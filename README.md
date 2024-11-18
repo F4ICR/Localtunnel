@@ -13,3 +13,33 @@ Ayant depuis quelque temps fait l'acquisition d'un [M5Stack](https://m5stack.com
 
 Ce tunnel bien entendu est dédié dans le cadre du projet RRFRemote mais pourrait tout aussi bien être utilisé pour d'autres besoins, mais Localtunnel ne fonctionne qu'avec les protocoles HTTP et HTTPS.
 
+## Mise en place de Localtunnel (nécessite NodeJS) 
+Nécessite d'être connecté via une console SSH
+
+`npm install -g localtunnel`
+
+Téléchargez le script localtunnel.py depuis votre répertoire de travail qui est /root/ dans notre exemple, (dans la mesure ou il n'y a qu'un seul fichier, je ne vois pas la nécéssité d'utiliser les commandes GIT)
+
+`wget https://github.com/F4ICR/Localtunnel/blob/main/localtunnel.py`
+
+Rendre executable le script localtunnel.py
+
+`chmod +x localtunnel.py`
+
+Renseigné les variables aux lignes 11, 13, 14 ,15 ,16 et 17 en éditant le fichier locatunnel.py avec 'nano'
+
+`nano localtunnel.py`
+
+> `PORT = 3000  # Le port local que vous souhaitez exposer` (Ligne 11)
+
+> `EMAIL = "votre_mail.com"  # Remplacez par votre adresse email` (Ligne 13)
+ 
+> `SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)` (Ligne 14)
+
+> `SMTP_PORT = 465  # Port SMTP sécurisé (SSL)` (Ligne 15)
+
+> `SMTP_USER = "votre_mail.com"  # Votre adresse Gmail (ou autre fournisseur)` (Ligne 16)
+
+> `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 17)
+
+L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion ultérieure. Cette URL sera également envoyée par mail afin d’être utilisée selon vos besoins. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes. Le script vérifiera si le tunnel est actif ou non : si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée ; si la valeur de retour est 0, le script tentera de récupérer le nom de sous-domaine précédemment attribué et inscrit dans le fichier tunnel_output.log afin de conserver la même URL.
