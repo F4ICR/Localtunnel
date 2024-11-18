@@ -42,7 +42,7 @@ Renseigné les variables aux lignes 11, 13, 14 ,15 ,16 et 17 en éditant le fich
 
 > `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 17)
 
-L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Cette URL sera également envoyée par mail afin d’être utilisée selon vos besoins. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
+L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
 
 `nano /etc/crontab`
 
