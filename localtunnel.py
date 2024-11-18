@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# F4ICR & OpenIA GPT-4o
 
 import subprocess
 import time
