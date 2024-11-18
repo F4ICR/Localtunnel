@@ -42,4 +42,16 @@ Renseigné les variables aux lignes 11, 13, 14 ,15 ,16 et 17 en éditant le fich
 
 > `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 17)
 
-L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion ultérieure. Cette URL sera également envoyée par mail afin d’être utilisée selon vos besoins. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes. Le script vérifiera si le tunnel est actif ou non : si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée ; si la valeur de retour est 0, le script tentera de récupérer le nom de sous-domaine précédemment attribué et inscrit dans le fichier tunnel_output.log afin de conserver la même URL.
+L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Cette URL sera également envoyée par mail afin d’être utilisée selon vos besoins. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
+
+`nano /etc/crontab`
+
+Puis ajouter la ligne suivant:
+
+> `*/5 * * * * root /root/localtunnel.py >/dev/null 2>&1`
+
+Relancer le service crontab pour que ce changement soit effectif
+
+`service cron restart`
+
+Le script vérifiera si le tunnel est actif ou non : si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée ; si la valeur de retour est 0, le script tentera de récupérer le nom de sous-domaine précédemment attribué et inscrit dans le fichier tunnel_output.log afin de conserver la même URL.
