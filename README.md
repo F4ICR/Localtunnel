@@ -55,3 +55,7 @@ Relancer le service crontab pour que ce changement soit effectif
 `service cron restart`
 
 Le script vérifiera si le tunnel est actif ou non : si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée ; si la valeur de retour est 0, le script tentera de récupérer le nom de sous-domaine précédemment attribué et inscrit dans le fichier tunnel_output.log afin de conserver la même URL.
+Un email vous sera également envoyé avec l’adresse URL du tunnel, même si l’URL du tunnel ne change pas, cela permet tout de même de savoir que le tunnel est tombé et que le script s’est déroulé correctement.
+
+L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer OpenIA GPT-4 pour écrire ce script.
+Je dois dire que l’expérience a été géniale, même si cela ne s’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final, je trouve le résultat plutôt satisfaisant.
