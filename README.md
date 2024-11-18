@@ -13,7 +13,7 @@ Ayant depuis quelque temps fait l'acquisition d'un [M5Stack](https://m5stack.com
 
 Ce tunnel bien entendu est dédié dans le cadre du projet ***RRFRemote*** mais pourrait tout aussi bien être utilisé pour d'autres besoins.
 Toutefois une petite précision : ***Localtunnel*** ne fonctionne qu'avec les protocoles HTTP et HTTPS. 
-En ce qui concerne la configuration du fichier.ini pour le ***RRFRemote***, l'URL devra être en HTTP
+En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l'URL devra être en HTTP
 
 ## Mise en place de Localtunnel (nécessite NodeJS) 
 Nécessite d'être connecté via une console SSH
