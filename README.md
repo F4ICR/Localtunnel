@@ -12,7 +12,7 @@ La conséquence est que l'on ne peut pas ouvrir de ports sur ce point de sortie 
 Ayant depuis quelque temps fait l'acquisition d'un [M5Stack](https://m5stack.com/) dans le but d'y installer le projet [RRFRemote](https://github.com/armel/RRFRemote) de Armel [F4HWN](https://www.qrz.com/db/F4HWN), ceci afin de pouvoir suivre l'activité du [RRF](http://rrf4.f5nlg.ovh:82/) (Réseau des Répéteurs Francophones) et de piloter mon link [F1ZUJ](https://www.qrz.com/db/F1ZUJ) à distance, j'ai rapidement été confronté au problème d'accéder a mon LAN derrière un routeur 4G.
 
 Ce tunnel bien entendu est dédié dans le cadre du projet ***RRFRemote*** mais pourrait tout aussi bien être utilisé pour d'autres besoins.
-Toutefois une petite précision : ***Localtunnel*** ne fonctionne qu'avec les protocoles HTTP et HTTPS. 
+Toutefois une petite précision : ***Localtunnel*** ne permet pas de tunneliser d'autres types de connexions TCP non-HTTP ou HTTPS. 
 En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l'URL devra être en HTTP
 
 ## Mise en place de Localtunnel (nécessite NodeJS) 
