@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# F4ICR & OpenIA GPT-4o
 
 import subprocess
 import time
@@ -36,7 +35,21 @@ def start_tunnel():
         if match:
             tunnel_url = match.group(0)
             print(f"Tunnel démarré à l'adresse : {tunnel_url}")
-            send_email(tunnel_url)  # Envoyer l'URL par email
+
+            # Lire l'URL existante dans le fichier de log
+            previous_url = read_tunnel_url_from_log()
+
+            # Vérifier si l'URL a changé
+            if previous_url != tunnel_url:
+                print(f"L'URL a changé. Nouvelle URL : {tunnel_url}")
+                send_email(tunnel_url)  # Envoyer l'URL par email
+
+                # Mettre à jour le fichier log avec la nouvelle URL
+                with open(LOG_FILE, "w") as log_file:
+                    log_file.write(f"Tunnel URL: {tunnel_url}\n")
+            else:
+                print("L'URL n'a pas changé. Aucun email envoyé.")
+
             return tunnel_url
         else:
             print("Erreur : Impossible de trouver l'URL du tunnel.")
@@ -82,20 +95,16 @@ def manage_tunnel():
         print("Le tunnel est déjà actif.")
     else:
         print("Le tunnel n'est pas actif.")
-        
+
         # Vérifier si une URL précédente existe dans le fichier de log
         previous_url = read_tunnel_url_from_log()
-
+        
         if previous_url:
             print(f"Tentative de réutilisation de l'URL précédente : {previous_url}")
             global SUBDOMAIN
             SUBDOMAIN = previous_url.split("//")[1].split(".")[0]  # Extraire le sous-domaine précédent
-        
-        new_url = start_tunnel()
 
-        if new_url and new_url != previous_url:
-            print(f"L'URL a changé. Nouvelle URL : {new_url}")
-            send_email(new_url)
+        new_url = start_tunnel()
 
 # Exécution principale du script
 if __name__ == "__main__":
