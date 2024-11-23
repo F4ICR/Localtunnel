@@ -15,8 +15,12 @@ Ce tunnel bien entendu est dédié dans le cadre du projet ***RRFRemote*** mais 
 Toutefois une petite précision : ***Localtunnel*** ne permet pas de tunneliser des connexions TCP génériques (comme SSH ou FTP), car il est spécifiquement conçu pour les services web utilisant HTTP/HTTPS. 
 En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l'URL devra être en HTTP
 
-## Mise en place de Localtunnel (nécessite NodeJS) 
-Nécessite d'être connecté via une console SSH
+## Pré-requis
+Avant d’utiliser ce script, vous devez installer certaines dépendances :
+
+• Python 3 : Assurez-vous que Python 3 est installé sur votre machine.
+ 
+• Localtunnel : Installez Localtunnel en utilisant la commande suivante, nécessite d'être connecté via une console SSH :
 
 `npm install -g localtunnel`
 
@@ -57,7 +61,7 @@ Relancer le service crontab pour que ce changement soit effectif
 `service cron restart`
 
 Le script vérifiera si le tunnel est actif ou non : si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée ; si la valeur de retour est 0, le script tentera de récupérer le nom de sous-domaine précédemment attribué et inscrit dans le fichier tunnel_output.log afin de conserver la même URL.
-Un email vous sera également envoyé avec l’adresse URL du tunnel, même si l’URL du tunnel ne change pas, cela permet tout de même de savoir que le tunnel est tombé et que le script s’est déroulé correctement.
+Un email vous sera envoyé avec l’adresse URL du tunnel, si toutefois l'adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
 L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
 Je dois dire que l’expérience a été géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final et pour une première, je trouve le résultat plutôt satisfaisant.
