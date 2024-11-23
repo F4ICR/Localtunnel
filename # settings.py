@@ -9,7 +9,7 @@ PORT = 3000
 LOG_FILE = "tunnel_output.log"
 
 # Adresse email pour recevoir l'URL du tunnel
-EMAIL = "pascal.paquet@gmail.com"
+EMAIL = "votre_mail@domaine.com"
 
 # Serveur SMTP (exemple avec Gmail)
 SMTP_SERVER = "smtp.gmail.com"
@@ -18,10 +18,10 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 # Votre adresse Gmail (ou autre fournisseur)
-SMTP_USER = "pascal.paquet@gmail.com"
+SMTP_USER = "votre_mail@domaine.com"
 
 # Mot de passe ou App Password (si Gmail)
-SMTP_PASSWORD = "wlubhwfcogtdfyfb"  # Remplacez par une variable d'environnement pour plus de sécurité
+SMTP_PASSWORD = "votre_password"  # Remplacez par une variable d'environnement pour plus de sécurité
 
 # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 SUBDOMAIN = None
