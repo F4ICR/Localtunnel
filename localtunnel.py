@@ -19,7 +19,7 @@ def manage_tunnel():
             SUBDOMAIN = previous_url.split("//")[1].split(".")[0]  # Extraire le sous-domaine précédent
 
         new_url = start_tunnel(PORT, LOG_FILE, SUBDOMAIN)
-        if new_url and new_url != previous_url:
+        if new_url and (not previous_url or new_url != previous_url):
             print(f"L'URL a changé. Nouvelle URL : {new_url}")
             send_email(SMTP_USER, SMTP_PASSWORD, SMTP_SERVER, SMTP_PORT, EMAIL, new_url)
 
