@@ -3,21 +3,8 @@
 
 from settings import PORT, LOG_FILE, EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SUBDOMAIN
 from lib import start_tunnel, is_tunnel_active, send_email, read_tunnel_url_from_log
-import os  # Import nécessaire pour vérifier l'existence du fichier
+import os
 
-# Fonction pour lire l'URL précédente dans le fichier de log
-def safe_read_tunnel_url_from_log(log_file):
-    if not os.path.exists(log_file):  # Vérifier si le fichier existe
-        print("Le fichier de log n'existe pas.")
-        return None
-    with open(log_file, 'r') as file:
-        url = file.read().strip()
-        if not url:  # Vérifier si le fichier est vide
-            print("Le fichier de log est vide.")
-            return None
-        return url
-
-# Fonction principale pour gérer la connexion au tunnel
 def manage_tunnel():
     if is_tunnel_active(PORT):
         print("Le tunnel est déjà actif.")
@@ -25,7 +12,7 @@ def manage_tunnel():
         print("Le tunnel n'est pas actif.")
 
         # Lire l'URL précédente en toute sécurité
-        previous_url = safe_read_tunnel_url_from_log(LOG_FILE)
+        previous_url = read_tunnel_url_from_log(LOG_FILE)
 
         if previous_url:
             print(f"Tentative de réutilisation de l'URL précédente : {previous_url}")
@@ -42,6 +29,5 @@ def manage_tunnel():
         else:
             print("Aucun email envoyé car l'URL n'a pas changé.")
 
-# Exécution principale du script
 if __name__ == "__main__":
     manage_tunnel()
