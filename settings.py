@@ -2,6 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version
+version = '1.0.6'
 
 # Le port local que vous souhaitez exposer
 PORT = 3000
