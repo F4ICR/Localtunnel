@@ -28,25 +28,27 @@ Téléchargez le projet Localtunnel depuis votre répertoire de travail qui est 
 
 `git clone https://github.com/F4ICR/Localtunnel.git`
 
-Rendre executable le script localtunnel.py
+Rendre executable le script localtunnel.py en se rendant dans le répertoire Localtunnel
+
+`cd Localtunnel/`
 
 `chmod +x localtunnel.py`
 
-Renseigné les variables aux lignes 11, 13, 14 ,15 ,16 et 17 en éditant le fichier locatunnel.py avec 'nano'
+Renseigné les variables aux lignes 5, 11, 14, 17, 20 et 23 en éditant le fichier settings.py avec 'nano'
 
-`nano localtunnel.py`
+`nano settings.py`
 
-> `PORT = 3000  # Le port local que vous souhaitez exposer` (Ligne 11)
+> `PORT = 3000  # Le port local que vous souhaitez exposer` (Ligne 5)
 
-> `EMAIL = "votre_mail.com"  # Remplacez par votre adresse email` (Ligne 13)
+> `EMAIL = "votre_mail.com"  # Remplacez par votre adresse email` (Ligne 11)
  
 > `SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)` (Ligne 14)
 
-> `SMTP_PORT = 465  # Port SMTP sécurisé (SSL)` (Ligne 15)
+> `SMTP_PORT = 465  # Port SMTP sécurisé (SSL)` (Ligne 17)
 
-> `SMTP_USER = "votre_mail.com"  # Votre adresse Gmail (ou autre fournisseur)` (Ligne 16)
+> `SMTP_USER = "votre_mail.com"  # Votre adresse Gmail (ou autre fournisseur)` (Ligne 20)
 
-> `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 17)
+> `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 23)
 
 L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
 
@@ -54,7 +56,7 @@ L’exécution du script se déroule comme suit : démarrage du tunnel avec la c
 
 Puis ajouter la ligne suivant:
 
-> `*/5 * * * * root /root/localtunnel.py >/dev/null 2>&1`
+> `*/5 * * * * root /root/Localtunnel/localtunnel.py >/dev/null 2>&1`
 
 Relancer le service crontab pour que ce changement soit effectif
 
