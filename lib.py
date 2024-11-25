@@ -8,6 +8,9 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 
+# Importer LOG_FILE depuis settings.py
+from settings import LOG_FILE
+
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, log_file, subdomain=None):
     with open(log_file, "w") as log_file:
