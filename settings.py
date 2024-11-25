@@ -2,7 +2,15 @@
 # F4ICR & OpenIA GPT-4
 
 # Version
-version = '1.0.6'
+version = '1.0.7'
+
+import os
+
+# Obtenir le chemin absolu du répertoire où se trouve ce fichier
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Construire un chemin absolu pour LOG_FILE
+LOG_FILE = os.path.join(SCRIPT_DIR, "tunnel_output.log")
 
 # Le port local que vous souhaitez exposer
 PORT = 3000
