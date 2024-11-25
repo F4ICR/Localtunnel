@@ -33,21 +33,21 @@ Rendre executable le script localtunnel.py en se rendant dans le répertoire Loc
 
 `chmod +x localtunnel.py`
 
-Renseigné les variables aux lignes 5, 11, 14, 17, 20 et 23 en éditant le fichier settings.py avec 'nano'
+Renseigné les variables suivantes en éditant le fichier localtunnel.py avec 'nano'
 
-`nano settings.py`
+`nano localtunnel.py`
 
-> `PORT = 3000  # Le port local que vous souhaitez exposer` (Ligne 5)
+> `PORT = 3000  # Le port local que vous souhaitez exposer`
 
-> `EMAIL = "votre_mail.com"  # Remplacez par votre adresse email` (Ligne 11)
+> `EMAIL = "votre_mail.com"  # Remplacez par votre adresse email`
  
-> `SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)` (Ligne 14)
+> `SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)`
 
-> `SMTP_PORT = 465  # Port SMTP sécurisé (SSL)` (Ligne 17)
+> `SMTP_PORT = 465  # Port SMTP sécurisé (SSL)`
 
-> `SMTP_USER = "votre_mail.com"  # Votre adresse Gmail (ou autre fournisseur)` (Ligne 20)
+> `SMTP_USER = "votre_mail.com"  # Votre adresse Gmail (ou autre fournisseur)`
 
-> `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)` (Ligne 23)
+> `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)`
 
 L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
 
@@ -55,7 +55,7 @@ L’exécution du script se déroule comme suit : démarrage du tunnel avec la c
 
 Puis ajouter la ligne suivant:
 
-> `*/5 * * * * root /root/Localtunnel/localtunnel.py >/dev/null 2>&1`
+> `*/5 * * * * root /root/localtunnel.py >/dev/null 2>&1`
 
 Relancer le service crontab pour que ce changement soit effectif
 
