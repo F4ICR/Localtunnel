@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
+# Importer les variables de configuration depuis settings.py
 from settings import PORT, LOG_FILE, EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SUBDOMAIN
+
+# Importer les fonctions utilitaires depuis lib.py
 from lib import start_tunnel, is_tunnel_active, send_email, read_tunnel_url_from_log
 
 # Fonction principale pour gérer la connexion au tunnel
