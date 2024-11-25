@@ -19,12 +19,7 @@ def start_tunnel(port, log_file, subdomain=None):
     time.sleep(2)  # Attendre quelques secondes pour que le tunnel démarre
 
     # Lire l'URL du tunnel dans le fichier de log
-    with open(log_file, "r") as log_file:
-        log_content = log_file.read()
-        match = re.search(r"https://[^\s]+", log_content)
-        if match:
-            return match.group(0)
-    return None
+    return read_tunnel_url_from_log(log_file.name)
 
 # Fonction pour vérifier si le tunnel est déjà actif en utilisant pgrep
 def is_tunnel_active(port):
@@ -52,10 +47,13 @@ def send_email(smtp_user, smtp_password, smtp_server, smtp_port, email_to, tunne
 
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log(log_file):
-    if os.path.exists(log_file):
-        with open(log_file, "r") as log_file:
-            log_content = log_file.read()
+    # Vérifier si le fichier existe et n'est pas vide
+    if os.path.exists(log_file) and os.path.getsize(log_file) > 0:
+        with open(log_file, "r") as file:
+            log_content = file.read()
             match = re.search(r"https://[^\s]+", log_content)
             if match:
                 return match.group(0)
+    else:
+        print("Le fichier de log est absent ou vide.")
     return None
