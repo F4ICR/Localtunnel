@@ -18,9 +18,9 @@ En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l
 ## Pré-requis
 Avant d’utiliser ce script, vous devez installer certaines dépendances :
 
-• Python 3 : Assurez-vous que Python 3 est installé sur votre machine.
+• **Python 3** : Assurez-vous que Python 3 est installé sur votre machine.
  
-• Localtunnel : Installez Localtunnel en utilisant la commande suivante :
+• **Localtunnel** : Installez Localtunnel en utilisant la commande suivante :
 
 `npm install -g localtunnel`
 
@@ -64,16 +64,16 @@ Relancer le service crontab pour que ce changement soit effectif
 
 Le script vérifiera si le tunnel est actif ou non :
 
-• Si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée.
+**• Si la valeur de retour est 1**, aucune action supplémentaire ne sera effectuée.
 
-• Si la valeur de retour est 0, le script tentera :
+**• Si la valeur de retour est 0**, le script tentera :
 
 
-• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
+• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier **tunnel_output.log**, afin de conserver la même URL (si ce fichier existe).
 
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
 
-Remarque : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
+**Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
 L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
 Je dois dire que l’expérience a été géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final et pour une première, je trouve le résultat plutôt satisfaisant.
