@@ -20,7 +20,7 @@ SMTP_PORT = 465
 SMTP_USER = "pascal.paquet@gmail.com"
 
 # Mot de passe ou App Password (si Gmail)
-SMTP_PASSWORD = "wlubhwfcogtdfyfb"  # Remplacez par une variable d'environnement pour plus de sécurité
+SMTP_PASSWORD = "votre_password"  # Remplacez par une variable d'environnement pour plus de sécurité
 
 # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 SUBDOMAIN = None
