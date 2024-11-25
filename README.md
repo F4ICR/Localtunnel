@@ -62,12 +62,17 @@ Relancer le service crontab pour que ce changement soit effectif
 
 `service cron restart`
 
-Le texte est globalement compréhensible, mais il pourrait être clarifié et restructuré pour améliorer sa lisibilité et éviter toute confusion. Voici une version révisée et mieux structurée :
 Le script vérifiera si le tunnel est actif ou non :
-	•	##Si la valeur de retour est 1##, aucune action supplémentaire ne sera effectuée.
-	•	##Si la valeur de retour est 0##, le script tentera :
-	•	De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
-	•	Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
+
+• Si la valeur de retour est 1, aucune action supplémentaire ne sera effectuée.
+
+• Si la valeur de retour est 0, le script tentera :
+
+
+• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
+
+• Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
+
 Remarque : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
 L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
