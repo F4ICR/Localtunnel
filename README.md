@@ -24,9 +24,9 @@ Avant d’utiliser ce script, vous devez installer certaines dépendances :
 
 `npm install -g localtunnel`
 
-Téléchargez le script localtunnel.py depuis votre répertoire de travail qui est /root/ dans notre exemple, (dans la mesure ou il n'y a qu'un seul fichier, je ne vois pas la nécéssité d'utiliser les commandes GIT)
+Téléchargez le projet Localtunnel depuis votre répertoire de travail qui est /root/ dans notre exemple :
 
-`wget https://github.com/F4ICR/Localtunnel/blob/main/localtunnel.py`
+`git clone https://github.com/F4ICR/Localtunnel.git`
 
 Rendre executable le script localtunnel.py
 
