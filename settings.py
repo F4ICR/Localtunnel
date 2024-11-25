@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version
-version = '1.0.7'
+version = '1.0.8'
 
 import os
 
@@ -12,26 +12,12 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Construire un chemin absolu pour LOG_FILE
 LOG_FILE = os.path.join(SCRIPT_DIR, "tunnel_output.log")
 
-# Le port local que vous souhaitez exposer
-PORT = 3000
+# Autres variables globales
+PORT = 3000  # Le port local que vous souhaitez exposer
+EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
+SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
+SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
+SMTP_USER = "pascal.paquet@gmail.com"  # Votre adresse Gmail (ou autre fournisseur)
+SMTP_PASSWORD = "wlubhwfcogtdfyfb"  # Mot de passe ou App Password (si Gmail)
+SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 
-# Fichier de log pour capturer la sortie du tunnel
-LOG_FILE = "tunnel_output.log"
-
-# Adresse email pour recevoir l'URL du tunnel
-EMAIL = "votre_mail@blabla.com"
-
-# Serveur SMTP (exemple avec Gmail)
-SMTP_SERVER = "smtp.gmail.com"
-
-# Port SMTP sécurisé (SSL)
-SMTP_PORT = 465
-
-# Votre adresse Gmail (ou autre fournisseur)
-SMTP_USER = "votre_mail@blabla.com"
-
-# Mot de passe ou App Password (si Gmail)
-SMTP_PASSWORD = "votre_password"  # Remplacez par une variable d'environnement pour plus de sécurité
-
-# Sous-domaine souhaité (None pour un sous-domaine aléatoire)
-SUBDOMAIN = None
