@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
+# Version
+
 # Le port local que vous souhaitez exposer
 PORT = 3000
 
