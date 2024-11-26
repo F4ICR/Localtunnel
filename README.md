@@ -55,7 +55,7 @@ L’exécution du script se déroule comme suit : démarrage du tunnel avec la c
 
 Puis ajouter la ligne suivant:
 
-> `*/5 * * * * root /root/localtunnel.py >/dev/null 2>&1`
+> `*/5 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
 
 Relancer le service crontab pour que ce changement soit effectif
 
