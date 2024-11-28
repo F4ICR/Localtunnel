@@ -53,13 +53,13 @@ Renseigné les variables suivantes en éditant le fichier settings.py avec 'nano
 
 Le programme utilise Localtunnel pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
 
-Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les heures.
+Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 15 minutes.
 
 `nano /etc/crontab`
 
 Puis ajouter la ligne suivant:
 
-> `*/60 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
+> `*/15 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
 
 Relancer le service crontab pour que ce changement soit effectif
 
