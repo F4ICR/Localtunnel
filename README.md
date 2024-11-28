@@ -33,7 +33,7 @@ Rendre executable le script localtunnel.py en se rendant dans le répertoire Loc
 
 `chmod +x localtunnel.py`
 
-Renseigné les variables suivantes en éditant le fichier localtunnel.py avec 'nano'
+Renseigné les variables suivantes en éditant le fichier settings.py avec 'nano'
 
 `nano localtunnel.py`
 
@@ -49,7 +49,11 @@ Renseigné les variables suivantes en éditant le fichier localtunnel.py avec 'n
 
 > `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)`
 
-L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
+## Présentation du Programme
+
+Le programme utilise Localtunnel pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
+
+Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
 
 `nano /etc/crontab`
 
@@ -71,7 +75,6 @@ Le script vérifiera si le tunnel est actif ou non :
 • De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier **tunnel_output.log**, afin de conserver la même URL (si ce fichier existe).
 
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
-
 **Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
 L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
