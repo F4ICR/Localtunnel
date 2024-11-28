@@ -72,7 +72,17 @@ Le script vérifiera si le tunnel est actif ou non :
 **• Si la valeur de retour est 0**, le script tentera :
 
 
-• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier **tunnel_output.log**, afin de conserver la même URL (si ce fichier existe).
+• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
+
+• Il verifiera aussi la connectivité du tunnel de facon réguliere, si le tunnel est inactif ou inaccessible :
+
+•	Il arrêtera l’ancien processus.
+
+•	Créera un nouveau tunnel.
+
+•	Mettra à jour l’URL dans `tunnel_output.log`.
+
+•	Enverra un email avec la nouvelle URL.
 
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
 **Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
