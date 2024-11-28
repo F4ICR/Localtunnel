@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version
-version = '1.0.9'
+version = '1.1.1'
 
 import os
 
