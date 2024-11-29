@@ -63,7 +63,7 @@ Puis ajouter la ligne suivant:
 
 > `*/15 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
 
-Relancer le service crontab pour que ce changement soit effectif
+Relancer le service crontab pour que ce changement soit pris en compte.
 
 `service cron restart`
 
