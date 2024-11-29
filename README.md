@@ -19,7 +19,7 @@ Avant d’utiliser ce script, vous devez installer certaines dépendances :
 
 • **Python 3** : Assurez-vous que Python 3 est installé sur votre machine ainsi que **requests** nécessaire pour tester la connectivité HTTP du tunnel
 
-• `pip install requests`
+`pip install requests`
 
 • **Localtunnel** : Installez Localtunnel en utilisant la commande suivante :
 
