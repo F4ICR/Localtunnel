@@ -89,5 +89,5 @@ Le script vérifiera si le tunnel est actif ou non :
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
 **Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
-L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
+L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ces scripts en Python.
 Je dois dire que l’expérience a été géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final et pour une première, je trouve le résultat plutôt satisfaisant.
