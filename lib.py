@@ -70,15 +70,20 @@ def read_tunnel_url_from_log():
 # Nouvelle fonction pour tester la connectivité du tunnel via HTTP avec réessai
 def test_tunnel_connectivity(tunnel_url):
     try:
-        response = requests.get(tunnel_url, timeout=5)  # Première tentative de connexion
+        # Première tentative de connexion
+        response = requests.get(tunnel_url, timeout=5)
         if response.status_code == 200:
             return True
         
-        # Si la première tentative échoue, attendre et réessayer
-        time.sleep(3)
-        response = requests.get(tunnel_url, timeout=5)  # Deuxième tentative après délai
-        return response.status_code == 200  # Retourne True si le code HTTP est 200 (succès)
-    
+        # Si la première tentative échoue, effectuer deux autres tentatives
+        for _ in range(2):  # Répéter deux fois pour un total de trois tentatives
+            time.sleep(3)  # Attendre 3 secondes avant de réessayer
+            response = requests.get(tunnel_url, timeout=5)
+            if response.status_code == 200:
+                return True
+        
+        return False  # Retourne False si toutes les tentatives échouent
     except Exception as e:
         print(f"Erreur lors du test de connectivité : {e}")
         return False
+    
