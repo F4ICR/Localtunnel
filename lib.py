@@ -75,15 +75,17 @@ def test_tunnel_connectivity(tunnel_url):
         if response.status_code == 200:
             return True
         
-        # Si la première tentative échoue, effectuer deux autres tentatives
-        for _ in range(2):  # Répéter deux fois pour un total de trois tentatives
-            time.sleep(3)  # Attendre 3 secondes avant de réessayer
-            response = requests.get(tunnel_url, timeout=5)
-            if response.status_code == 200:
-                return True
-        
-        return False  # Retourne False si toutes les tentatives échouent
+        # Si la première tentative échoue, attendre et réessayer
+        time.sleep(3)
+        response = requests.get(tunnel_url, timeout=5)  # Deuxième tentative après délai
+        if response.status_code == 200:
+            return True
+
+        # Troisième tentative après délai supplémentaire
+        time.sleep(3)
+        response = requests.get(tunnel_url, timeout=5)
+        return response.status_code == 200  # Retourne True si le code HTTP est 200 (succès)
+    
     except Exception as e:
         print(f"Erreur lors du test de connectivité : {e}")
         return False
-    
