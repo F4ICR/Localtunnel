@@ -100,9 +100,6 @@ def read_tunnel_url_from_log():
 
 # Fonction pour tester la connectivité du tunnel via HTTP en effectuant plusieurs tentatives
 def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
-    """
-    Teste la connectivité HTTP du tunnel en effectuant plusieurs tentatives.
-    """
     try:
         for attempt in range(retries):
             try:
