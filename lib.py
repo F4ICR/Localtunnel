@@ -33,29 +33,28 @@ def start_tunnel(port, subdomain=None):
         process = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp)
         pid_file = f"/tmp/localtunnel_{port}.pid"
 
-        # Stocker le PID dans un fichier spécifique au port
-        with open(pid_file, "w") as f:
+        # Création sécurisée du fichier PID avec permissions restreintes
+        with os.fdopen(os.open(pid_file, os.O_WRONLY | os.O_CREAT, 0o600), "w") as f:
             f.write(str(process.pid))
 
         logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
 
-    # Attendre que le tunnel démarre et vérifier périodiquement l'URL
-    max_retries = 10  # Nombre maximum de tentatives
-    delay = 1  # Délai entre les tentatives (en secondes)
+        # Attendre que le tunnel démarre et vérifier périodiquement l'URL
+        max_retries = 10  # Nombre maximum de tentatives
+        delay = 1  # Délai entre les tentatives (en secondes)
 
-    for attempt in range(max_retries):
-        url = read_tunnel_url_from_log()  # Lire l'URL depuis le fichier log
-        if url:
-            logger.info(f"Tunnel démarré avec succès. URL : {url}")
-            return url  # Retourner l'URL si elle est trouvée
+        for attempt in range(max_retries):
+            url = read_tunnel_url_from_log()  # Lire l'URL depuis le fichier log
+            if url:
+                logger.info(f"Tunnel démarré avec succès. URL : {url}")
+                return url  # Retourner l'URL si elle est trouvée
+            logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
+            time.sleep(delay)  # Attendre avant de réessayer
 
-        logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
-        time.sleep(delay)  # Attendre avant de réessayer
-
-    # Si aucune URL n'est trouvée après toutes les tentatives, lever une exception
-    error_message = "Échec du démarrage du tunnel : aucune URL n'a été trouvée après plusieurs tentatives."
-    logger.error(error_message)
-    raise Exception(error_message)
+        # Si aucune URL n'est trouvée après toutes les tentatives, lever une exception
+        error_message = "Échec du démarrage du tunnel : aucune URL n'a été trouvée après plusieurs tentatives."
+        logger.error(error_message)
+        raise Exception(error_message)
 
 # Fonction pour vérifier si le tunnel est déjà actif en utilisant pgrep
 def is_tunnel_active(port):
@@ -65,6 +64,17 @@ def is_tunnel_active(port):
         return result.returncode == 0
     except Exception as e:
         logger.error(f"Erreur lors de la vérification du processus : {e}")
+        return False
+
+# Fonction pour vérifier si un processus est actif à partir de son PID
+def is_process_running(pid):
+    """
+    Vérifie si un processus avec le PID donné est en cours d'exécution.
+    """
+    try:
+        os.kill(pid, 0)  # Envoie un signal nul pour vérifier l'existence du processus
+        return True
+    except OSError:
         return False
 
 # Fonction pour arrêter un processus existant du tunnel
@@ -77,9 +87,15 @@ def stop_existing_tunnel(port):
         if os.path.exists(pid_file):
             with open(pid_file, "r") as f:
                 pid = int(f.read().strip())
-            os.kill(pid, 15)  # Envoyer un signal SIGTERM pour arrêter proprement le processus
+
+            # Vérification si le processus est actif avant de l'arrêter
+            if is_process_running(pid):
+                os.kill(pid, 15)  # Envoyer un signal SIGTERM pour arrêter proprement le processus
+                logger.info(f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid}).")
+            else:
+                logger.warning(f"Aucun processus actif trouvé pour le PID : {pid}. Suppression du fichier PID.")
+
             os.remove(pid_file)
-            logger.info(f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid}).")
         else:
             logger.warning(f"Aucun fichier PID trouvé pour le port {port}. Aucun processus à arrêter.")
     except Exception as e:
