@@ -17,7 +17,6 @@ import logging
 
 logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
-
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
     """
@@ -58,41 +57,35 @@ def start_tunnel(port, subdomain=None):
     logger.error(error_message)
     raise Exception(error_message)
 
-
 # Fonction pour vérifier si le tunnel est déjà actif en utilisant pgrep
 def is_tunnel_active(port):
     try:
         result = subprocess.run(["pgrep", "-f", f"lt --port {port}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        logger.info(f"Vérification de l'état du tunnel sur le port {port}. Résultat : {'actif' if result.returncode == 0 else 'inactif'}.")
         return result.returncode == 0
     except Exception as e:
         logger.error(f"Erreur lors de la vérification du processus : {e}")
         return False
 
-
-# Nouvelle fonction pour arrêter un processus existant du tunnel en utilisant son PID
+# Fonction pour arrêter un processus existant du tunnel
 def stop_existing_tunnel(port):
     """
     Arrête le processus Localtunnel associé au port spécifié en utilisant son PID.
     """
     try:
         pid_file = f"/tmp/localtunnel_{port}.pid"
-        
         if os.path.exists(pid_file):
             with open(pid_file, "r") as f:
                 pid = int(f.read().strip())
-            
             os.kill(pid, 15)  # Envoyer un signal SIGTERM pour arrêter proprement le processus
-            os.remove(pid_file)  # Supprimer le fichier PID après arrêt
-            
+            os.remove(pid_file)
             logger.info(f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid}).")
         else:
             logger.warning(f"Aucun fichier PID trouvé pour le port {port}. Aucun processus à arrêter.")
-    
     except Exception as e:
         logger.error(f"Erreur lors de l'arrêt du processus : {e}")
 
-
-# Fonction pour envoyer un email avec l'URL du tunnel (inchangée)
+# Fonction pour envoyer un email avec l'URL du tunnel
 def send_email(tunnel_url):
     msg = MIMEText(f"Le tunnel est accessible à l'adresse suivante : {tunnel_url}")
     msg['Subject'] = 'Localtunnel URL'
@@ -103,12 +96,11 @@ def send_email(tunnel_url):
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.sendmail(SMTP_USER, EMAIL, msg.as_string())
-            logger.info(f"L'URL a été envoyée à {EMAIL}.")
+            logger.info(f"L'URL a été envoyée à {EMAIL}. Tunnel URL : {tunnel_url}")
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi de l'email : {e}")
 
-
-# Fonction pour lire l'URL depuis le fichier log existant (inchangée)
+# Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
     """
     Lit l'URL du tunnel à partir du fichier log généré par Localtunnel.
@@ -118,26 +110,28 @@ def read_tunnel_url_from_log():
             log_content = log_file.read()
             match = re.search(r"https://[^\s]+", log_content)
             if match:
+                logger.debug("URL trouvée dans le fichier log.")
                 return match.group(0)
+    logger.debug("Aucune URL trouvée dans le fichier log.")
     return None
 
-
-# Fonction pour tester la connectivité du tunnel via HTTP en effectuant plusieurs tentatives (inchangée)
+# Fonction pour tester la connectivité du tunnel via HTTP
 def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
     try:
         for attempt in range(retries):
+            start_time = time.time()
             try:
                 response = requests.get(tunnel_url, timeout=timeout)
+                elapsed_time = time.time() - start_time
                 if response.status_code == 200:
+                    logger.info(f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
                     return True
             except requests.RequestException as e:
-                logger.warning(f"Tentative {attempt + 1}/{retries} échouée : {e}")
-            
-            if attempt < retries - 1:  # Attente avant la prochaine tentative
-                time.sleep(delay)
-
+                elapsed_time = time.time() - start_time
+                logger.warning(f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}")
+                if attempt < retries - 1:
+                    time.sleep(delay)
         return False  # Échec après toutes les tentatives
-
     except Exception as e:
         logger.error(f"Erreur inattendue lors du test de connectivité : {e}")
         return False

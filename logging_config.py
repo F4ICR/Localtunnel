@@ -11,13 +11,12 @@ LOG_FILE = os.path.join(LOG_DIR, "application.log")
 
 # Configurer la journalisation
 logging.basicConfig(
-    level=logging.INFO,  # Niveau par défaut : INFO
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG,  # Niveau par défaut : DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - [PID: %(process)d] - %(message)s",
     handlers=[
         logging.FileHandler(LOG_FILE),  # Écriture dans un fichier
         logging.StreamHandler()        # Affichage dans la console
     ]
 )
 
-# Obtenir le logger principal
 logger = logging.getLogger("LocaltunnelApp")
