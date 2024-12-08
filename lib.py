@@ -47,7 +47,7 @@ def start_tunnel(port, subdomain=None):
 
     # Attendre que le tunnel démarre et vérifier périodiquement l'URL
     max_retries = 10  # Nombre maximum de tentatives
-    delay = 1  # Délai entre les tentatives (en secondes)
+    delay = 2  # Délai entre les tentatives (en secondes)
 
     for attempt in range(max_retries):
         url = read_tunnel_url_from_log()  # Lire l'URL depuis le fichier log
