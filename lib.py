@@ -8,7 +8,11 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 import requests  # Pour tester la connectivité HTTP
+
+# Importer LOG_FILE et d'autres variables depuis settings.py
 from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL
+
+# Importer le module de journalisation
 import logging
 
 logger = logging.getLogger(__name__)  # Créer un logger pour ce module
