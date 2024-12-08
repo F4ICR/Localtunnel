@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # F4ICR & OpenIA GPT-4
 
 import subprocess
@@ -8,14 +9,11 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 import requests  # Pour tester la connectivité HTTP
-
-# Importer LOG_FILE et d'autres variables depuis settings.py
 from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL
-
-# Importer le module de journalisation
 import logging
 
 logger = logging.getLogger(__name__)  # Créer un logger pour ce module
+
 
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
@@ -30,7 +28,9 @@ def start_tunnel(port, subdomain=None):
             cmd += ["--subdomain", subdomain]
 
         # Lancer le processus en arrière-plan et capturer le PID
-        process = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp)
+        process = subprocess.Popen(
+            cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp
+        )
         pid_file = f"/tmp/localtunnel_{port}.pid"
 
         # Création sécurisée du fichier PID avec permissions restreintes
@@ -48,6 +48,7 @@ def start_tunnel(port, subdomain=None):
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
                 return url  # Retourner l'URL si elle est trouvée
+
             logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
             time.sleep(delay)  # Attendre avant de réessayer
 
@@ -56,15 +57,6 @@ def start_tunnel(port, subdomain=None):
         logger.error(error_message)
         raise Exception(error_message)
 
-# Fonction pour vérifier si le tunnel est déjà actif en utilisant pgrep
-def is_tunnel_active(port):
-    try:
-        result = subprocess.run(["pgrep", "-f", f"lt --port {port}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logger.info(f"Vérification de l'état du tunnel sur le port {port}. Résultat : {'actif' if result.returncode == 0 else 'inactif'}.")
-        return result.returncode == 0
-    except Exception as e:
-        logger.error(f"Erreur lors de la vérification du processus : {e}")
-        return False
 
 # Fonction pour vérifier si un processus est actif à partir de son PID
 def is_process_running(pid):
@@ -76,6 +68,27 @@ def is_process_running(pid):
         return True
     except OSError:
         return False
+
+
+# Fonction pour vérifier si le tunnel est actif via le fichier PID
+def is_tunnel_active(port):
+    pid_file = f"/tmp/localtunnel_{port}.pid"
+    if os.path.exists(pid_file):
+        try:
+            with open(pid_file, "r") as f:
+                pid = int(f.read().strip())
+                if is_process_running(pid):
+                    logger.info(f"Le tunnel est actif sur le port {port} (PID: {pid}).")
+                    return True
+                else:
+                    logger.warning(f"Le processus avec le PID {pid} n'est plus actif.")
+                    os.remove(pid_file)  # Supprimer le fichier PID obsolète
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification du fichier PID : {e}")
+    else:
+        logger.debug(f"Aucun fichier PID trouvé pour le port {port}.")
+    return False
+
 
 # Fonction pour arrêter un processus existant du tunnel
 def stop_existing_tunnel(port):
@@ -94,12 +107,27 @@ def stop_existing_tunnel(port):
                 logger.info(f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid}).")
             else:
                 logger.warning(f"Aucun processus actif trouvé pour le PID : {pid}. Suppression du fichier PID.")
-
             os.remove(pid_file)
         else:
             logger.warning(f"Aucun fichier PID trouvé pour le port {port}. Aucun processus à arrêter.")
     except Exception as e:
         logger.error(f"Erreur lors de l'arrêt du processus : {e}")
+
+
+# Fonction pour enregistrer les changements d'URL dans un fichier dédié
+def log_tunnel_change(previous_url, new_url):
+    """
+    Enregistre les changements d'URL du tunnel dans un fichier dédié.
+    """
+    change_log_file = "/tmp/tunnel_changes.log"  # Chemin du fichier de journal des changements
+
+    try:
+        with open(change_log_file, "a") as f:
+            f.write(f"Changement détecté : {time.strftime('%Y-%m-%d %H:%M:%S')} - Ancienne URL : {previous_url or 'Aucune'} - Nouvelle URL : {new_url}\n")
+        logger.info(f"Changement d'URL enregistré dans {change_log_file}.")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'enregistrement du changement d'URL : {e}")
+
 
 # Fonction pour envoyer un email avec l'URL du tunnel
 def send_email(tunnel_url):
@@ -116,6 +144,7 @@ def send_email(tunnel_url):
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi de l'email : {e}")
 
+
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
     """
@@ -130,6 +159,7 @@ def read_tunnel_url_from_log():
                 return match.group(0)
     logger.debug("Aucune URL trouvée dans le fichier log.")
     return None
+
 
 # Fonction pour tester la connectivité du tunnel via HTTP
 def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
@@ -148,6 +178,7 @@ def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
                 if attempt < retries - 1:
                     time.sleep(delay)
         return False  # Échec après toutes les tentatives
+
     except Exception as e:
         logger.error(f"Erreur inattendue lors du test de connectivité : {e}")
         return False
