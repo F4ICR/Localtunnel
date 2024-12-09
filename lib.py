@@ -49,6 +49,24 @@ def is_process_running(pid):
         return False
 
 
+# Fonction pour crée un fichier PID sécurisé avec des permissions restreintes (lecture/écriture uniquement pour le propriétaire)
+def create_secure_pid_file(pid_file, pid):
+    try:
+        # Définir les drapeaux pour créer un fichier sécurisé
+        flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+        mode = 0o600  # Permissions : rw------- (lecture/écriture uniquement pour le propriétaire)
+        
+        # Créer le fichier avec les permissions définies
+        fd = os.open(pid_file, flags, mode)
+        with os.fdopen(fd, 'w') as f:
+            f.write(f"{pid}\n")
+        
+        logger.info(f"Fichier PID créé : {pid_file} (PID: {pid})")
+    except Exception as e:
+        logger.error(f"Erreur lors de la création du fichier PID {pid_file} : {e}")
+        raise
+
+
 '''Fonctions liées à la gestion des tunnels'''
 
 # Fonction pour démarrer le tunnel Localtunnel
