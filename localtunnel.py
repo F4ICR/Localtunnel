@@ -10,8 +10,21 @@ from lib import start_tunnel, is_tunnel_active, stop_existing_tunnel, send_email
 # Importer le logger depuis logging_config.py
 from logging_config import logger
 
+# Importer les fonctions utilitaires depuis dependency_check.py
+from dependency_check import verify_all_dependencies
+
 # Fonction principale pour gérer la connexion au tunnel
 def manage_tunnel():
+    # Vérification des dépendances
+    if not verify_all_dependencies():
+        logger.error("Certaines dépendances sont manquantes. Arrêt du programme.")
+        return
+    
+    # Vérification de l'installation de localtunnel
+    if not is_lt_installed():
+        logger.error("Localtunnel n'est pas installé. Arrêt du programme.")
+        return
+    
     # Vérifier si un tunnel est déjà actif sur le port spécifié
     if is_tunnel_active(PORT):
         logger.info("Le tunnel est déjà actif.")
@@ -50,4 +63,3 @@ def manage_tunnel():
 
 if __name__ == "__main__":
     manage_tunnel()
-    
