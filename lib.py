@@ -18,6 +18,8 @@ import logging
 logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 
+''' Fonctions utilitaires générales '''
+
 # Fonction pour écrire dans un fichier avec gestion des erreurs
 def write_to_file(file_path, content):
     try:
@@ -46,6 +48,8 @@ def is_process_running(pid):
     except OSError:
         return False
 
+
+'''Fonctions liées à la gestion des tunnels'''
 
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
@@ -148,6 +152,8 @@ def stop_existing_tunnel(port):
         logger.warning(f"Aucun fichier PID trouvé pour le port {port}. Aucun processus à arrêter.")
 
 
+'''Fonctions liées à la journalisation et au suivi'''
+
 # Fonction pour enregistrer les changements d'URL dans un fichier dédié
 def log_tunnel_change(previous_url, new_url):
     change_log_file = "/tmp/tunnel_changes.log"
@@ -159,6 +165,8 @@ def log_tunnel_change(previous_url, new_url):
     
     write_to_file(change_log_file, content)
 
+
+'''Fonctions liées à la communication'''
 
 # Fonction pour envoyer un email avec l'URL du tunnel
 def send_email(tunnel_url):
