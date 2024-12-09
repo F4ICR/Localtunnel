@@ -40,21 +40,12 @@ def read_from_file(file_path):
         return None
 
 
-# Fonction pour vérifier si un processus est actif à partir de son PID
-def is_process_running(pid):
-    try:
-        os.kill(pid, 0)  # Envoie un signal nul pour vérifier l'existence du processus
-        return True
-    except OSError:
-        return False
-
-
-# Fonction pour crée un fichier PID sécurisé avec des permissions restreintes (lecture/écriture uniquement pour le propriétaire)
+# Fonction pour crée un fichier PID sécurisé avec des permissions restreintes
 def create_secure_pid_file(pid_file, pid):
     try:
         # Définir les drapeaux pour créer un fichier sécurisé
         flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
-        mode = 0o600  # Permissions : rw------- (lecture/écriture uniquement pour le propriétaire)
+        mode = 0o600  # lecture/écriture uniquement pour le propriétaire
         
         # Créer le fichier avec les permissions définies
         fd = os.open(pid_file, flags, mode)
@@ -65,6 +56,15 @@ def create_secure_pid_file(pid_file, pid):
     except Exception as e:
         logger.error(f"Erreur lors de la création du fichier PID {pid_file} : {e}")
         raise
+
+
+# Fonction pour vérifier si un processus est actif à partir de son PID
+def is_process_running(pid):
+    try:
+        os.kill(pid, 0)  # Envoie un signal nul pour vérifier l'existence du processus
+        return True
+    except OSError:
+        return False
 
 
 '''Fonctions liées à la gestion des tunnels'''
