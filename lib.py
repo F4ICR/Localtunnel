@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
-import subprocess
+# Bibliothèques standard
 import os
 import re
+import time
+import subprocess
+import logging
+
+# Bibliothèques tierces
 import smtplib
 from email.mime.text import MIMEText
-import time
-import requests  # Pour tester la connectivité HTTP
+import requests
 
-# Importer LOG_FILE et d'autres variables depuis settings.py
+# Modules locaux
 from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL
 
 # Importer le module de journalisation
@@ -19,6 +23,25 @@ logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 
 ''' Fonctions utilitaires générales '''
+
+# Fonction permettant de vérifier la présence de 'lt'
+def is_lt_installed():
+    """
+    Vérifie si l'outil 'lt' (Localtunnel) est installé et accessible.
+    Retourne True si 'lt' est trouvé, False sinon.
+    """
+    try:
+        # Vérifie si 'lt' est accessible via le PATH
+        subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        logger.info("L'outil 'lt' (Localtunnel) est installé.")
+        return True
+    except FileNotFoundError:
+        logger.error("L'outil 'lt' (Localtunnel) n'est pas installé. Veuillez l'installer avec 'npm install -g localtunnel'.")
+        return False
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
+        return False
+
 
 # Fonction pour écrire dans un fichier avec gestion des erreurs
 def write_to_file(file_path, content):
@@ -39,6 +62,8 @@ def read_from_file(file_path):
         logger.error(f"Erreur lors de la lecture du fichier {file_path} : {e}")
         return None
 
+
+'''Fonctions liées à la gestion des tunnels'''
 
 # Fonction pour crée un fichier PID sécurisé avec des permissions restreintes
 def create_secure_pid_file(pid_file, pid):
@@ -67,14 +92,16 @@ def is_process_running(pid):
         return False
 
 
-'''Fonctions liées à la gestion des tunnels'''
-
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     Si un sous-domaine est spécifié, il sera utilisé ; sinon, un sous-domaine aléatoire sera généré.
     """
+    if not is_lt_installed():
+        logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
+        return
+    
     with open(LOG_FILE, "w") as log_file:
         # Construire la commande pour démarrer Localtunnel
         cmd = ["lt", "--port", str(port)]
@@ -83,14 +110,12 @@ def start_tunnel(port, subdomain=None):
 
         # Lancer le processus en arrière-plan et capturer le PID
         process = subprocess.Popen(
-            cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp
-        )
+            cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp)
 
         pid_file = f"/tmp/localtunnel_{port}.pid"
         write_to_file(pid_file, str(process.pid))
         logger.info(
-            f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})"
-        )
+            f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
 
         # Attendre que le tunnel démarre et vérifier périodiquement l'URL
         max_retries = 10  # Nombre maximum de tentatives
@@ -102,8 +127,7 @@ def start_tunnel(port, subdomain=None):
                 return url  # Retourner l'URL si elle est trouvée
 
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s)."
-            )
+                f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
             time.sleep(delay)  # Attendre avant de réessayer
 
         # Si aucune URL n'est trouvée après toutes les tentatives, lever une exception
@@ -159,12 +183,10 @@ def stop_existing_tunnel(port):
         if pid and is_process_running(int(pid)):
             os.kill(int(pid), 15)  # Envoyer un signal SIGTERM pour arrêter proprement le processus
             logger.info(
-                f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid})."
-            )
+                f"Le processus du tunnel sur le port {port} a été arrêté (PID: {pid}).")
         else:
             logger.warning(
-                f"Aucun processus actif trouvé pour le PID : {pid}. Suppression du fichier PID."
-            )
+                f"Aucun processus actif trouvé pour le PID : {pid}. Suppression du fichier PID.")
         os.remove(pid_file)
     else:
         logger.warning(f"Aucun fichier PID trouvé pour le port {port}. Aucun processus à arrêter.")
@@ -178,8 +200,7 @@ def log_tunnel_change(previous_url, new_url):
     
     content = (
         f"Changement détecté : {time.strftime('%Y-%m-%d %H:%M:%S')} - "
-        f"Ancienne URL : {previous_url or 'Aucune'} - Nouvelle URL : {new_url}\n"
-    )
+        f"Ancienne URL : {previous_url or 'Aucune'} - Nouvelle URL : {new_url}\n")
     
     write_to_file(change_log_file, content)
 
@@ -211,14 +232,12 @@ def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
             elapsed_time = time.time() - start_time
             if response.status_code == 200:
                 logger.info(
-                    f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes."
-                )
+                    f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
                 return True
         except requests.RequestException as e:
             elapsed_time = time.time() - start_time
             logger.warning(
-                f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}"
-            )
+                f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
     
