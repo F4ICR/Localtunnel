@@ -38,6 +38,15 @@ def read_from_file(file_path):
         return None
 
 
+# Fonction pour vérifier si un processus est actif à partir de son PID
+def is_process_running(pid):
+    try:
+        os.kill(pid, 0)  # Envoie un signal nul pour vérifier l'existence du processus
+        return True
+    except OSError:
+        return False
+
+
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
     """
@@ -100,15 +109,6 @@ def read_tunnel_url_from_log():
     except Exception as e:
         logger.error(f"Erreur lors de la lecture du fichier log : {e}")
     return None
-
-
-# Fonction pour vérifier si un processus est actif à partir de son PID
-def is_process_running(pid):
-    try:
-        os.kill(pid, 0)  # Envoie un signal nul pour vérifier l'existence du processus
-        return True
-    except OSError:
-        return False
 
 
 # Fonction pour vérifier si le tunnel est actif via le fichier PID
