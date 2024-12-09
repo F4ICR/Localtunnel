@@ -15,6 +15,7 @@ from dependency_check import verify_all_dependencies
 
 # Fonction principale pour gérer la connexion au tunnel
 def manage_tunnel():
+    
     # Vérification des dépendances
     if not verify_all_dependencies():
         logger.error("Certaines dépendances sont manquantes. Arrêt du programme.")
