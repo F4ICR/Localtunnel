@@ -5,7 +5,7 @@
 from settings import PORT, LOG_FILE, EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SUBDOMAIN
 
 # Importer les fonctions utilitaires depuis lib.py
-from lib import start_tunnel, is_tunnel_active, stop_existing_tunnel, send_email, read_tunnel_url_from_log, test_tunnel_connectivity
+from lib import is_lt_installed, start_tunnel, is_tunnel_active, stop_existing_tunnel, send_email, read_tunnel_url_from_log, test_tunnel_connectivity
 
 # Importer le logger depuis logging_config.py
 from logging_config import logger
