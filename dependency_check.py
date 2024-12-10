@@ -6,57 +6,46 @@ import sys
 import subprocess
 from logging_config import logger
 
-
-# Fonction permettant de vérifier la présence de 'lt'
 def is_lt_installed():
-    """
-    Vérifie si l'outil 'lt' (Localtunnel) est installé et accessible.
-    Retourne True si 'lt' est trouvé, False sinon.
-    """
     try:
-        # Vérifie si 'lt' est accessible via le PATH
         subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         logger.info("L'outil 'lt' (Localtunnel) est installé.")
         return True
     except FileNotFoundError:
-        logger.error("L'outil 'lt' (Localtunnel) n'est pas installé. Veuillez l'installer avec 'npm install -g localtunnel'.")
+        logger.error("L'outil 'lt' n'est pas installé. Installation : 'npm install -g localtunnel'")
         return False
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
         return False
-    
 
 def check_python_version():
-    """Vérifie la version de Python"""
     required_version = (3, 6)
     if sys.version_info < required_version:
-        logger.error(f"Python {required_version[0]}.{required_version[1]} ou supérieur est requis")
+        logger.error(f"Python {required_version[0]}.{required_version[1]} ou supérieur est requis. Téléchargez-le sur python.org")
         return False
     return True
 
-
 def check_required_modules():
-    """Vérifie la présence des modules requis"""
     required_modules = {
-        'requests': None,
-        'smtplib': None,
-        'email.mime.text': None
+        'requests': 'pip install requests',
+        'smtplib': 'Module intégré à Python',
+        'email.mime.text': 'Module intégré à Python'
     }
-    
+
     all_modules_present = True
-    for module in required_modules:
+    for module, install_cmd in required_modules.items():
         try:
             importlib.import_module(module)
             logger.debug(f"Module {module} trouvé")
-        except ImportError as e:
-            logger.error(f"Module requis manquant : {module}")
+        except ImportError:
+            if install_cmd != 'Module intégré à Python':
+                logger.error(f"Module requis manquant : {module}. Installation : '{install_cmd}'")
+            else:
+                logger.error(f"Module requis manquant : {module}. Ce module devrait être présent dans l'installation Python")
             all_modules_present = False
-    
     return all_modules_present
 
-
 def verify_all_dependencies():
-    """Vérifie toutes les dépendances"""
     python_ok = check_python_version()
     modules_ok = check_required_modules()
     lt_ok = is_lt_installed()
