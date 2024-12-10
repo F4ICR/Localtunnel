@@ -24,25 +24,6 @@ logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 ''' Fonctions utilitaires générales '''
 
-# Fonction permettant de vérifier la présence de 'lt'
-def is_lt_installed():
-    """
-    Vérifie si l'outil 'lt' (Localtunnel) est installé et accessible.
-    Retourne True si 'lt' est trouvé, False sinon.
-    """
-    try:
-        # Vérifie si 'lt' est accessible via le PATH
-        subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        logger.info("L'outil 'lt' (Localtunnel) est installé.")
-        return True
-    except FileNotFoundError:
-        logger.error("L'outil 'lt' (Localtunnel) n'est pas installé. Veuillez l'installer avec 'npm install -g localtunnel'.")
-        return False
-    except Exception as e:
-        logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
-        return False
-
-
 # Fonction pour écrire dans un fichier avec gestion des erreurs
 def write_to_file(file_path, content):
     try:
@@ -97,11 +78,7 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     Si un sous-domaine est spécifié, il sera utilisé ; sinon, un sous-domaine aléatoire sera généré.
-    """
-    if not is_lt_installed():
-        logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
-        return
-    
+    """  
     with open(LOG_FILE, "w") as log_file:
         # Construire la commande pour démarrer Localtunnel
         cmd = ["lt", "--port", str(port)]
