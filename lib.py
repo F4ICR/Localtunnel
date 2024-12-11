@@ -202,20 +202,37 @@ def send_email(tunnel_url):
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives.
 def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
+    total_time = 0
+    success_count = 0
+    
+    # Utiliser le logger du module
+    logger = logging.getLogger("LocaltunnelApp")
+    
     for attempt in range(retries):
         start_time = time.time()
         try:
             response = requests.get(tunnel_url, timeout=timeout)
             elapsed_time = time.time() - start_time
+            total_time += elapsed_time
             if response.status_code == 200:
-                logger.info(
-                    f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
-                return True
+                success_count += 1
+                logger.info(f"Tentative {attempt + 1}: {elapsed_time:.2f}s - Status: OK")
         except requests.RequestException as e:
             elapsed_time = time.time() - start_time
-            logger.warning(
-                f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}")
-            if attempt < retries - 1:
-                time.sleep(delay)
+            logger.warning(f"Tentative {attempt + 1}: {elapsed_time:.2f}s - Échec - Erreur: {str(e)}")
+            
+        if attempt < retries - 1:
+            time.sleep(delay)
     
-    return False
+    # Métriques de performance
+    success_rate = (success_count / retries) * 100
+    avg_response_time = total_time / retries if retries > 0 else 0
+    
+    # Utiliser le logger pour enregistrer les métriques
+    logger.info(
+        f"Métriques du tunnel - "
+        f"URL: {tunnel_url} - "
+        f"Taux de succès: {success_rate:.1f}% - "
+        f"Temps de réponse moyen: {avg_response_time:.2f}s"
+    )
+    return success_count > 0
