@@ -38,7 +38,3 @@ logger = logging.getLogger("LocaltunnelApp")
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
-
-metric_file_handler = logging.FileHandler("metrics.log")
-metric_file_handler.setFormatter(formatter)
-logger.addHandler(metric_file_handler)

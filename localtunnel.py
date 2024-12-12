@@ -12,21 +12,19 @@ from logging_config import logger
 
 # Import autres depuis dependency_check
 from dependency_check import verify_dependencies
-from metrics import log_tunnel_availability, log_custom_metric
 
 # Fonction principale pour gérer la connexion au tunnel
 def manage_tunnel():
     # Vérifier si un tunnel est déjà actif sur le port spécifié
     if is_tunnel_active(PORT):
         logger.info("Le tunnel est déjà actif.")
+        
         # Lire l'URL actuelle du tunnel depuis le fichier de log
         current_url = read_tunnel_url_from_log()
         
-        # Tester la connectivité du tunnel actuel et enregistrer la métrique
+        # Tester la connectivité du tunnel actuel
         if current_url and test_tunnel_connectivity(current_url):
             logger.info(f"Le tunnel fonctionne correctement : {current_url}")
-            log_tunnel_availability(current_url)  # Enregistrer la disponibilité du tunnel
-            log_custom_metric("Tunnel actif", 1)
             return  # Si tout va bien avec la connectivité actuelle
         
         # Si la connectivité échoue ou n'existe pas
@@ -52,9 +50,7 @@ def manage_tunnel():
         # Mettre à jour le fichier log avec la nouvelle URL
         with open(LOG_FILE, "w") as log_file:
             log_file.write(new_url + "\n")
-        
-        # Enregistrer la métrique pour le nouveau tunnel créé
-        log_custom_metric("Nouveau tunnel créé", 1)
 
 if __name__ == "__main__":
     manage_tunnel()
+    
