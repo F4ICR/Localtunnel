@@ -24,6 +24,25 @@ logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 ''' Fonctions utilitaires générales '''
 
+# Fonction permettant de vérifier la présence de 'lt'
+def is_lt_installed():
+    """
+    Vérifie si l'outil 'lt' (Localtunnel) est installé et accessible.
+    Retourne True si 'lt' est trouvé, False sinon.
+    """
+    try:
+        # Vérifie si 'lt' est accessible via le PATH
+        subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        logger.info("L'outil 'lt' (Localtunnel) est installé.")
+        return True
+    except FileNotFoundError:
+        logger.error("L'outil 'lt' (Localtunnel) n'est pas installé. Veuillez l'installer avec 'npm install -g localtunnel'.")
+        return False
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
+        return False
+
+
 # Fonction pour écrire dans un fichier avec gestion des erreurs
 def write_to_file(file_path, content):
     try:
@@ -78,7 +97,11 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     Si un sous-domaine est spécifié, il sera utilisé ; sinon, un sous-domaine aléatoire sera généré.
-    """  
+    """
+    if not is_lt_installed():
+        logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
+        return
+    
     with open(LOG_FILE, "w") as log_file:
         # Construire la commande pour démarrer Localtunnel
         cmd = ["lt", "--port", str(port)]
@@ -202,37 +225,20 @@ def send_email(tunnel_url):
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives.
 def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
-    total_time = 0
-    success_count = 0
-    
-    # Utiliser le logger du module
-    logger = logging.getLogger("LocaltunnelApp")
-    
     for attempt in range(retries):
         start_time = time.time()
         try:
             response = requests.get(tunnel_url, timeout=timeout)
             elapsed_time = time.time() - start_time
-            total_time += elapsed_time
             if response.status_code == 200:
-                success_count += 1
-                logger.info(f"Tentative {attempt + 1}: {elapsed_time:.2f}s - Status: OK")
+                logger.info(
+                    f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
+                return True
         except requests.RequestException as e:
             elapsed_time = time.time() - start_time
-            logger.warning(f"Tentative {attempt + 1}: {elapsed_time:.2f}s - Échec - Erreur: {str(e)}")
-            
-        if attempt < retries - 1:
-            time.sleep(delay)
+            logger.warning(
+                f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
     
-    # Métriques de performance
-    success_rate = (success_count / retries) * 100
-    avg_response_time = total_time / retries if retries > 0 else 0
-    
-    # Utiliser le logger pour enregistrer les métriques
-    logger.info(
-        f"Métriques du tunnel - "
-        f"URL: {tunnel_url} - "
-        f"Taux de succès: {success_rate:.1f}% - "
-        f"Temps de réponse moyen: {avg_response_time:.2f}s"
-    )
-    return success_count > 0
+    return False
