@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
+# Bibliothèques standard
+import time
+
 # Importer les variables de configuration depuis settings.py
 from settings import PORT, LOG_FILE, EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SUBDOMAIN
 
@@ -13,7 +16,8 @@ from logging_config import logger
 # Import autres depuis dependency_check
 from dependency_check import verify_all_dependencies
 
-from metrics import log_tunnel_availability, log_custom_metric
+# Import des fonctions de métriques
+from metrics import log_tunnel_availability, log_custom_metric, log_tunnel_startup_time, log_connectivity_failure, log_url_change
 
 # Fonction principale pour gérer la connexion au tunnel
 def manage_tunnel():
@@ -49,17 +53,26 @@ def manage_tunnel():
         SUBDOMAIN = previous_url.split("//")[1].split(".")[0]  # Extraire le sous-domaine précédent
 
     # Démarrer un nouveau tunnel et envoyer un email si nécessaire
+    start_time = time.time()  # Commencer à mesurer le temps de démarrage du tunnel
     new_url = start_tunnel(PORT, SUBDOMAIN)
+    end_time = time.time()  # Fin de la mesure du temps de démarrage
+
     if new_url:
         logger.info(f"Nouveau tunnel créé. URL : {new_url}")
-        # Comparer avec l'URL précédente pour décider d'envoyer un email
+        log_tunnel_startup_time(start_time, end_time)  # Enregistrer le temps de démarrage du tunnel
+
+        # Comparer avec l'URL précédente pour décider d'envoyer un email et enregistrer le changement d'URL
         if new_url != previous_url:
             send_email(new_url)  # Envoyer un email avec la nouvelle URL
+            log_url_change(previous_url, new_url)  # Enregistrer le changement d'URL
+
         # Mettre à jour le fichier log avec la nouvelle URL
         with open(LOG_FILE, "w") as log_file:
             log_file.write(new_url + "\n")
+
         # Enregistrer la métrique pour le nouveau tunnel créé
         log_custom_metric("Nouveau tunnel créé", 1)
 
 if __name__ == "__main__":
     manage_tunnel()
+    
