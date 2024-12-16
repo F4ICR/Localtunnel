@@ -8,15 +8,22 @@ from logging_config import logger
 
 def is_lt_installed():
     try:
+        # Vérifie si 'lt' est accessible via le PATH
         subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        logger.info("L'outil 'lt' (Localtunnel) est installé.")
+        
+        # Vérifie s'il y a des tunnels actifs
+        tunnels_actifs = subprocess.run(["ps", "aux"], capture_output=True, text=True)
+        if "lt --port" not in tunnels_actifs.stdout:
+            logger.info("L'outil 'lt' (Localtunnel) est installé.")
         return True
+        
     except FileNotFoundError:
         logger.error("L'outil 'lt' n'est pas installé. Installation : 'npm install -g localtunnel'")
         return False
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
         return False
+
 
 def check_python_version():
     required_version = (3, 6)
