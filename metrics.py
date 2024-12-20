@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
-import logging
+from logging_config import logger
 import time
-
-logger = logging.getLogger("MetricsLogger")
 
 # Stocker les timestamps pour calculer la disponibilité
 tunnel_start_time = None

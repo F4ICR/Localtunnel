@@ -17,9 +17,9 @@ import requests
 from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL
 
 # Importer le module de journalisation
-import logging
+from logging_config import logger
 
-logger = logging.getLogger(__name__)  # Créer un logger pour ce module
+#logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 
 ''' Fonctions utilitaires générales '''
