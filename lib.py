@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 import requests
 
 # Modules locaux
-from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL
+from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL, TUNNEL_RETRIES, TUNNEL_DELAY, TUNNEL_TIMEOUT, HTTP_SUCCESS_CODE
 
 # Importer le module de journalisation
 from logging_config import logger
@@ -224,22 +224,22 @@ def send_email(tunnel_url):
 
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives.
-def test_tunnel_connectivity(tunnel_url, retries=3, delay=3, timeout=5):
-    for attempt in range(retries):
+def test_tunnel_connectivity(tunnel_url):
+    for attempt in range(TUNNEL_RETRIES):
         start_time = time.time()
         try:
-            response = requests.get(tunnel_url, timeout=timeout)
+            response = requests.get(tunnel_url, timeout=TUNNEL_TIMEOUT)
             elapsed_time = time.time() - start_time
-            if response.status_code == 200:
+            if response.status_code == HTTP_SUCCESS_CODE:
                 logger.info(
                     f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
                 return True
         except requests.RequestException as e:
             elapsed_time = time.time() - start_time
             logger.warning(
-                f"Tentative {attempt + 1}/{retries} échouée après {elapsed_time:.2f} secondes : {e}")
-            if attempt < retries - 1:
-                time.sleep(delay)
+                f"Tentative {attempt + 1}/{TUNNEL_RETRIES} échouée après {elapsed_time:.2f} secondes : {e}")
+            if attempt < TUNNEL_RETRIES - 1:
+                time.sleep(TUNNEL_DELAY)
     
     return False
   

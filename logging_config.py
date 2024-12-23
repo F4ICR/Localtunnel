@@ -7,19 +7,10 @@ from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
 import os
 import socket
 
-# Définir le chemin du fichier log
-LOG_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_FILE = os.path.join(LOG_DIR, "application.log")
-ERROR_LOG = os.path.join(LOG_DIR, "error.log")
-
-# Format détaillé pour les logs
-VERBOSE_FORMAT = (
-    "%(asctime)s - %(name)s - %(levelname)s - "
-    "[PID: %(process)d - Thread: %(thread)d] - "
-#    "[Host: %(hostname)s] - "
-#    "[Function: %(funcName)s - Line: %(lineno)d] - " # Ligne à décommenté si besoin d'info de debuggage
-    "%(message)s"
-)
+from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
+LOG_FILE = APPLICATION_LOG
+ERROR_LOG = ERROR_LOG
+formatter = logging.Formatter(VERBOSE_FORMAT)
 
 # Classe pour ajouter l'hostname aux logs
 class ContextFilter(logging.Filter):
@@ -36,7 +27,7 @@ file_handler = TimedRotatingFileHandler(
     LOG_FILE,
     when='midnight',
     interval=1,
-    backupCount=5,
+    backupCount=LOG_BACKUP_COUNT,
     encoding='utf-8'
 )
 file_handler.setLevel(logging.INFO)
@@ -44,8 +35,8 @@ file_handler.setLevel(logging.INFO)
 # Gestionnaire pour les erreurs
 error_handler = RotatingFileHandler(
     ERROR_LOG,
-    maxBytes=5*1024*1024,
-    backupCount=5,
+    maxBytes=LOG_MAX_BYTES,
+    backupCount=LOG_BACKUP_COUNT,
     encoding='utf-8'
 )
 error_handler.setLevel(logging.ERROR)

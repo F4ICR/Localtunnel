@@ -57,3 +57,4 @@ def verify_all_dependencies():
     modules_ok = check_required_modules()
     lt_ok = is_lt_installed()
     return python_ok and modules_ok and lt_ok
+  
