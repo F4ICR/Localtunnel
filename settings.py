@@ -42,6 +42,7 @@ VERBOSE_FORMAT = (
     "%(asctime)s - %(name)s - %(levelname)s - "
     "[PID: %(process)d - Thread: %(thread)d] - "
 #    "[Host: %(hostname)s] - "
+#  	"[File: %(filename)s] - "  # Ajout pour inclure le nom du fichier
 #    "[Function: %(funcName)s - Line: %(lineno)d] - " # Ligne à décommenté si besoin d'info de debuggage    
     "%(message)s"
 )

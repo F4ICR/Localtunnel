@@ -65,4 +65,4 @@ logger.addHandler(error_handler)
 logger.addHandler(console_handler)
 
 # Désactiver la propagation
-logger.propagate = True
+logger.propagate = False

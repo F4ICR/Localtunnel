@@ -56,4 +56,3 @@ def log_custom_metric(metric_name, value):
         logger.info(f"Métrique personnalisée - {metric_name} : {value}")
     except Exception as e:
         logger.error(f"Erreur lors de l'enregistrement de la métrique {metric_name} : {e}")
-        

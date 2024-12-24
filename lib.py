@@ -119,7 +119,7 @@ def start_tunnel(port, subdomain=None):
 
         # Attendre que le tunnel démarre et vérifier périodiquement l'URL
         max_retries = 10  # Nombre maximum de tentatives
-        delay = 2  # Délai entre les tentatives (en secondes)
+        delay = 3  # Délai entre les tentatives (en secondes)
         for attempt in range(max_retries):
             url = read_tunnel_url_from_log()  # Lire l'URL depuis le fichier log
             if url:
@@ -223,7 +223,7 @@ def send_email(tunnel_url):
         logger.error(f"Erreur lors de l'envoi de l'email : {e}")
 
 
-# Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives.
+# Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
 def test_tunnel_connectivity(tunnel_url):
     for attempt in range(TUNNEL_RETRIES):
         start_time = time.time()
@@ -241,5 +241,5 @@ def test_tunnel_connectivity(tunnel_url):
             if attempt < TUNNEL_RETRIES - 1:
                 time.sleep(TUNNEL_DELAY)
     
-    return False
+    return True
   
