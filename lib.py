@@ -14,7 +14,18 @@ from email.mime.text import MIMEText
 import requests
 
 # Modules locaux
-from settings import LOG_FILE, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL, TUNNEL_RETRIES, TUNNEL_DELAY, TUNNEL_TIMEOUT, HTTP_SUCCESS_CODE
+from settings import (
+  LOG_FILE, 
+  SMTP_SERVER, 
+  SMTP_PORT, 
+  SMTP_USER, 
+  SMTP_PASSWORD, 
+  EMAIL, 
+  TUNNEL_RETRIES, 
+  TUNNEL_DELAY, 
+  TUNNEL_TIMEOUT, 
+  HTTP_SUCCESS_CODE
+)
 
 # Importer le module de journalisation
 from logging_config import logger
@@ -98,42 +109,42 @@ def start_tunnel(port, subdomain=None):
     Démarre un tunnel Localtunnel pour exposer un port local.
     Si un sous-domaine est spécifié, il sera utilisé ; sinon, un sous-domaine aléatoire sera généré.
     """
+    # Vérifier si un tunnel est déjà actif
+    if is_tunnel_active(port):
+        logger.info(f"Un tunnel est déjà actif sur le port {port}.")
+        return read_tunnel_url_from_log()  # Retourner l'URL existante
+
+    # Vérifier si 'lt' est installé uniquement si aucun tunnel n'est actif
     if not is_lt_installed():
         logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
         return
-    
+
     with open(LOG_FILE, "w") as log_file:
-        # Construire la commande pour démarrer Localtunnel
         cmd = ["lt", "--port", str(port)]
         if subdomain:
             cmd += ["--subdomain", subdomain]
 
-        # Lancer le processus en arrière-plan et capturer le PID
         process = subprocess.Popen(
             cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp)
-
+        
         pid_file = f"/tmp/localtunnel_{port}.pid"
         write_to_file(pid_file, str(process.pid))
-        logger.info(
-            f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
 
-        # Attendre que le tunnel démarre et vérifier périodiquement l'URL
+        logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
+
         max_retries = 10  # Nombre maximum de tentatives
         delay = 3  # Délai entre les tentatives (en secondes)
+
         for attempt in range(max_retries):
-            url = read_tunnel_url_from_log()  # Lire l'URL depuis le fichier log
+            url = read_tunnel_url_from_log()
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
-                return url  # Retourner l'URL si elle est trouvée
+                return url
 
-            logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
-            time.sleep(delay)  # Attendre avant de réessayer
+            logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
+            time.sleep(delay)
 
-        # Si aucune URL n'est trouvée après toutes les tentatives, lever une exception
-        error_message = (
-            "Échec du démarrage du tunnel : aucune URL n'a été trouvée après plusieurs tentatives."
-        )
+        error_message = "Échec du démarrage du tunnel : aucune URL n'a été trouvée après plusieurs tentatives."
         logger.error(error_message)
         raise Exception(error_message)
 
@@ -241,5 +252,5 @@ def test_tunnel_connectivity(tunnel_url):
             if attempt < TUNNEL_RETRIES - 1:
                 time.sleep(TUNNEL_DELAY)
     
-    return True
+    return False
   

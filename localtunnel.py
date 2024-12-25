@@ -6,7 +6,16 @@ import time
 import sys
 
 # Importer les variables de configuration depuis settings.py
-from settings import PORT, LOG_FILE, EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SUBDOMAIN
+from settings import (
+  PORT, 
+  LOG_FILE, 
+  EMAIL, 
+  SMTP_SERVER, 
+  SMTP_PORT, 
+  SMTP_USER, 
+  SMTP_PASSWORD, 
+  SUBDOMAIN
+)
 
 # Importer les fonctions utilitaires depuis lib.py
 from lib import (
@@ -15,7 +24,7 @@ from lib import (
     stop_existing_tunnel,
     send_email,
     read_tunnel_url_from_log,
-    test_tunnel_connectivity,
+    test_tunnel_connectivity
 )
 
 # Importer le logger depuis logging_config.py
@@ -31,7 +40,7 @@ from metrics import (
     log_tunnel_startup_time,
     log_connectivity_failure,
     log_url_change,
-    log_tunnel_downtime,
+    log_tunnel_downtime
 )
 
 
