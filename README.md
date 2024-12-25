@@ -37,7 +37,7 @@ Rendre executable le script localtunnel.py en se rendant dans le répertoire Loc
 
 Renseigné les variables suivantes en éditant le fichier settings.py avec 'nano'
 
-`nano localtunnel.py`
+`nano settings.py`
 
 > `PORT = 3000  # Le port local que vous souhaitez exposer`
 
