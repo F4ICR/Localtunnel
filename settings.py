@@ -32,7 +32,7 @@ LOG_BACKUP_COUNT = 6  # Nombre de sauvegardes de logs à conserver
 LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
 
 # Paramètres pour tester la connectivité du tunnel
-TUNNEL_RETRIES = 3  # Nombre de tentatives pour tester la connectivité
+TUNNEL_RETRIES = 5  # Nombre de tentatives pour tester la connectivité
 TUNNEL_DELAY = 3  # Délai (en secondes) entre chaque tentative
 TUNNEL_TIMEOUT = 5  # Timeout (en secondes) pour les requêtes HTTP
 HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
