@@ -1,6 +1,6 @@
 # Localtunnel
 ## En remplacement du script RemoteNgrok, devenu trop limité dans sa version gratuite
-Prise de contrôle distant derrière un routeur 4G via ***Localtunnel*** qui est totalement gratuit pour le moment
+Prise de contrôle distant derrière un routeur 4G via ***Localtunnel*** qui est totalement gratuit pour le moment.
 
 Bonjour à tous,
 
