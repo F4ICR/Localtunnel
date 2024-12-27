@@ -87,7 +87,7 @@ Le script vérifiera si le tunnel est actif ou non :
 
 •	Enverra un email avec la nouvelle URL.
 
-•   D'autres fonctions sont également inclus telles que :
+•   D'autres fonctions sont également incluses telles que :
 
 •   Vérification des dépendances python pour les besoin du programme.
 
