@@ -91,7 +91,7 @@ Le script vérifiera si le tunnel est actif ou non :
 
 •   Vérification des dépendances python pour les besoin du programme.
 
-•   Véfication de la validité des certificats SSL de Locatunnel.
+•   Vérification de la validité des certificats SSL de Locatunnel.
 
 •   Ajout d'une configuration conditionnelle des logs pour les besoins éventuel de débugage
 
