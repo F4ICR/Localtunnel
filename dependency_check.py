@@ -136,3 +136,4 @@ if __name__ == "__main__":
             
     else:
         logger.error("Certaines dépendances sont manquantes ou incorrectes.")
+        
