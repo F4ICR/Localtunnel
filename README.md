@@ -51,11 +51,13 @@ Renseigné les variables suivantes en éditant le fichier settings.py avec 'nano
 
 > `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)`
 
+Ne modifié les autres variables que si vous savez ce que vous faites.
+
 ## Présentation du Programme
 
-Le programme utilise Localtunnel pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
+Le programme utilise ***Localtunnel*** pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
 
-Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 15 minutes.
+Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 15 minutes (cela pourrait être une toute autre valeur) j'ai egalement inclus une boucle dans le script 'localtunnel.py' qui tourne en mode deamon afin de verifier la connectivité du tunnel toutes les 300s (5mn), au cas ou vous mettriez ce programme en mode service.
 
 `nano /etc/crontab`
 
@@ -73,7 +75,6 @@ Le script vérifiera si le tunnel est actif ou non :
 
 **• Si la valeur de retour est 0**, le script tentera :
 
-
 • De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
 
 • Il verifiera aussi la connectivité du tunnel de facon réguliere, si le tunnel est inactif ou inaccessible :
@@ -86,8 +87,17 @@ Le script vérifiera si le tunnel est actif ou non :
 
 •	Enverra un email avec la nouvelle URL.
 
+•   D'autres fonctions sont également inclus telles que :
+
+•   Vérification des dépendances python pour les besoin du programme.
+
+•   Véfication de la validité des certificats SSL de Locatunnel.
+
+•   Ajout d'une configuration conditionnelle des logs pour les besoins éventuel de débugage
+
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
 **Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
 L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ces scripts en Python.
-Je dois dire que l’expérience a été géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final et pour une première, je trouve le résultat plutôt satisfaisant.
+Je dois dire que l’expérience est géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais et je ne cesse pas d'améliorer l'ensemble du programme au fil du temps. 
+Au final et pour une première, je trouve le résultat plutôt satisfaisant.
