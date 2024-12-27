@@ -34,15 +34,20 @@ LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
 # Paramètres pour tester la connectivité du tunnel
 TUNNEL_RETRIES = 5  # Nombre de tentatives pour tester la connectivité
 TUNNEL_DELAY = 3  # Délai (en secondes) entre chaque tentative
-TUNNEL_TIMEOUT = 5  # Timeout (en secondes) pour les requêtes HTTP
+TUNNEL_TIMEOUT = 6  # Timeout (en secondes) pour les requêtes HTTP
 HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
 
-# Format des logs
+# Configuration conditionnelle des logs pour les besoins de débogage
+
+# Variables pour activer/désactiver certaines parties du format
+INCLUDE_FILENAME = False  # Inclure le nom du fichier dans les logs
+INCLUDE_DEBUG_INFO = False  # Inclure les informations de debug (fonction et ligne)
+
+# Format des logs avec gestion conditionnelle
 VERBOSE_FORMAT = (
     "%(asctime)s - %(name)s - %(levelname)s - "
     "[PID: %(process)d - Thread: %(thread)d] - "
-#    "[Host: %(hostname)s] - "
-#  	 "[File: %(filename)s] - "  # Ajout pour inclure le nom du fichier
-#    "[Function: %(funcName)s - Line: %(lineno)d] - " # Ligne à décommenté si besoin d'info de debuggage    
-    "%(message)s"
+    + ("[File: %(filename)s] - " if INCLUDE_FILENAME else "")
+    + ("[Function: %(funcName)s - Line: %(lineno)d] - " if INCLUDE_DEBUG_INFO else "")
+    + "%(message)s"
 )
