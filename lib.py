@@ -9,6 +9,7 @@ import subprocess
 import logging
 
 # Bibliothèques tierces
+from metrics import save_start_time, log_tunnel_availability
 import smtplib
 from email.mime.text import MIMEText
 import requests
@@ -107,17 +108,32 @@ def is_process_running(pid):
 def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
-    Si un sous-domaine est spécifié, il sera utilisé ; sinon, un sous-domaine aléatoire sera généré.
     """
+    # Import au début de la fonction
+    from metrics import save_start_time, log_tunnel_availability
+
+    # Récupérer l'URL précédente avant toute chose
+    previous_url = read_tunnel_url_from_log()
+    
     # Vérifier si un tunnel est déjà actif
     if is_tunnel_active(port):
-        logger.info(f"Un tunnel est déjà actif sur le port {port}.")
-        return read_tunnel_url_from_log()  # Retourner l'URL existante
+        if previous_url:
+            logger.info(f"Réutilisation du tunnel existant sur le port {port} : {previous_url}")
+            log_tunnel_availability(previous_url)
+            return previous_url
 
-    # Vérifier si 'lt' est installé uniquement si aucun tunnel n'est actif
+    # Vérifier si 'lt' est installé
     if not is_lt_installed():
         logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
         return
+
+    # Utiliser le sous-domaine de l'URL précédente si aucun n'est spécifié
+    if not subdomain and previous_url:
+        try:
+            subdomain = previous_url.split("//")[1].split(".")[0]
+            logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
 
     with open(LOG_FILE, "w") as log_file:
         cmd = ["lt", "--port", str(port)]
@@ -126,21 +142,24 @@ def start_tunnel(port, subdomain=None):
 
         process = subprocess.Popen(
             cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp)
-        
+
+        # Enregistrer l'heure de démarrage
+        from metrics import save_start_time
+        save_start_time()
+
         pid_file = f"/tmp/localtunnel_{port}.pid"
         write_to_file(pid_file, str(process.pid))
-
         logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
 
-        max_retries = 10  # Nombre maximum de tentatives
-        delay = 3  # Délai entre les tentatives (en secondes)
-
+        # Attendre et vérifier l'URL
+        max_retries = 10
+        delay = 3
         for attempt in range(max_retries):
             url = read_tunnel_url_from_log()
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
+                log_tunnel_availability(url)
                 return url
-
             logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
             time.sleep(delay)
 
@@ -148,7 +167,7 @@ def start_tunnel(port, subdomain=None):
         logger.error(error_message)
         raise Exception(error_message)
 
-
+         
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
     try:

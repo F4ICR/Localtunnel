@@ -43,7 +43,6 @@ from metrics import (
     log_tunnel_downtime
 )
 
-
 def manage_tunnel():
     """
     Gère le cycle de vie du tunnel Localtunnel.
@@ -60,6 +59,8 @@ def manage_tunnel():
                 log_tunnel_availability(current_url)
                 log_custom_metric("Tunnel actif", 1)
                 return
+            else:
+                log_tunnel_downtime()
 
         # Si aucun tunnel n'est actif, vérifier les dépendances
         logger.info("Aucun tunnel actif détecté. Vérification des dépendances en cours.")
@@ -72,10 +73,6 @@ def manage_tunnel():
 
         # Récupérer l'URL précédente
         previous_url = read_tunnel_url_from_log()
-        if previous_url:
-            logger.info(f"Tentative de réutilisation de l'URL précédente : {previous_url}")
-            global SUBDOMAIN
-            SUBDOMAIN = previous_url.split("//")[1].split(".")[0]
 
         # Démarrer un nouveau tunnel
         start_time = time.time()
@@ -89,7 +86,7 @@ def manage_tunnel():
             # Notifier si l'URL a changé
             if new_url != previous_url:
                 send_email(new_url)
-                log_url_change(previous_url, new_url)
+                log_url_change(previous_url, new_url)  # Appel à la fonction modifiée
 
             # Écrire l'URL dans le fichier log principal
             with open(LOG_FILE, "w") as log_file:
@@ -115,8 +112,8 @@ def main():
         while True:
             manage_tunnel()
 
-            # Attendre avant de vérifier à nouveau (par exemple, toutes les 300 secondes)
-            time.sleep(300)
+            # Attendre avant de vérifier à nouveau (par exemple, toutes les 600 secondes)
+            time.sleep(600)
 
     except KeyboardInterrupt:
         logger.warning("Interruption par l'utilisateur (Ctrl+C). Arrêt du programme.")
