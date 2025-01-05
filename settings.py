@@ -9,10 +9,17 @@ import os
 # Obtenir le chemin absolu du répertoire où se trouve ce fichier
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Créer le répertoire 'logs' s'il n'existe pas
+LOG_DIR = os.path.join(SCRIPT_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
 # Fichiers de log
-LOG_FILE = os.path.join(SCRIPT_DIR, "tunnel_output.log")
-APPLICATION_LOG = os.path.join(SCRIPT_DIR, "application.log")
-ERROR_LOG = os.path.join(SCRIPT_DIR, "error.log")
+TUNNEL_OUTPUT_FILE = os.path.join(LOG_DIR, "tunnel_output.log")
+APPLICATION_LOG = os.path.join(LOG_DIR, "application.log")
+ERROR_LOG = os.path.join(LOG_DIR, "error.log")
+TUNNEL_DURATIONS_FILE = os.path.join(LOG_DIR, "tunnel_durations.log")
+TIMESTAMP_FILE = "/tmp/tunnel_start_time.txt"
+TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 # Configuration du port
 PORT = 3000  # Le port local à exposer

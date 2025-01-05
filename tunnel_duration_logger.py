@@ -69,3 +69,4 @@ class TunnelDurationLogger:
             )
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des détails du tunnel : {e}")
+            
