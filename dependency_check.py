@@ -8,9 +8,8 @@ import os
 import ssl
 import socket
 from logging_config import logger  # Import du logger configuré dans logging_config.py
+from settings import TUNNEL_OUTPUT_FILE
 
-LOG_FILE = "application.log"  # Nom du fichier de log
-TUNNEL_OUTPUT_FILE = "tunnel_output.log"  # Fichier contenant le nom de domaine
 
 def is_lt_installed():
     """
