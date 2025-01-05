@@ -1,6 +1,6 @@
 # Localtunnel
 ## En remplacement du script RemoteNgrok, devenu trop limité dans sa version gratuite
-Prise de contrôle distant derrière un routeur 4G via ***Localtunnel*** qui est totalement gratuit pour le moment
+Prise de contrôle distant derrière un routeur 4G via ***Localtunnel*** qui est totalement gratuit pour le moment.
 
 Bonjour à tous,
 
@@ -17,8 +17,10 @@ En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l
 ## Pré-requis
 Avant d’utiliser ce script, vous devez installer certaines dépendances :
 
-• **Python 3** : Assurez-vous que Python 3 est installé sur votre machine.
- 
+• **Python 3** : Assurez-vous que Python 3 est installé sur votre machine ainsi que **requests** nécessaire pour tester la connectivité HTTP du tunnel
+
+`pip install requests`
+
 • **Localtunnel** : Installez Localtunnel en utilisant la commande suivante :
 
 `npm install -g localtunnel`
@@ -33,9 +35,9 @@ Rendre executable le script localtunnel.py en se rendant dans le répertoire Loc
 
 `chmod +x localtunnel.py`
 
-Renseigné les variables suivantes en éditant le fichier localtunnel.py avec 'nano'
+Renseigné les variables suivantes en éditant le fichier settings.py avec 'nano'
 
-`nano localtunnel.py`
+`nano settings.py`
 
 > `PORT = 3000  # Le port local que vous souhaitez exposer`
 
@@ -49,15 +51,21 @@ Renseigné les variables suivantes en éditant le fichier localtunnel.py avec 'n
 
 > `SMTP_PASSWORD = "password"  # Mot de passe ou App Password (si Gmail)`
 
-L’exécution du script se déroule comme suit : démarrage du tunnel avec la création du fichier tunnel_output.log pour y enregistrer l’URL qui permettra la connexion depuis l'exterieur. Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 5 minutes.
+Ne modifié les autres variables que si vous savez ce que vous faites.
+
+## Présentation du Programme
+
+Le programme utilise ***Localtunnel*** pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
+
+Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 15 minutes (cela pourrait être une toute autre valeur) j'ai egalement inclus une boucle dans le script 'localtunnel.py' qui tourne en mode deamon afin de verifier la connectivité du tunnel toutes les 300s (5mn), au cas ou vous mettriez ce programme en mode service.
 
 `nano /etc/crontab`
 
 Puis ajouter la ligne suivant:
 
-> `*/5 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
+> `*/15 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
 
-Relancer le service crontab pour que ce changement soit effectif
+Relancer le service crontab pour que ce changement soit pris en compte.
 
 `service cron restart`
 
@@ -67,12 +75,29 @@ Le script vérifiera si le tunnel est actif ou non :
 
 **• Si la valeur de retour est 0**, le script tentera :
 
+• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier `tunnel_output.log`, afin de conserver la même URL (si ce fichier existe).
 
-• De récupérer le nom de sous-domaine précédemment attribué, inscrit dans le fichier **tunnel_output.log**, afin de conserver la même URL (si ce fichier existe).
+• Il verifiera aussi la connectivité du tunnel de facon réguliere, si le tunnel est inactif ou inaccessible :
+
+•	Il arrêtera l’ancien processus.
+
+•	Créera un nouveau tunnel.
+
+•	Mettra à jour l’URL dans `tunnel_output.log`.
+
+•	Enverra un email avec la nouvelle URL.
+
+•   D'autres fonctions sont également incluses telles que :
+
+•   Vérification des dépendances python pour les besoin du programme.
+
+•   Vérification de la validité des certificats SSL de Locatunnel.
+
+•   Ajout d'une configuration conditionnelle des logs pour les besoins éventuel de débugage
 
 • Lors d’un premier lancement, ce fichier n’existe pas encore. Dans ce cas, un email vous sera envoyé contenant l’adresse URL du tunnel.
-
 **Remarque** : Si l’adresse du tunnel ne change pas, aucun email ne sera envoyé.
 
-L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ce script en Python.
-Je dois dire que l’expérience a été géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais. Au final et pour une première, je trouve le résultat plutôt satisfaisant.
+L’idée de départ était de créer un script shell, ce qui aurait probablement été plus adapté et aussi plus simple pour moi. Cependant, n’ayant jamais utilisé l’IA pour du développement et voulant explorer les possibilités qu’elle pouvait offrir, j’ai décidé d’essayer ***OpenIA GPT-4*** qui est un des modèle d'IA de ***Perplexity*** pour écrire ces scripts en Python.
+Je dois dire que l’expérience est géniale et instructive, même si cela ne c’est pas fait en une seule requête. J’ai dû affiner chacune de mes demandes en étant de plus en plus précis sur ce que je voulais et je ne cesse pas d'améliorer l'ensemble du programme au fil du temps. 
+Au final et pour une première, je trouve le résultat plutôt satisfaisant.

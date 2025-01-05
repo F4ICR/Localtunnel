@@ -7,7 +7,6 @@ import re
 import time
 import subprocess
 import logging
-from datetime import datetime
 
 # Bibliothèques tierces
 from metrics import save_start_time, log_tunnel_availability
@@ -17,7 +16,7 @@ import requests
 
 # Modules locaux
 from settings import (
-  TUNNEL_OUTPUT_FILE, 
+  LOG_FILE, 
   SMTP_SERVER, 
   SMTP_PORT, 
   SMTP_USER, 
@@ -31,6 +30,8 @@ from settings import (
 
 # Importer le module de journalisation
 from logging_config import logger
+
+#logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 
 ''' Fonctions utilitaires générales '''
@@ -134,7 +135,7 @@ def start_tunnel(port, subdomain=None):
         except Exception as e:
             logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
 
-    with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
+    with open(LOG_FILE, "w") as log_file:
         cmd = ["lt", "--port", str(port)]
         if subdomain:
             cmd += ["--subdomain", subdomain]
@@ -170,8 +171,8 @@ def start_tunnel(port, subdomain=None):
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
     try:
-        if os.path.exists(TUNNEL_OUTPUT_FILE):
-            with open(TUNNEL_OUTPUT_FILE, "r") as log_file:
+        if os.path.exists(LOG_FILE):
+            with open(LOG_FILE, "r") as log_file:
                 lines = log_file.readlines()
                 # Parcourir les lignes en sens inverse pour trouver la dernière URL valide
                 for line in reversed(lines):
@@ -180,7 +181,7 @@ def read_tunnel_url_from_log():
                         logger.debug(f"URL trouvée dans le fichier log : {match.group(0)}")
                         return match.group(0)
         else:
-            logger.warning(f"Le fichier log {TUNNEL_OUTPUT_FILE} n'existe pas.")
+            logger.warning(f"Le fichier log {LOG_FILE} n'existe pas.")
     except Exception as e:
         logger.error(f"Erreur lors de la lecture du fichier log : {e}")
     return None
@@ -254,32 +255,21 @@ def send_email(tunnel_url):
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
 def test_tunnel_connectivity(tunnel_url):
-    """
-    Teste la connectivité du tunnel avec gestion du temps via datetime.
-    """
     for attempt in range(TUNNEL_RETRIES):
-        start_time = datetime.now()
+        start_time = time.time()
         try:
             response = requests.get(tunnel_url, timeout=TUNNEL_TIMEOUT)
-            elapsed_time = (datetime.now() - start_time).total_seconds()
-            
+            elapsed_time = time.time() - start_time
             if response.status_code == HTTP_SUCCESS_CODE:
                 logger.info(
-                    f"Connectivité réussie au tunnel ({tunnel_url}). "
-                    f"Temps écoulé : {elapsed_time:.2f} secondes.")
+                    f"Connectivité réussie au tunnel ({tunnel_url}). Temps écoulé : {elapsed_time:.2f} secondes.")
                 return True
-                
         except requests.RequestException as e:
-            elapsed_time = (datetime.now() - start_time).total_seconds()
+            elapsed_time = time.time() - start_time
             logger.warning(
-                f"Tentative {attempt + 1}/{TUNNEL_RETRIES} échouée "
-                f"après {elapsed_time:.2f} secondes : {e}")
-                
+                f"Tentative {attempt + 1}/{TUNNEL_RETRIES} échouée après {elapsed_time:.2f} secondes : {e}")
             if attempt < TUNNEL_RETRIES - 1:
                 time.sleep(TUNNEL_DELAY)
-    
-    return False
-
     
     return False
   

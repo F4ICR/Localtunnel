@@ -4,19 +4,17 @@
 # Bibliothèques standard
 import time
 import sys
-from datetime import datetime
 
 # Importer les variables de configuration depuis settings.py
 from settings import (
-    PORT,
-    TUNNEL_OUTPUT_FILE,
-    EMAIL,
-    SMTP_SERVER,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASSWORD,
-    SUBDOMAIN,
-    TUNNEL_CHECK_INTERVAL
+  PORT, 
+  LOG_FILE, 
+  EMAIL, 
+  SMTP_SERVER, 
+  SMTP_PORT, 
+  SMTP_USER, 
+  SMTP_PASSWORD, 
+  SUBDOMAIN
 )
 
 # Importer les fonctions utilitaires depuis lib.py
@@ -35,7 +33,7 @@ from logging_config import logger
 # Import autres depuis dependency_check
 from dependency_check import verify_all_dependencies
 
-# Import des métriques depuis metrics.py
+# Import des fonctions de métriques
 from metrics import (
     log_tunnel_availability,
     log_custom_metric,
@@ -44,13 +42,6 @@ from metrics import (
     log_url_change,
     log_tunnel_downtime
 )
-
-# Import de la gestion des durées depuis tunnel_duration_logger.py
-from tunnel_duration_logger import TunnelDurationLogger
-
-# Initialisation du gestionnaire de durées de tunnel
-duration_logger = TunnelDurationLogger()
-
 
 def manage_tunnel():
     """
@@ -83,25 +74,22 @@ def manage_tunnel():
         # Récupérer l'URL précédente
         previous_url = read_tunnel_url_from_log()
 
-        # Démarrer un nouveau tunnel et enregistrer son début avec son URL
-        start_time = datetime.now()
+        # Démarrer un nouveau tunnel
+        start_time = time.time()
         new_url = start_tunnel(PORT, SUBDOMAIN)
-        
+        end_time = time.time()
+
         if new_url:
-            duration_logger.end_tunnel()  # Terminer le cycle précédent (s'il existe)
-            duration_logger.start_tunnel(new_url)  # Démarrer un nouveau cycle avec l'URL actuelle
-            
-            end_time = datetime.now()
             logger.info(f"Nouveau tunnel créé. URL : {new_url}")
             log_tunnel_startup_time(start_time, end_time)
 
             # Notifier si l'URL a changé
             if new_url != previous_url:
                 send_email(new_url)
-                log_url_change(previous_url, new_url)
+                log_url_change(previous_url, new_url)  # Appel à la fonction modifiée
 
             # Écrire l'URL dans le fichier log principal
-            with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
+            with open(LOG_FILE, "w") as log_file:
                 log_file.write(new_url + "\n")
 
             log_custom_metric("Nouveau tunnel créé", 1)
@@ -109,7 +97,7 @@ def manage_tunnel():
     except Exception as e:
         # Enregistrer l'erreur et signaler un temps d'arrêt du tunnel
         logger.error(f"Erreur dans la gestion du tunnel : {str(e)}")
-        duration_logger.end_tunnel()  # Assurez-vous que la durée est enregistrée même en cas d'erreur.
+        log_tunnel_downtime()
         raise  # Relancer l'exception pour qu'elle soit capturée globalement
 
 
@@ -124,8 +112,8 @@ def main():
         while True:
             manage_tunnel()
 
-            # Attendre avant de vérifier à nouveau (voir TUNNEL_CHECK_INTERVAL dans settings.py)
-            time.sleep(TUNNEL_CHECK_INTERVAL)
+            # Attendre avant de vérifier à nouveau (par exemple, toutes les 600 secondes)
+            time.sleep(600)
 
     except KeyboardInterrupt:
         logger.warning("Interruption par l'utilisateur (Ctrl+C). Arrêt du programme.")
