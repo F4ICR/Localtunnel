@@ -17,7 +17,7 @@ import requests
 
 # Modules locaux
 from settings import (
-  LOG_FILE, 
+  TUNNEL_OUTPUT_FILE, 
   SMTP_SERVER, 
   SMTP_PORT, 
   SMTP_USER, 
@@ -31,8 +31,6 @@ from settings import (
 
 # Importer le module de journalisation
 from logging_config import logger
-
-#logger = logging.getLogger(__name__)  # Créer un logger pour ce module
 
 
 ''' Fonctions utilitaires générales '''
@@ -136,7 +134,7 @@ def start_tunnel(port, subdomain=None):
         except Exception as e:
             logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
 
-    with open(LOG_FILE, "w") as log_file:
+    with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
         cmd = ["lt", "--port", str(port)]
         if subdomain:
             cmd += ["--subdomain", subdomain]
@@ -172,8 +170,8 @@ def start_tunnel(port, subdomain=None):
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
     try:
-        if os.path.exists(LOG_FILE):
-            with open(LOG_FILE, "r") as log_file:
+        if os.path.exists(TUNNEL_OUTPUT_FILE):
+            with open(TUNNEL_OUTPUT_FILE, "r") as log_file:
                 lines = log_file.readlines()
                 # Parcourir les lignes en sens inverse pour trouver la dernière URL valide
                 for line in reversed(lines):
@@ -182,7 +180,7 @@ def read_tunnel_url_from_log():
                         logger.debug(f"URL trouvée dans le fichier log : {match.group(0)}")
                         return match.group(0)
         else:
-            logger.warning(f"Le fichier log {LOG_FILE} n'existe pas.")
+            logger.warning(f"Le fichier log {TUNNEL_OUTPUT_FILE} n'existe pas.")
     except Exception as e:
         logger.error(f"Erreur lors de la lecture du fichier log : {e}")
     return None

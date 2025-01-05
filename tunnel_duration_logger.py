@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
+# F4ICR & OpenIA GPT-4
 
 import os
 from datetime import datetime, timedelta
 from logging_config import logger  # Assurez-vous que `logging_config.py` est correctement configuré
+from settings import TUNNEL_DURATIONS_FILE
 
-# Définir le répertoire du script actuel
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-LOGS_DIR = os.path.join(SCRIPT_DIR, "logs")
-# Nom du fichier pour enregistrer les durées des tunnels
-TUNNEL_DURATIONS_FILE = os.path.join(LOGS_DIR, "tunnel_durations.log")
 
 class TunnelDurationLogger:
     """
@@ -72,4 +69,3 @@ class TunnelDurationLogger:
             )
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des détails du tunnel : {e}")
-            

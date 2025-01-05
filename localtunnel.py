@@ -9,7 +9,7 @@ from datetime import datetime
 # Importer les variables de configuration depuis settings.py
 from settings import (
     PORT,
-    LOG_FILE,
+    TUNNEL_OUTPUT_FILE,
     EMAIL,
     SMTP_SERVER,
     SMTP_PORT,
@@ -101,7 +101,7 @@ def manage_tunnel():
                 log_url_change(previous_url, new_url)
 
             # Écrire l'URL dans le fichier log principal
-            with open(LOG_FILE, "w") as log_file:
+            with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
                 log_file.write(new_url + "\n")
 
             log_custom_metric("Nouveau tunnel créé", 1)
@@ -141,3 +141,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
