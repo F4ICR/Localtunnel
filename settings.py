@@ -43,8 +43,10 @@ TUNNEL_RETRIES = 5  # Nombre de tentatives pour tester la connectivité
 TUNNEL_DELAY = 3  # Délai (en secondes) entre chaque tentative
 TUNNEL_TIMEOUT = 6  # Timeout (en secondes) pour les requêtes HTTP
 HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
+TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
 
-# Configuration conditionnelle des logs pour les besoins de débogage
+
+''' Configuration conditionnelle des logs pour les besoins de débogage '''
 
 # Variables pour activer/désactiver certaines parties du format
 INCLUDE_FILENAME = False  # Inclure le nom du fichier dans les logs
