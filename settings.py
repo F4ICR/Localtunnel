@@ -1,26 +1,57 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
-# Le port local que vous souhaitez exposer
-PORT = 3000
+# Version du script
+version = '1.2'
 
-# Fichier de log pour capturer la sortie du tunnel
-LOG_FILE = "tunnel_output.log"
+import os
 
-# Adresse email pour recevoir l'URL du tunnel
-EMAIL = "votre_mail@domaine.com"
+# Obtenir le chemin absolu du répertoire où se trouve ce fichier
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Serveur SMTP (exemple avec Gmail)
-SMTP_SERVER = "smtp.gmail.com"
+# Fichiers de log
+LOG_FILE = os.path.join(SCRIPT_DIR, "tunnel_output.log")
+APPLICATION_LOG = os.path.join(SCRIPT_DIR, "application.log")
+ERROR_LOG = os.path.join(SCRIPT_DIR, "error.log")
+#TUNNEL_DURATION_FILE = os.path.join(SCRIPT_DIR, "tunnel_durations.log")
+TIMESTAMP_FILE = "/tmp/tunnel_start_time.txt"
+TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-# Port SMTP sécurisé (SSL)
-SMTP_PORT = 465
+# Configuration du port
+PORT = 3000  # Le port local à exposer
 
-# Votre adresse Gmail (ou autre fournisseur)
-SMTP_USER = "votre_mail@domaine.com"
+# Configuration email
+EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
+SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
+SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
+SMTP_USER = "pascal.paquet@gmail.com"  # Adresse email utilisée pour l'envoi
+SMTP_PASSWORD = "ipkfxkftpmevavqc"  # Mot de passe ou App Password (si Gmail)
 
-# Mot de passe ou App Password (si Gmail)
-SMTP_PASSWORD = "votre_password"  # Remplacez par une variable d'environnement pour plus de sécurité
+# Sous-domaine pour le tunnel
+SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 
-# Sous-domaine souhaité (None pour un sous-domaine aléatoire)
-SUBDOMAIN = None
+# Configuration des logs
+LOG_BACKUP_COUNT = 6  # Nombre de sauvegardes de logs à conserver
+LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
+
+# Paramètres pour tester la connectivité du tunnel
+TUNNEL_RETRIES = 5  # Nombre de tentatives pour tester la connectivité
+TUNNEL_DELAY = 3  # Délai (en secondes) entre chaque tentative
+TUNNEL_TIMEOUT = 6  # Timeout (en secondes) pour les requêtes HTTP
+HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
+TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
+
+''' Configuration conditionnelle des logs pour les besoins de débogage '''
+
+# Variables pour activer/désactiver certaines parties du format
+INCLUDE_FILENAME = False  # Inclure le nom du fichier dans les logs
+INCLUDE_DEBUG_INFO = False  # Inclure les informations de debug (fonction et ligne)
+
+# Format des logs avec gestion conditionnelle
+VERBOSE_FORMAT = (
+    "%(asctime)s - %(name)s - %(levelname)s - "
+    "[PID: %(process)d - Thread: %(thread)d] - "
+    + ("[File: %(filename)s] - " if INCLUDE_FILENAME else "")
+    + ("[Function: %(funcName)s - Line: %(lineno)d] - " if INCLUDE_DEBUG_INFO else "")
+    + "%(message)s"
+)
