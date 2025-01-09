@@ -119,25 +119,34 @@ def main():
     """
     try:
         logger.info("Démarrage de l'application Localtunnel Manager.")
-
-        # Boucle principale pour gérer les tunnels (si nécessaire en mode daemon)
+        
         while True:
+            # Enregistrer le début du cycle
+            cycle_start_time = time.time()
+            
+            # Gérer le tunnel
             manage_tunnel()
-
-            # Attendre avant de vérifier à nouveau (voir TUNNEL_CHECK_INTERVAL dans settings.py)
-            time.sleep(TUNNEL_CHECK_INTERVAL)
-
+            
+            # Calculer le temps pris par les opérations
+            cycle_duration = time.time() - cycle_start_time
+            
+            # Calculer le temps restant avant la prochaine vérification
+            sleep_time = max(0, TUNNEL_CHECK_INTERVAL - cycle_duration)
+            
+            logger.debug(f"Durée du cycle : {cycle_duration:.2f} secondes. Pause avant le prochain cycle : {sleep_time:.2f} secondes.")
+            
+            # Attendre avant de relancer le cycle
+            time.sleep(sleep_time)
+    
     except KeyboardInterrupt:
         logger.warning("Interruption par l'utilisateur (Ctrl+C). Arrêt du programme.")
-
+    
     except Exception as e:
-        # Gestion globale des erreurs imprévues
         logger.critical(f"Erreur critique non gérée : {str(e)}", exc_info=True)
-
+    
     finally:
         logger.info("Arrêt propre de l'application Localtunnel Manager.")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
