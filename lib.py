@@ -264,6 +264,9 @@ def log_tunnel_change(previous_url, new_url):
 
 # Fonction pour envoyer un email avec l'URL du tunnel
 def send_email(tunnel_url):
+if not EMAIL_NOTIFICATIONS:
+        logger.info("L'envoi des emails est désactivé.")
+        return
     msg = MIMEText(f"Le tunnel est accessible à l'adresse suivante : {tunnel_url}")
     msg["Subject"] = "Localtunnel URL"
     msg["From"] = SMTP_USER
