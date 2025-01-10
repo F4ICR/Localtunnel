@@ -25,6 +25,7 @@ TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 PORT = 3000  # Le port local à exposer
 
 # Configuration email
+ENABLE_EMAIL_NOTIFICATIONS = True  # Mettre à False pour désactiver les emails
 EMAIL = "votre_mail@blabla.com"  # Adresse email pour recevoir l'URL du tunnel
 SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
 SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
