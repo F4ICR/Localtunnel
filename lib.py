@@ -26,7 +26,8 @@ from settings import (
   TUNNEL_RETRIES, 
   TUNNEL_DELAY, 
   TUNNEL_TIMEOUT, 
-  HTTP_SUCCESS_CODE
+  HTTP_SUCCESS_CODE,
+ENABLE_EMAIL_NOTIFICATIONS
 )
 
 # Importer le module de journalisation
