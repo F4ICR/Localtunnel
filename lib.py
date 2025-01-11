@@ -22,12 +22,12 @@ from settings import (
   SMTP_PORT, 
   SMTP_USER, 
   SMTP_PASSWORD, 
-  EMAIL, 
+  EMAIL,
+  EMAIL_NOTIFICATIONS, 
   TUNNEL_RETRIES, 
   TUNNEL_DELAY, 
   TUNNEL_TIMEOUT, 
   HTTP_SUCCESS_CODE,
-  EMAIL_NOTIFICATIONS
 )
 
 # Importer le module de journalisation
@@ -264,7 +264,7 @@ def log_tunnel_change(previous_url, new_url):
 
 # Fonction pour envoyer un email avec l'URL du tunnel
 def send_email(tunnel_url):
-if not EMAIL_NOTIFICATIONS:
+    if not EMAIL_NOTIFICATIONS:
         logger.info("L'envoi des emails est désactivé.")
         return
     msg = MIMEText(f"Le tunnel est accessible à l'adresse suivante : {tunnel_url}")
