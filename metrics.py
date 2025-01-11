@@ -66,11 +66,9 @@ def log_url_change(previous_url: str, new_url: str):
     if tunnel_start_time:
         tunnel_end_time = datetime.now()
         duration = tunnel_end_time - tunnel_start_time
-        
         hours = duration.seconds // 3600
         minutes = (duration.seconds % 3600) // 60
         seconds = duration.seconds % 60
-        
         logger.info(f"Le tunnel précédent ({previous_url}) a été actif pendant {hours}h {minutes}m {seconds}s.")
         
         # Réinitialiser les timestamps pour le prochain cycle
