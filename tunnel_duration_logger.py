@@ -3,7 +3,7 @@
 
 import os
 from datetime import datetime, timedelta
-from logging_config import logger  # Assurez-vous que `logging_config.py` est correctement configuré
+from logging_config import logger
 from settings import TUNNEL_DURATIONS_FILE
 
 
