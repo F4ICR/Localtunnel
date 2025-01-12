@@ -1,6 +1,7 @@
 import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
+from settings import TUNNEL_DURATIONS_FILE
 
 # Fonction pour extraire les données du fichier log
 def extraire_donnees(fichier_log):
@@ -79,7 +80,7 @@ def generer_graphique(donnees_par_date, output_file):
     print(f"Graphique sauvegardé sous : {output_file}")
 
 # Chemin vers le fichier log (à adapter selon votre environnement)
-fichier_log = "logs/tunnel_durations.log"  # Remplacez par le chemin correct
+fichier_log = TUNNEL_DURATIONS_FILE
 
 # Chemin de sortie pour l'image
 output_image = "filtered_cumulative_bargraph.jpg"
