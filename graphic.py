@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# F4ICR & OpenIA GPT-4
+
 import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
