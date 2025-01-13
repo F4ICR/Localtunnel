@@ -7,26 +7,37 @@ import subprocess
 import os
 import ssl
 import socket
+
 from logging_config import logger  # Import du logger configuré dans logging_config.py
 from settings import TUNNEL_OUTPUT_FILE
 
+# Variable globale pour stocker le statut de l'installation
+_lt_installed = None
 
 def is_lt_installed():
     """
-    Vérifie si l'outil 'lt' (Localtunnel) est installé et s'il y a des tunnels actifs.
+    Vérifie si l'outil 'lt' (Localtunnel) est installé.
+    Retourne True si installé, False sinon.
     """
+    global _lt_installed
+
+    # Évite les vérifications répétées en utilisant la variable globale
+    if _lt_installed is not None:
+        return _lt_installed
+
     try:
+        # Vérification de la version de Localtunnel
         subprocess.run(["lt", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        tunnels_actifs = subprocess.run(["ps", "aux"], capture_output=True, text=True)
-        if "lt --port" not in tunnels_actifs.stdout:
-            logger.info("L'outil 'lt' (Localtunnel) est installé.")
-        return True
+        _lt_installed = True
+        logger.debug("L'outil 'lt' (Localtunnel) est installé.")  # Réduit le niveau de journalisation à DEBUG
     except FileNotFoundError:
+        _lt_installed = False
         logger.error("L'outil 'lt' n'est pas installé. Installation : 'npm install -g localtunnel'")
-        return False
     except Exception as e:
+        _lt_installed = False
         logger.error(f"Une erreur s'est produite lors de la vérification de 'lt' : {e}")
-        return False
+
+    return _lt_installed
 
 def check_python_version():
     """
@@ -34,8 +45,7 @@ def check_python_version():
     """
     required_version = (3, 6)
     if sys.version_info < required_version:
-        logger.error(f"Python {required_version[0]}.{required_version[1]} ou supérieur est requis. "
-                     "Téléchargez-le sur python.org")
+        logger.error(f"Python {required_version[0]}.{required_version[1]} ou supérieur est requis. Téléchargez-le sur python.org")
         return False
     return True
 
@@ -63,6 +73,7 @@ def check_required_modules():
             else:
                 logger.error(f"Module requis manquant : {module}. Ce module devrait être présent dans l'installation Python")
             all_modules_present = False
+
     return all_modules_present
 
 def get_domain_from_tunnel_output(file_path):
@@ -73,7 +84,7 @@ def get_domain_from_tunnel_output(file_path):
         if not os.path.exists(file_path):
             logger.error(f"Le fichier '{file_path}' n'existe pas.")
             return None
-        
+
         with open(file_path, "r") as file:
             for line in file:
                 # Supposons que la ligne contenant le domaine commence par "https://"
@@ -81,7 +92,7 @@ def get_domain_from_tunnel_output(file_path):
                     domain = line.strip().split("//")[-1].split("/")[0]
                     logger.info(f"Nom de domaine extrait : {domain}")
                     return domain
-        
+
         logger.error("Aucun nom de domaine trouvé dans le fichier.")
         return None
     except Exception as e:
@@ -112,6 +123,8 @@ def verify_all_dependencies():
     """
     python_ok = check_python_version()
     modules_ok = check_required_modules()
+    
+    # Appelle `is_lt_installed()` une seule fois ici pour éviter des appels répétés ailleurs.
     lt_ok = is_lt_installed()
 
     return python_ok and modules_ok and lt_ok
@@ -122,17 +135,14 @@ if __name__ == "__main__":
 
         # Lire le nom de domaine depuis tunnel_output.log
         domain = get_domain_from_tunnel_output(TUNNEL_OUTPUT_FILE)
-        
+
         if domain:
             # Vérifier le certificat SSL pour ce domaine
             if verify_ssl_certificate(domain):
                 logger.info(f"Le certificat SSL pour {domain} est valide.")
             else:
                 logger.error(f"Le certificat SSL pour {domain} n'est pas valide.")
-                
         else:
             logger.error("Impossible de vérifier un certificat SSL car aucun domaine n'a été trouvé.")
-            
     else:
         logger.error("Certaines dépendances sont manquantes ou incorrectes.")
-        
