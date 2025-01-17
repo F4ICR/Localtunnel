@@ -26,11 +26,11 @@ PORT = 3000  # Le port local à exposer
 
 # Configuration email
 EMAIL_NOTIFICATIONS = True  # Mettre à False pour désactiver les emails
-EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
+EMAIL = "votre_mail@blabla.com"  # Adresse email pour recevoir l'URL du tunnel
 SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
 SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
-SMTP_USER = "pascal.paquet@gmail.com"  # Adresse email utilisée pour l'envoi
-SMTP_PASSWORD = "ipkfxkftpmevavqc"  # Mot de passe ou App Password (si Gmail)
+SMTP_USER = "votre_mail@blabla.com"  # Adresse email utilisée pour l'envoi
+SMTP_PASSWORD = "mot_de_passe"  # Mot de passe ou App Password (si Gmail)
 
 # Sous-domaine pour le tunnel
 SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
@@ -41,11 +41,11 @@ LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
 
 # Paramètres pour démarrer le tunnel
 MAX_RETRIES = 15  # Nombre de tentatives pour établir le tunnel
-DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le tunne
+DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le tunnel
 
 # Paramètres pour tester la connectivité du tunnel
-TUNNEL_RETRIES = 15  # Nombre de tentatives pour tester la connectivité
-TUNNEL_DELAY = 5  # Délai (en secondes) entre chaque tentative
+TUNNEL_RETRIES = 5  # Nombre de tentatives pour tester la connectivité
+TUNNEL_DELAY = 3  # Délai (en secondes) entre chaque tentative
 TUNNEL_TIMEOUT = 10  # Timeout (en secondes) pour les requêtes HTTP
 HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
 TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
