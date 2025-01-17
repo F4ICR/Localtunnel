@@ -24,6 +24,8 @@ from settings import (
   SMTP_PASSWORD, 
   EMAIL,
   EMAIL_NOTIFICATIONS,
+  MAX_RETRIES, 
+  DELAY_RETRIES,
   TUNNEL_RETRIES, 
   TUNNEL_DELAY, 
   TUNNEL_TIMEOUT, 
@@ -109,9 +111,6 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     """
-    # Import au début de la fonction
-    from metrics import save_start_time, log_tunnel_availability
-
     # Récupérer l'URL précédente avant toute chose
     previous_url = read_tunnel_url_from_log()
 
@@ -155,17 +154,15 @@ def start_tunnel(port, subdomain=None):
         write_to_file(pid_file, str(process.pid))
         logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
 
-        # Attendre et vérifier l'URL
-        max_retries = 15
-        delay = 5
-        for attempt in range(max_retries):
+        # Attendre et vérifier l'URL        
+        for attempt in range(MAX_RETRIES):
             url = read_tunnel_url_from_log()
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
                 log_tunnel_availability(url)
                 return url
-            logger.warning(f"Tentative {attempt + 1}/{max_retries} : URL non trouvée. Nouvelle tentative dans {delay} seconde(s).")
-            time.sleep(delay)
+            logger.warning(f"Tentative {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {DELAY_RETRIES} seconde(s).")
+            time.sleep(DELAY_RETRIES)
 
         # Gestion des erreurs spécifiques aux serveurs Localtunnel
         error_message = (
@@ -180,14 +177,14 @@ def start_tunnel(port, subdomain=None):
             logger.info(f"Cycle de réessai {retry_cycle + 1}/5 : Attente de {retry_wait_time} secondes avant une nouvelle tentative...")
             time.sleep(retry_wait_time)
 
-            for attempt in range(max_retries):
+            for attempt in range(MAX_RETRIES):
                 url = read_tunnel_url_from_log()
                 if url:
                     logger.info(f"Tunnel redémarré avec succès après attente. URL : {url}")
                     log_tunnel_availability(url)
                     return url
-                logger.warning(f"Tentative supplémentaire {attempt + 1}/{max_retries} : URL non trouvée.")
-                time.sleep(delay)
+                logger.warning(f"Tentative supplémentaire {attempt + 1}/{MAX_RETRIES} : URL non trouvée.")
+                time.sleep(DELAY_RETRIES)
 
         # Si toutes les tentatives échouent, lever une exception critique
         raise Exception("Impossible de démarrer le tunnel après plusieurs tentatives.")
