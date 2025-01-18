@@ -110,7 +110,7 @@ def main():
                 jours_glissants = 30
 
             try:
-                duree_minimale_input = input("Entrez la durée minimale à afficher (en heures) (par défaut : ≥ 1) : ")
+                duree_minimale_input = input("Entrez la durée minimale à afficher (en heures, format décimal) (par défaut : ≥ 1) : ")
                 duree_minimale = float(duree_minimale_input) if duree_minimale_input.strip() else 1.0
             except ValueError:
                 print("Entrée invalide. Utilisation de la valeur par défaut : ≥ 1 heure.")
@@ -147,7 +147,7 @@ def main():
                     print("Entrée invalide. Veuillez entrer un nombre.")
 
             try:
-                duree_minimale_input = input("Entrez la durée minimale à afficher (en heures) (par défaut : ≥ 0) : ")
+                duree_minimale_input = input("Entrez la durée minimale à afficher (en heures,format décimal) (par défaut : ≥ 0) : ")
                 duree_minimale = float(duree_minimale_input) if duree_minimale_input.strip() else 0.0
             except ValueError:
                 print("Entrée invalide. Utilisation de la valeur par défaut : ≥ 0 heure.")
