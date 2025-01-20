@@ -14,6 +14,8 @@ from metrics import save_start_time, log_tunnel_availability
 import smtplib
 from email.mime.text import MIMEText
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Modules locaux
 from settings import (
@@ -111,6 +113,9 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     """
+    # Import au début de la fonction
+    from metrics import save_start_time, log_tunnel_availability
+    
     # Récupérer l'URL précédente avant toute chose
     previous_url = read_tunnel_url_from_log()
 
@@ -280,33 +285,43 @@ def send_email(tunnel_url):
 
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
-def test_tunnel_connectivity(tunnel_url):
+def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0.5):
     """
-    Teste la connectivité du tunnel avec gestion du temps via datetime.
-    """
-    for attempt in range(TUNNEL_RETRIES):
-        start_time = datetime.now()
-        try:
-            response = requests.get(tunnel_url, timeout=TUNNEL_TIMEOUT)
-            elapsed_time = (datetime.now() - start_time).total_seconds()
-            
-            if response.status_code == HTTP_SUCCESS_CODE:
-                logger.info(
-                    f"Connectivité réussie au tunnel ({tunnel_url}). "
-                    f"Temps écoulé : {elapsed_time:.2f} secondes.")
-                return True
-                
-        except requests.RequestException as e:
-            elapsed_time = (datetime.now() - start_time).total_seconds()
-            logger.warning(
-                f"Tentative {attempt + 1}/{TUNNEL_RETRIES} échouée "
-                f"après {elapsed_time:.2f} secondes : {e}")
-                
-            if attempt < TUNNEL_RETRIES - 1:
-                time.sleep(TUNNEL_DELAY)
+    Teste la connectivité du tunnel avec gestion des tentatives via urllib3 Retry.
     
-    return False
+    :param tunnel_url: URL du tunnel à tester.
+    :param retries: Nombre total de tentatives avant d'abandonner.
+    :param timeout: Temps maximum (en secondes) pour chaque requête.
+    :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
+    :return: True si la connexion réussit, False sinon.
+    """
+    # Configuration de la stratégie de retry pour les anciennes versions d'urllib3
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP qui déclenchent un retry
+        method_whitelist=["GET"]  # Ancien paramètre pour versions < 1.26
+    )
 
+    # Création d'une session avec un adaptateur HTTP configuré pour le retry
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    try:
+        response = session.get(tunnel_url, timeout=timeout)
+        if response.status_code == 200:
+            logger.info(f"Connectivité réussie au tunnel ({tunnel_url}).")
+            return True
+        else:
+            logger.warning(f"Échec de la connexion avec le code HTTP {response.status_code}.")
+            return False
+
+    except requests.RequestException as e:
+        logger.error(f"Erreur lors de la connexion au tunnel : {e}")
+        
+        return False
     
     return False
   
