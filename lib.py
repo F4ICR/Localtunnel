@@ -14,6 +14,9 @@ from metrics import save_start_time, log_tunnel_availability
 import smtplib
 from email.mime.text import MIMEText
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from urllib.parse import urlparse
 
 # Modules locaux
 from settings import (
@@ -25,11 +28,7 @@ from settings import (
   EMAIL,
   EMAIL_NOTIFICATIONS,
   MAX_RETRIES, 
-  DELAY_RETRIES,
-  TUNNEL_RETRIES, 
-  TUNNEL_DELAY, 
-  TUNNEL_TIMEOUT, 
-  HTTP_SUCCESS_CODE
+  DELAY_RETRIES
 )
 
 # Importer le module de journalisation
@@ -111,56 +110,65 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     """
-    # Récupérer l'URL précédente avant toute chose
+    # Récupérer l'URL précédente depuis le fichier log
     previous_url = read_tunnel_url_from_log()
 
-    # Vérifier si un tunnel est déjà actif
+    # Vérifier si un tunnel est déjà actif sur le port spécifié
     if is_tunnel_active(port):
         if previous_url:
             logger.info(f"Réutilisation du tunnel existant sur le port {port} : {previous_url}")
             log_tunnel_availability(previous_url)
             return previous_url
 
-    # Vérifier si 'lt' est installé
+    # Vérifier si 'lt' (Localtunnel) est installé
     if not is_lt_installed():
         logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
-        return
+        return None
 
-    # Utiliser le sous-domaine de l'URL précédente si aucun n'est spécifié
+    # Déterminer le sous-domaine à utiliser si aucun n'est spécifié
     if not subdomain and previous_url:
         try:
-            subdomain = previous_url.split("//")[1].split(".")[0]
-            logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
+            parsed_url = urlparse(previous_url)
+            if parsed_url.scheme in ["http", "https"] and parsed_url.netloc:
+                subdomain = parsed_url.hostname.split(".")[0] if parsed_url.hostname else None
+                logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
+            else:
+                logger.warning(f"L'URL précédente n'est pas valide : {previous_url}")
         except Exception as e:
-            logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
+            logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}", exc_info=True)
 
-    with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
-        cmd = ["lt", "--port", str(port)]
-        if subdomain:
-            cmd += ["--subdomain", subdomain]
+    # Préparer la commande pour démarrer Localtunnel
+    cmd = ["lt", "--port", str(port)]
+    if subdomain:
+        cmd += ["--subdomain", subdomain]
 
-        try:
+    try:
+        # Démarrer le processus Localtunnel et rediriger la sortie vers un fichier log
+        with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
             process = subprocess.Popen(
                 cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp
             )
-        except Exception as e:
-            logger.error(f"Erreur lors du démarrage du processus Localtunnel : {e}")
+
+        # Vérifier si le processus a démarré correctement
+        time.sleep(1)  # Attendre un moment pour permettre au processus de se stabiliser
+        if process.poll() is not None:  # Si le processus s'est terminé immédiatement
+            logger.error("Le processus Localtunnel s'est terminé prématurément.")
             raise Exception("Échec du démarrage du processus Localtunnel.")
 
-        # Enregistrer l'heure de démarrage
+        # Enregistrer l'heure de démarrage et le PID dans un fichier sécurisé
         save_start_time()
-
         pid_file = f"/tmp/localtunnel_{port}.pid"
         write_to_file(pid_file, str(process.pid))
-        logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
+        logger.info(f"Processus Localtunnel démarré avec succès (PID: {process.pid}). Commande : {' '.join(cmd)}")
 
-        # Attendre et vérifier l'URL        
+        # Attendre et vérifier l'URL générée par Localtunnel
         for attempt in range(MAX_RETRIES):
             url = read_tunnel_url_from_log()
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
                 log_tunnel_availability(url)
                 return url
+
             logger.warning(f"Tentative {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {DELAY_RETRIES} seconde(s).")
             time.sleep(DELAY_RETRIES)
 
@@ -183,12 +191,16 @@ def start_tunnel(port, subdomain=None):
                     logger.info(f"Tunnel redémarré avec succès après attente. URL : {url}")
                     log_tunnel_availability(url)
                     return url
+
                 logger.warning(f"Tentative supplémentaire {attempt + 1}/{MAX_RETRIES} : URL non trouvée.")
                 time.sleep(DELAY_RETRIES)
 
         # Si toutes les tentatives échouent, lever une exception critique
         raise Exception("Impossible de démarrer le tunnel après plusieurs tentatives.")
 
+    except Exception as e:
+        logger.error(f"Erreur lors du démarrage du processus Localtunnel : {e}", exc_info=True)
+        return None
 
          
 # Fonction pour lire l'URL depuis le fichier log existant
@@ -197,12 +209,11 @@ def read_tunnel_url_from_log():
         if os.path.exists(TUNNEL_OUTPUT_FILE):
             with open(TUNNEL_OUTPUT_FILE, "r") as log_file:
                 lines = log_file.readlines()
-                # Parcourir les lignes en sens inverse pour trouver la dernière URL valide
                 for line in reversed(lines):
-                    match = re.search(r"https://[^\s]+", line)
-                    if match:
-                        logger.debug(f"URL trouvée dans le fichier log : {match.group(0)}")
-                        return match.group(0)
+                    parsed_url = urlparse(line.strip())
+                    if parsed_url.scheme in ["http", "https"] and parsed_url.netloc:
+                        logger.debug(f"URL trouvée dans le fichier log : {parsed_url.geturl()}")
+                        return parsed_url.geturl()
         else:
             logger.warning(f"Le fichier log {TUNNEL_OUTPUT_FILE} n'existe pas.")
     except Exception as e:
@@ -280,33 +291,47 @@ def send_email(tunnel_url):
 
 
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
-def test_tunnel_connectivity(tunnel_url):
+def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0.5):
     """
-    Teste la connectivité du tunnel avec gestion du temps via datetime.
+    Teste la connectivité HTTP du tunnel avec gestion des tentatives via urllib3 Retry.
+    :param tunnel_url: URL du tunnel à tester.
+    :param retries: Nombre total de tentatives avant d'abandonner.
+    :param timeout: Temps maximum (en secondes) pour chaque requête.
+    :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
+    :return: True si la connexion réussit, False sinon.
     """
-    for attempt in range(TUNNEL_RETRIES):
-        start_time = datetime.now()
-        try:
-            response = requests.get(tunnel_url, timeout=TUNNEL_TIMEOUT)
-            elapsed_time = (datetime.now() - start_time).total_seconds()
-            
-            if response.status_code == HTTP_SUCCESS_CODE:
-                logger.info(
-                    f"Connectivité réussie au tunnel ({tunnel_url}). "
-                    f"Temps écoulé : {elapsed_time:.2f} secondes.")
-                return True
-                
-        except requests.RequestException as e:
-            elapsed_time = (datetime.now() - start_time).total_seconds()
-            logger.warning(
-                f"Tentative {attempt + 1}/{TUNNEL_RETRIES} échouée "
-                f"après {elapsed_time:.2f} secondes : {e}")
-                
-            if attempt < TUNNEL_RETRIES - 1:
-                time.sleep(TUNNEL_DELAY)
-    
-    return False
+    # Validation de l'URL avec urllib.parse
+    parsed_url = urlparse(tunnel_url)
+    if not (parsed_url.scheme in ["http", "https"] and parsed_url.netloc):
+        logger.error(f"L'URL fournie n'est pas valide : {tunnel_url}")
+        return False
 
+    # Configuration de la stratégie de retry pour requests
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP qui déclenchent un retry
+        allowed_methods=["GET"]  # Méthodes HTTP autorisées pour le retry
+    )
+    
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    try:
+        # Effectuer une requête GET vers l'URL du tunnel
+        response = session.get(tunnel_url, timeout=timeout)
+        if response.status_code == 200:
+            logger.info(f"Connectivité réussie au tunnel ({tunnel_url}).")
+            return True
+        else:
+            logger.warning(f"Échec de la connexion avec le code HTTP {response.status_code}.")
+            return False
+    except requests.RequestException as e:
+        logger.error(f"Erreur lors de la connexion au tunnel : {e}")
+        
+        return False
     
     return False
   

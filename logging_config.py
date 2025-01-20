@@ -73,4 +73,4 @@ if error_handler:
 logger.addHandler(console_handler)
 
 # Désactiver la propagation si nécessaire
-logger.propagate = True
+logger.propagate = False
