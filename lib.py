@@ -110,57 +110,65 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     """
-    # Récupérer l'URL précédente avant toute chose
+    # Récupérer l'URL précédente depuis le fichier log
     previous_url = read_tunnel_url_from_log()
 
-    # Vérifier si un tunnel est déjà actif
+    # Vérifier si un tunnel est déjà actif sur le port spécifié
     if is_tunnel_active(port):
         if previous_url:
             logger.info(f"Réutilisation du tunnel existant sur le port {port} : {previous_url}")
             log_tunnel_availability(previous_url)
             return previous_url
 
-    # Vérifier si 'lt' est installé
+    # Vérifier si 'lt' (Localtunnel) est installé
     if not is_lt_installed():
         logger.error("Impossible de démarrer le tunnel : 'lt' n'est pas installé.")
-        return
+        return None
 
-    # Utiliser le sous-domaine de l'URL précédente si aucun n'est spécifié
+    # Déterminer le sous-domaine à utiliser si aucun n'est spécifié
     if not subdomain and previous_url:
-    try:
-        parsed_url = urlparse(previous_url)
-        subdomain = parsed_url.hostname.split(".")[0] if parsed_url.hostname else None
-        logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
-    except Exception as e:
-        logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
-
-    with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
-        cmd = ["lt", "--port", str(port)]
-        if subdomain:
-            cmd += ["--subdomain", subdomain]
-
         try:
+            parsed_url = urlparse(previous_url)
+            if parsed_url.scheme in ["http", "https"] and parsed_url.netloc:
+                subdomain = parsed_url.hostname.split(".")[0] if parsed_url.hostname else None
+                logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
+            else:
+                logger.warning(f"L'URL précédente n'est pas valide : {previous_url}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}", exc_info=True)
+
+    # Préparer la commande pour démarrer Localtunnel
+    cmd = ["lt", "--port", str(port)]
+    if subdomain:
+        cmd += ["--subdomain", subdomain]
+
+    try:
+        # Démarrer le processus Localtunnel et rediriger la sortie vers un fichier log
+        with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
             process = subprocess.Popen(
                 cmd, stdout=log_file, stderr=subprocess.STDOUT, preexec_fn=os.setpgrp
             )
-        except Exception as e:
-            logger.error(f"Erreur lors du démarrage du processus Localtunnel : {e}")
+
+        # Vérifier si le processus a démarré correctement
+        time.sleep(1)  # Attendre un moment pour permettre au processus de se stabiliser
+        if process.poll() is not None:  # Si le processus s'est terminé immédiatement
+            logger.error("Le processus Localtunnel s'est terminé prématurément.")
             raise Exception("Échec du démarrage du processus Localtunnel.")
 
-        # Enregistrer l'heure de démarrage
+        # Enregistrer l'heure de démarrage et le PID dans un fichier sécurisé
         save_start_time()
-
         pid_file = f"/tmp/localtunnel_{port}.pid"
         write_to_file(pid_file, str(process.pid))
-        logger.info(f"Commande exécutée pour démarrer Localtunnel : {' '.join(cmd)} (PID: {process.pid})")
+        logger.info(f"Processus Localtunnel démarré avec succès (PID: {process.pid}). Commande : {' '.join(cmd)}")
 
-        # Attendre et vérifier l'URL        
+        # Attendre et vérifier l'URL générée par Localtunnel
         for attempt in range(MAX_RETRIES):
             url = read_tunnel_url_from_log()
             if url:
                 logger.info(f"Tunnel démarré avec succès. URL : {url}")
                 log_tunnel_availability(url)
                 return url
+
             logger.warning(f"Tentative {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {DELAY_RETRIES} seconde(s).")
             time.sleep(DELAY_RETRIES)
 
@@ -183,12 +191,16 @@ def start_tunnel(port, subdomain=None):
                     logger.info(f"Tunnel redémarré avec succès après attente. URL : {url}")
                     log_tunnel_availability(url)
                     return url
+
                 logger.warning(f"Tentative supplémentaire {attempt + 1}/{MAX_RETRIES} : URL non trouvée.")
                 time.sleep(DELAY_RETRIES)
 
         # Si toutes les tentatives échouent, lever une exception critique
         raise Exception("Impossible de démarrer le tunnel après plusieurs tentatives.")
 
+    except Exception as e:
+        logger.error(f"Erreur lors du démarrage du processus Localtunnel : {e}", exc_info=True)
+        return None
 
          
 # Fonction pour lire l'URL depuis le fichier log existant
