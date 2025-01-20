@@ -301,43 +301,87 @@ def send_email(tunnel_url):
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
 def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0.5):
     """
-    Teste la connectivité HTTP du tunnel avec gestion des tentatives via urllib3 Retry.
+    Teste la connectivité HTTP du tunnel avec :
+    1. Une stratégie de retry via requests.
+    2. Un double test avec curl et wget pour valider la connectivité.
+
     :param tunnel_url: URL du tunnel à tester.
     :param retries: Nombre total de tentatives avant d'abandonner.
     :param timeout: Temps maximum (en secondes) pour chaque requête.
     :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
-    :return: True si la connexion réussit, False sinon.
+    :return: True si tous les tests réussissent, False sinon.
     """
+    
     # Validation de l'URL avec urllib.parse
     parsed_url = urlparse(tunnel_url)
     if not (parsed_url.scheme in ["http", "https"] and parsed_url.netloc):
         logger.error(f"L'URL fournie n'est pas valide : {tunnel_url}")
         return False
 
-    # Configuration de la stratégie de retry pour requests
+    logger.info(f"Test de connectivité pour l'URL : {tunnel_url}")
+
+    # 1. Test avec requests et stratégie de retry
     retry_strategy = Retry(
         total=retries,
         backoff_factor=backoff_factor,
-        status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP qui déclenchent un retry
-        allowed_methods=["GET"]  # Méthodes HTTP autorisées pour le retry
+        status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP à réessayer
+        method_whitelist=["GET"]  # Méthodes HTTP autorisées pour le retry
     )
-    
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session = requests.Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
     try:
-        # Effectuer une requête GET vers l'URL du tunnel
         response = session.get(tunnel_url, timeout=timeout)
         if response.status_code == 200:
-            logger.info(f"Connectivité réussie au tunnel ({tunnel_url}).")
-            return True
+            logger.info(f"Connectivité réussie avec requests ({tunnel_url}).")
+            requests_success = True
         else:
-            logger.warning(f"Échec de la connexion avec le code HTTP {response.status_code}.")
-            return False
+            logger.warning(f"Échec avec requests : Code HTTP {response.status_code}.")
+            requests_success = False
     except requests.RequestException as e:
-        logger.error(f"Erreur lors de la connexion au tunnel : {e}")
+        logger.error(f"Erreur lors du test avec requests : {e}")
+        requests_success = False
+
+    # 2. Test complémentaire avec curl
+    curl_command = [
+        "curl", "-A", "Wget/1.21.1", "-o", "/dev/null", "-s", "-w", "%{http_code}", tunnel_url
+    ]
+    try:
+        curl_result = subprocess.run(curl_command, capture_output=True, text=True, timeout=timeout)
+        if curl_result.stdout.strip() == "200":
+            logger.info("Connectivité réussie avec curl.")
+            curl_success = True
+        else:
+            logger.warning(f"Échec avec curl : Code HTTP {curl_result.stdout.strip()}.")
+            curl_success = False
+    except Exception as e:
+        logger.error(f"Erreur lors du test avec curl : {e}")
+        curl_success = False
+
+    # 3. Test complémentaire avec wget
+    wget_command = [
+        "wget", "--user-agent=curl/7.85.0", "--spider", tunnel_url
+    ]
+    try:
+        wget_result = subprocess.run(wget_command, capture_output=True, text=True, timeout=timeout)
+        if wget_result.returncode == 0:  # Code retour 0 indique succès pour wget
+            logger.info("Connectivité réussie avec wget.")
+            wget_success = True
+        else:
+            logger.warning(f"Échec avec wget : Code retour {wget_result.returncode}.")
+            wget_success = False
+    except Exception as e:
+        logger.error(f"Erreur lors du test avec wget : {e}")
+        wget_success = False
+
+    # Résultat final basé sur les trois tests
+    if requests_success and curl_success and wget_success:
+        logger.info("Tous les tests réussis : L'URL est accessible via requests, curl et wget.")
+        return True
+    else:
+        logger.warning("Un ou plusieurs tests ont échoué : L'URL n'est pas pleinement accessible.")
         
         return False
     

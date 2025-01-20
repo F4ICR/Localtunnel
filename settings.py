@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version du script
-version = '1.9'
+version = '2.0'
 
 import os
 
@@ -44,7 +44,7 @@ MAX_RETRIES = 15  # Nombre de tentatives pour établir le tunnel
 DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le tunnel
 
 # Paramètres pour tester la connectivité du tunnel
-TUNNEL_CHECK_INTERVAL = 3600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
+TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
 
 ''' Configuration conditionnelle des logs pour les besoins de débogage '''
 # Variables pour activer/désactiver certaines parties du format
