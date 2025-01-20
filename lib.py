@@ -205,11 +205,19 @@ def start_tunnel(port, subdomain=None):
          
 # Fonction pour lire l'URL depuis le fichier log existant
 def read_tunnel_url_from_log():
+    """
+    Lit le fichier log pour trouver une URL valide.
+    """
     try:
         if os.path.exists(TUNNEL_OUTPUT_FILE):
             with open(TUNNEL_OUTPUT_FILE, "r") as log_file:
                 lines = log_file.readlines()
                 for line in reversed(lines):
+                    # Supprimer le texte "your url is:" si présent
+                    if "your url is:" in line.lower():
+                        line = line.split("your url is:")[-1].strip()
+                    
+                    # Vérifier si la ligne contient une URL valide
                     parsed_url = urlparse(line.strip())
                     if parsed_url.scheme in ["http", "https"] and parsed_url.netloc:
                         logger.debug(f"URL trouvée dans le fichier log : {parsed_url.geturl()}")
