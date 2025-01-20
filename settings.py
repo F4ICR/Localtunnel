@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version du script
-version = '1.8'
+version = '1.9'
 
 import os
 
@@ -44,15 +44,9 @@ MAX_RETRIES = 15  # Nombre de tentatives pour établir le tunnel
 DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le tunnel
 
 # Paramètres pour tester la connectivité du tunnel
-TUNNEL_RETRIES = 10  # Nombre de tentatives pour tester la connectivité
-TUNNEL_DELAY = 5  # Délai (en secondes) entre chaque tentative
-TUNNEL_TIMEOUT = 10  # Timeout (en secondes) pour les requêtes HTTP
-HTTP_SUCCESS_CODE = 200  # Code HTTP attendu pour une réponse réussie
 TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
 
-
 ''' Configuration conditionnelle des logs pour les besoins de débogage '''
-
 # Variables pour activer/désactiver certaines parties du format
 INCLUDE_FILENAME = False  # Inclure le nom du fichier dans les logs
 INCLUDE_DEBUG_INFO = False  # Inclure les informations de debug (fonction et ligne)
