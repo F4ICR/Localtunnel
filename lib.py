@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from urllib.parse import urlparse
 
 # Modules locaux
 from settings import (
@@ -27,11 +28,7 @@ from settings import (
   EMAIL,
   EMAIL_NOTIFICATIONS,
   MAX_RETRIES, 
-  DELAY_RETRIES,
-  TUNNEL_RETRIES, 
-  TUNNEL_DELAY, 
-  TUNNEL_TIMEOUT, 
-  HTTP_SUCCESS_CODE
+  DELAY_RETRIES
 )
 
 # Importer le module de journalisation
@@ -113,9 +110,6 @@ def start_tunnel(port, subdomain=None):
     """
     Démarre un tunnel Localtunnel pour exposer un port local.
     """
-    # Import au début de la fonction
-    from metrics import save_start_time, log_tunnel_availability
-    
     # Récupérer l'URL précédente avant toute chose
     previous_url = read_tunnel_url_from_log()
 
@@ -133,11 +127,12 @@ def start_tunnel(port, subdomain=None):
 
     # Utiliser le sous-domaine de l'URL précédente si aucun n'est spécifié
     if not subdomain and previous_url:
-        try:
-            subdomain = previous_url.split("//")[1].split(".")[0]
-            logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
+    try:
+        parsed_url = urlparse(previous_url)
+        subdomain = parsed_url.hostname.split(".")[0] if parsed_url.hostname else None
+        logger.info(f"Réutilisation du sous-domaine précédent : {subdomain}")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'extraction du sous-domaine : {e}")
 
     with open(TUNNEL_OUTPUT_FILE, "w") as log_file:
         cmd = ["lt", "--port", str(port)]
@@ -202,12 +197,11 @@ def read_tunnel_url_from_log():
         if os.path.exists(TUNNEL_OUTPUT_FILE):
             with open(TUNNEL_OUTPUT_FILE, "r") as log_file:
                 lines = log_file.readlines()
-                # Parcourir les lignes en sens inverse pour trouver la dernière URL valide
                 for line in reversed(lines):
-                    match = re.search(r"https://[^\s]+", line)
-                    if match:
-                        logger.debug(f"URL trouvée dans le fichier log : {match.group(0)}")
-                        return match.group(0)
+                    parsed_url = urlparse(line.strip())
+                    if parsed_url.scheme in ["http", "https"] and parsed_url.netloc:
+                        logger.debug(f"URL trouvée dans le fichier log : {parsed_url.geturl()}")
+                        return parsed_url.geturl()
         else:
             logger.warning(f"Le fichier log {TUNNEL_OUTPUT_FILE} n'existe pas.")
     except Exception as e:
@@ -287,29 +281,34 @@ def send_email(tunnel_url):
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
 def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0.5):
     """
-    Teste la connectivité du tunnel avec gestion des tentatives via urllib3 Retry.
-    
+    Teste la connectivité HTTP du tunnel avec gestion des tentatives via urllib3 Retry.
     :param tunnel_url: URL du tunnel à tester.
     :param retries: Nombre total de tentatives avant d'abandonner.
     :param timeout: Temps maximum (en secondes) pour chaque requête.
     :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
     :return: True si la connexion réussit, False sinon.
     """
-    # Configuration de la stratégie de retry pour les anciennes versions d'urllib3
+    # Validation de l'URL avec urllib.parse
+    parsed_url = urlparse(tunnel_url)
+    if not (parsed_url.scheme in ["http", "https"] and parsed_url.netloc):
+        logger.error(f"L'URL fournie n'est pas valide : {tunnel_url}")
+        return False
+
+    # Configuration de la stratégie de retry pour requests
     retry_strategy = Retry(
         total=retries,
         backoff_factor=backoff_factor,
         status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP qui déclenchent un retry
-        method_whitelist=["GET"]  # Ancien paramètre pour versions < 1.26
+        allowed_methods=["GET"]  # Méthodes HTTP autorisées pour le retry
     )
-
-    # Création d'une session avec un adaptateur HTTP configuré pour le retry
+    
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session = requests.Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
     try:
+        # Effectuer une requête GET vers l'URL du tunnel
         response = session.get(tunnel_url, timeout=timeout)
         if response.status_code == 200:
             logger.info(f"Connectivité réussie au tunnel ({tunnel_url}).")
@@ -317,7 +316,6 @@ def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0
         else:
             logger.warning(f"Échec de la connexion avec le code HTTP {response.status_code}.")
             return False
-
     except requests.RequestException as e:
         logger.error(f"Erreur lors de la connexion au tunnel : {e}")
         
