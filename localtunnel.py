@@ -55,7 +55,7 @@ from tunnel_duration_logger import TunnelDurationLogger
 duration_logger = TunnelDurationLogger()
 
 # Liste globale pour suivre les tunnels actifs (éviter les doublons)
-active_tunnels = []
+active_tunnels = []  # Contient les URLs des tunnels actuellement actifs
 
 # Verrou pour synchroniser les accès à `active_tunnels`
 lock = threading.Lock()
@@ -70,10 +70,12 @@ def monitor_lt_process():
     while True:
         try:
             with lock:
+                # Vérifier si le processus Localtunnel est actif sur le port spécifié
                 if not check_lt_process(PORT):
                     logger.warning("Le processus Localtunnel n'est pas actif. Tentative de redémarrage.")
                     stop_existing_tunnel(PORT)  # Arrêter tout tunnel existant
                     
+                    # Démarrer un nouveau tunnel et mettre à jour la liste des tunnels actifs
                     new_url = start_tunnel(PORT, SUBDOMAIN)
                     if new_url and new_url not in active_tunnels:
                         active_tunnels.append(new_url)
