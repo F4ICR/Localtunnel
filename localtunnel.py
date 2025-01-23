@@ -61,7 +61,7 @@ active_tunnels = []
 lock = threading.Lock()
 
 
-# Nouvelle fonction : Surveillance périodique du processus Localtunnel
+# Surveillance périodique du processus Localtunnel
 def monitor_lt_process():
     """
     Vérifie périodiquement si le processus Localtunnel est actif.
@@ -85,7 +85,7 @@ def monitor_lt_process():
         time.sleep(LT_PROCESS_CHECK_INTERVAL)
 
 
-# Fonction existante : Gérer le cycle de vie du tunnel (connectivité)
+# Gére le cycle de vie du tunnel (connectivité)
 def manage_tunnel():
     """
     Gère le cycle de vie du tunnel Localtunnel.
@@ -151,7 +151,7 @@ def manage_tunnel():
         duration_logger.end_tunnel()  # Assurez-vous que la durée est enregistrée même en cas d'erreur.
 
 
-# Fonction principale : Boucle principale pour gérer les tunnels et surveiller les processus
+# Boucle principale pour gérer les tunnels et surveiller les processus
 def main():
     """
     Point d'entrée principal de l'application avec gestion globale des exceptions.
