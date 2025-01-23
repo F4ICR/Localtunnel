@@ -45,7 +45,7 @@ DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le
 
 # Paramètres pour tester la connectivité du tunnel
 LT_PROCESS_CHECK_INTERVAL = 60  # Intervalle de vérification du processus Localtunnel (en secondes)
-TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier 'localtunnel.py'
+TUNNEL_CHECK_INTERVAL = 600  # Temps d'attente dans la boucle en mode daemon du fichier (en secondes)
 
 ''' Configuration conditionnelle des logs pour les besoins de débogage '''
 # Variables pour activer/désactiver certaines parties du format
