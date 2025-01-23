@@ -8,6 +8,7 @@ import time
 import subprocess
 import logging
 from datetime import datetime
+import shutil
 
 # Bibliothèques tierces
 from metrics import save_start_time, log_tunnel_availability
@@ -298,8 +299,40 @@ def send_email(tunnel_url):
         logger.error(f"Erreur lors de l'envoi de l'email : {e}")
 
 
+def check_lt_process(port):
+    """
+    Vérifie si un processus 'lt --port <port>' est actif.
+    Logge uniquement si le processus est inactif.
+    Retourne True si le processus est trouvé, False sinon.
+    """
+    # Vérifier si 'pgrep' est disponible sur le système
+    if not shutil.which('pgrep'):
+        logger.error("'pgrep' n'est pas disponible sur ce système.")
+        return False
+
+    try:
+        # Exécuter la commande 'pgrep' pour vérifier le processus
+        result = subprocess.run(
+            ['pgrep', '-f', f'lt --port {port}'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        if result.returncode == 0:
+            # Le processus est actif, ne pas logguer ici pour éviter la redondance
+            return True
+        else:
+            # Le processus est inactif, logguer un message d'avertissement
+            logger.warning(f"Le processus 'lt --port {port}' n'est pas actif.")
+            return False
+    except Exception as e:
+        # Logger l'erreur au lieu de la retourner
+        logger.error(f"Erreur lors de la vérification du processus Localtunnel : {e}")
+        return False
+
+        
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
-def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=0.5):
+def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1):
     """
     Teste la connectivité HTTP du tunnel avec :
     1. Une stratégie de retry via requests.
