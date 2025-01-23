@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 # F4ICR & OpenIA GPT-4
 
 # Bibliothèques standard
@@ -25,15 +24,19 @@ from settings import (
 # Importer les fonctions utilitaires depuis lib.py
 from lib import (
     start_tunnel,
+    is_tunnel_active,
     stop_existing_tunnel,
-    check_lt_process,  # Vérifie si le processus Localtunnel est actif
+    send_email,
     read_tunnel_url_from_log,
     test_tunnel_connectivity,
-    send_email  # Notification par email en cas de changement d'URL
+    check_lt_process  # Vérifie si le processus Localtunnel est actif
 )
 
 # Importer le logger depuis logging_config.py
 from logging_config import logger
+
+# Import autres depuis dependency_check
+from dependency_check import verify_all_dependencies
 
 # Import des métriques depuis metrics.py
 from metrics import (
@@ -52,7 +55,7 @@ from tunnel_duration_logger import TunnelDurationLogger
 duration_logger = TunnelDurationLogger()
 
 # Liste globale pour suivre les tunnels actifs (éviter les doublons)
-active_tunnels = []  # Contient les URLs des tunnels actuellement actifs
+active_tunnels = []
 
 # Verrou pour synchroniser les accès à `active_tunnels`
 lock = threading.Lock()
@@ -67,12 +70,10 @@ def monitor_lt_process():
     while True:
         try:
             with lock:
-                # Vérifier si le processus Localtunnel est actif sur le port spécifié
                 if not check_lt_process(PORT):
                     logger.warning("Le processus Localtunnel n'est pas actif. Tentative de redémarrage.")
                     stop_existing_tunnel(PORT)  # Arrêter tout tunnel existant
                     
-                    # Démarrer un nouveau tunnel et mettre à jour la liste des tunnels actifs
                     new_url = start_tunnel(PORT, SUBDOMAIN)
                     if new_url and new_url not in active_tunnels:
                         active_tunnels.append(new_url)
@@ -93,30 +94,36 @@ def manage_tunnel():
     try:
         with lock:
             subdomain = SUBDOMAIN
-            expected_url = f"https://{subdomain}.loca.lt"
 
-            # Vérifiez si le tunnel attendu est déjà actif (évite les doublons)
-            if expected_url in active_tunnels:
-                logger.info(f"Le tunnel {expected_url} est déjà actif.")
+            # Vérifiez si un tunnel est déjà actif sur le port spécifié
+            if is_tunnel_active(PORT):
+                logger.info("Le tunnel est déjà actif.")
+                current_url = read_tunnel_url_from_log()
+
+                # Tester la connectivité du tunnel actuel
+                if current_url and test_tunnel_connectivity(current_url):
+                    logger.info(f"Le tunnel fonctionne correctement : {current_url}")
+                    log_tunnel_availability(current_url)
+                    log_custom_metric("Tunnel actif", 1)
+                    return
+                else:
+                    log_tunnel_downtime()
+
+            # Si aucun tunnel n'est actif, vérifier les dépendances
+            logger.info("Aucun tunnel actif détecté. Vérification des dépendances en cours.")
+            if not verify_all_dependencies():
+                logger.error("Certaines dépendances sont manquantes ou incorrectes.")
                 return
 
-            # Lire l'URL actuelle du tunnel depuis le fichier log
-            current_url = read_tunnel_url_from_log()
+            # Arrêter le tunnel existant si nécessaire
+            stop_existing_tunnel(PORT)
 
-            # Tester la connectivité du tunnel actuel
-            if current_url and test_tunnel_connectivity(current_url):
-                logger.info(f"Le tunnel fonctionne correctement : {current_url}")
-                log_tunnel_availability(current_url)
-                log_custom_metric("Tunnel actif", 1)
-                return
+            # Récupérer l'URL précédente
+            previous_url = read_tunnel_url_from_log()
 
-            # Si aucun tunnel fonctionnel n'est détecté, démarrer un nouveau tunnel
-            logger.info("Aucun tunnel fonctionnel détecté. Démarrage d'un nouveau tunnel.")
-            previous_url = current_url  # Sauvegarder l'URL précédente pour comparaison
-
-            stop_existing_tunnel(PORT)  # Arrêter tout tunnel existant (au cas où)
+            # Démarrer un nouveau tunnel et enregistrer son début avec son URL
             start_time = datetime.now()
-            new_url = start_tunnel(PORT, SUBDOMAIN)
+            new_url = start_tunnel(PORT, subdomain)
 
             if new_url:
                 duration_logger.end_tunnel()  # Terminer le cycle précédent (s'il existe)
@@ -159,10 +166,16 @@ def main():
 
         # Boucle principale pour gérer la connectivité du tunnel
         while True:
+            cycle_start_time = time.time()  # Début du cycle
+            
             manage_tunnel()  # Appeler la fonction de gestion des tunnels
             
-            # Pause avant la prochaine vérification de connectivité (intervalle configurable)
-            time.sleep(TUNNEL_CHECK_INTERVAL)
+            cycle_duration = time.time() - cycle_start_time
+            sleep_time = max(0, TUNNEL_CHECK_INTERVAL - cycle_duration)
+            
+            logger.debug(f"Durée du cycle : {cycle_duration:.2f} secondes. Pause avant le prochain cycle : {sleep_time:.2f} secondes.")
+            
+            time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         logger.warning("Interruption par l'utilisateur (Ctrl+C). Arrêt du programme.")
