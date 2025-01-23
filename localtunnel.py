@@ -17,8 +17,8 @@ from settings import (
     SMTP_USER,
     SMTP_PASSWORD,
     SUBDOMAIN,
-    TUNNEL_CHECK_INTERVAL,  # Intervalle pour vérifier la connectivité
-    LT_PROCESS_CHECK_INTERVAL  # Intervalle pour surveiller le processus Localtunnel
+    TUNNEL_CHECK_INTERVAL,
+    LT_PROCESS_CHECK_INTERVAL
 )
 
 # Importer les fonctions utilitaires depuis lib.py
@@ -55,7 +55,7 @@ from tunnel_duration_logger import TunnelDurationLogger
 duration_logger = TunnelDurationLogger()
 
 # Liste globale pour suivre les tunnels actifs (éviter les doublons)
-active_tunnels = []
+active_tunnels = []  # Contient les URLs des tunnels actuellement actifs
 
 # Verrou pour synchroniser les accès à `active_tunnels`
 lock = threading.Lock()
@@ -70,10 +70,12 @@ def monitor_lt_process():
     while True:
         try:
             with lock:
+                # Vérifier si le processus Localtunnel est actif sur le port spécifié
                 if not check_lt_process(PORT):
                     logger.warning("Le processus Localtunnel n'est pas actif. Tentative de redémarrage.")
                     stop_existing_tunnel(PORT)  # Arrêter tout tunnel existant
                     
+                    # Démarrer un nouveau tunnel et mettre à jour la liste des tunnels actifs
                     new_url = start_tunnel(PORT, SUBDOMAIN)
                     if new_url and new_url not in active_tunnels:
                         active_tunnels.append(new_url)
@@ -85,7 +87,7 @@ def monitor_lt_process():
         time.sleep(LT_PROCESS_CHECK_INTERVAL)
 
 
-# Gére le cycle de vie du tunnel (connectivité)
+# Gérer le cycle de vie du tunnel (connectivité)
 def manage_tunnel():
     """
     Gère le cycle de vie du tunnel Localtunnel.
@@ -107,6 +109,7 @@ def manage_tunnel():
                     log_custom_metric("Tunnel actif", 1)
                     return
                 else:
+                    logger.warning("Le tunnel actif semble ne pas être fonctionnel.")
                     log_tunnel_downtime()
 
             # Si aucun tunnel n'est actif, vérifier les dépendances
@@ -118,7 +121,10 @@ def manage_tunnel():
             # Arrêter le tunnel existant si nécessaire
             stop_existing_tunnel(PORT)
 
-            # Récupérer l'URL précédente
+            # Terminer l'enregistrement de l'ancien cycle de durée (s'il existe)
+            duration_logger.end_tunnel()
+
+            # Récupérer l'URL précédente pour comparaison
             previous_url = read_tunnel_url_from_log()
 
             # Démarrer un nouveau tunnel et enregistrer son début avec son URL
@@ -126,10 +132,10 @@ def manage_tunnel():
             new_url = start_tunnel(PORT, subdomain)
 
             if new_url:
-                duration_logger.end_tunnel()  # Terminer le cycle précédent (s'il existe)
-                duration_logger.start_tunnel(new_url)  # Démarrer un nouveau cycle avec l'URL actuelle
-                end_time = datetime.now()
+                # Enregistrer le début du nouveau cycle de durée
+                duration_logger.start_tunnel(new_url)
 
+                end_time = datetime.now()
                 logger.info(f"Nouveau tunnel créé. URL : {new_url}")
                 log_tunnel_startup_time(start_time, end_time)
 
@@ -143,12 +149,14 @@ def manage_tunnel():
                     log_file.write(new_url + "\n")
 
                 active_tunnels.append(new_url)  # Ajouter à la liste des tunnels actifs
-
                 log_custom_metric("Nouveau tunnel créé", 1)
+            else:
+                logger.error("Échec de la création d'un nouveau tunnel.")
 
     except Exception as e:
-        logger.error(f"Erreur dans la gestion du tunnel : {e}")
-        duration_logger.end_tunnel()  # Assurez-vous que la durée est enregistrée même en cas d'erreur.
+        logger.error(f"Erreur dans la gestion du tunnel : {e}", exc_info=True)
+        # Assurez-vous que la durée du dernier tunnel est enregistrée même en cas d'erreur
+        duration_logger.end_tunnel()
 
 
 # Boucle principale pour gérer les tunnels et surveiller les processus
