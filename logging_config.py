@@ -3,7 +3,6 @@
 
 import logging
 from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
-import os
 import socket
 from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
