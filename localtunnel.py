@@ -43,7 +43,6 @@ from metrics import (
     log_tunnel_availability,
     log_custom_metric,
     log_tunnel_startup_time,
-    log_connectivity_failure,
     log_url_change,
     log_tunnel_downtime
 )

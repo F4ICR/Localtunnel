@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
-import os
 from datetime import datetime, timedelta
 from logging_config import logger
 from settings import TUNNEL_DURATIONS_FILE
