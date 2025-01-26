@@ -5,6 +5,7 @@
 import os
 import re
 import time
+import random
 import subprocess
 import logging
 from datetime import datetime
@@ -29,7 +30,8 @@ from settings import (
   EMAIL,
   EMAIL_NOTIFICATIONS,
   MAX_RETRIES, 
-  DELAY_RETRIES
+  DELAY_RETRIES,
+  RETRY_WAIT_TIME
 )
 
 # Importer le module de journalisation
@@ -109,7 +111,7 @@ def is_process_running(pid):
 # Fonction pour démarrer le tunnel Localtunnel
 def start_tunnel(port, subdomain=None):
     """
-    Démarre un tunnel Localtunnel pour exposer un port local.
+    Démarre un tunnel Localtunnel pour exposer un port local avec un mécanisme d'attente exponentielle et jitter.
     """
     # Récupérer l'URL précédente depuis le fichier log
     previous_url = read_tunnel_url_from_log()
@@ -162,7 +164,7 @@ def start_tunnel(port, subdomain=None):
         write_to_file(pid_file, str(process.pid))
         logger.info(f"Processus Localtunnel démarré avec succès (PID: {process.pid}). Commande : {' '.join(cmd)}")
 
-        # Attendre et vérifier l'URL générée par Localtunnel
+        # Attendre et vérifier l'URL générée par Localtunnel avec backoff exponentiel et jitter
         for attempt in range(MAX_RETRIES):
             url = read_tunnel_url_from_log()
             if url:
@@ -170,8 +172,13 @@ def start_tunnel(port, subdomain=None):
                 log_tunnel_availability(url)
                 return url
 
-            logger.warning(f"Tentative {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {DELAY_RETRIES} seconde(s).")
-            time.sleep(DELAY_RETRIES)
+            # Calculer le délai avec backoff exponentiel et jitter
+            base_delay = DELAY_RETRIES * (1 ** attempt)  # Backoff exponentiel
+            jitter = random.uniform(0, base_delay)      # Ajouter une part aléatoire (jitter)
+            delay = min(base_delay + jitter, RETRY_WAIT_TIME)  # Limiter à RETRY_WAIT_TIME
+
+            logger.warning(f"Tentative {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {delay:.2f} seconde(s).")
+            time.sleep(delay)
 
         # Gestion des erreurs spécifiques aux serveurs Localtunnel
         error_message = (
@@ -181,10 +188,9 @@ def start_tunnel(port, subdomain=None):
         logger.error(error_message)
 
         # Ajouter une boucle de 5 cycles pour réessayer avec une attente prolongée
-        retry_wait_time = 60  # Temps d'attente avant chaque nouvelle tentative (en secondes)
         for retry_cycle in range(5):
-            logger.info(f"Cycle de réessai {retry_cycle + 1}/5 : Attente de {retry_wait_time} secondes avant une nouvelle tentative...")
-            time.sleep(retry_wait_time)
+            logger.info(f"Cycle de réessai {retry_cycle + 1}/5 : Attente de {RETRY_WAIT_TIME} secondes avant une nouvelle tentative...")
+            time.sleep(RETRY_WAIT_TIME)
 
             for attempt in range(MAX_RETRIES):
                 url = read_tunnel_url_from_log()
@@ -193,8 +199,13 @@ def start_tunnel(port, subdomain=None):
                     log_tunnel_availability(url)
                     return url
 
-                logger.warning(f"Tentative supplémentaire {attempt + 1}/{MAX_RETRIES} : URL non trouvée.")
-                time.sleep(DELAY_RETRIES)
+                # Calculer le délai avec backoff exponentiel et jitter pour les cycles supplémentaires
+                base_delay = DELAY_RETRIES * (1.1 ** attempt)
+                jitter = random.uniform(0, base_delay)
+                delay = min(base_delay + jitter, RETRY_WAIT_TIME)
+
+                logger.warning(f"Tentative supplémentaire {attempt + 1}/{MAX_RETRIES} : URL non trouvée. Nouvelle tentative dans {delay:.2f} seconde(s).")
+                time.sleep(delay)
 
         # Si toutes les tentatives échouent, lever une exception critique
         raise Exception("Impossible de démarrer le tunnel après plusieurs tentatives.")
