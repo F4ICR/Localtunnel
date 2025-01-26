@@ -27,7 +27,7 @@ try:
         backupCount=LOG_BACKUP_COUNT,
         encoding='utf-8'
     )
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG)
 except Exception as e:
     print(f"Erreur lors de la configuration du gestionnaire de fichier : {e}")
     file_handler = None

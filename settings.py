@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version du script
-version = '2.1'
+version = '2.2'
 
 import os
 
@@ -40,8 +40,9 @@ LOG_BACKUP_COUNT = 6  # Nombre de sauvegardes de logs à conserver
 LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
 
 # Paramètres pour démarrer le tunnel
-MAX_RETRIES = 15  # Nombre de tentatives pour établir le tunnel
+MAX_RETRIES = 10  # Nombre de tentatives pour établir le tunnel
 DELAY_RETRIES = 5 # Delai (en secondes) entre chaque tentative pour démarrer le tunnel
+RETRY_WAIT_TIME = 30  # Temps d'attente (en seconde) après DELAY_RETRIES pour nouvelle tentative
 
 # Paramètres pour tester la connectivité du tunnel
 LT_PROCESS_CHECK_INTERVAL = 60  # Intervalle de vérification du processus Localtunnel (en secondes)
