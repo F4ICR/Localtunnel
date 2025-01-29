@@ -341,16 +341,6 @@ def check_lt_process(port):
         logger.error(f"Erreur lors de la vérification du processus Localtunnel : {e}")
         return False
 
-        
-# Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
-import subprocess
-import logging
-from urllib.parse import urlparse
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-import requests
-
-logger = logging.getLogger(__name__)
 
 def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1):
     """
