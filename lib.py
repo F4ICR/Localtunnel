@@ -343,6 +343,15 @@ def check_lt_process(port):
 
         
 # Fonction pour tester la connectivité HTTP au tunnel en effectuant plusieurs tentatives
+import subprocess
+import logging
+from urllib.parse import urlparse
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+import requests
+
+logger = logging.getLogger(__name__)
+
 def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1):
     """
     Teste la connectivité HTTP du tunnel avec :
@@ -388,9 +397,10 @@ def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1
         logger.error(f"Erreur lors du test avec requests : {e}")
         requests_success = False
 
-    # 2. Test complémentaire avec curl
+    # 2. Test complémentaire avec curl et stratégie de retry
     curl_command = [
-        "curl", "-A", "Wget/1.21.1", "-o", "/dev/null", "-s", "-w", "%{http_code}", tunnel_url
+        "curl", "-A", "Wget/1.21.1", "-o", "/dev/null", "-s", "-w", "%{http_code}",
+        "--retry", str(retries), "--retry-max-time", str(timeout), tunnel_url
     ]
     try:
         curl_result = subprocess.run(curl_command, capture_output=True, text=True, timeout=timeout)
@@ -404,9 +414,10 @@ def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1
         logger.error(f"Erreur lors du test avec curl : {e}")
         curl_success = False
 
-    # 3. Test complémentaire avec wget
+    # 3. Test complémentaire avec wget et stratégie de retry
     wget_command = [
-        "wget", "--user-agent=curl/7.85.0", "--spider", tunnel_url
+        "wget", "--user-agent=curl/7.85.0", "--spider",
+        "--tries", str(retries), "--timeout", str(timeout), tunnel_url
     ]
     try:
         wget_result = subprocess.run(wget_command, capture_output=True, text=True, timeout=timeout)
