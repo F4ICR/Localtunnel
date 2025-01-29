@@ -100,12 +100,6 @@ def log_tunnel_downtime():
 
 ''' Fonctions Auxiliaires '''
 
-def log_connectivity_failure(attempt: int, max_attempts: int):
-    """
-    Enregistre un échec lors du test de connectivité.
-    """
-    logger.warning(f"Échec de connectivité ({attempt}/{max_attempts}).")
-
 def log_custom_metric(metric_name: str, value: any):
     """
     Enregistre une métrique personnalisée avec un nom et une valeur.
