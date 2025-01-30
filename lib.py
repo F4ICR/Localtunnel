@@ -342,7 +342,7 @@ def check_lt_process(port):
         return False
 
 
-def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1):
+def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1.5):
     """
     Teste la connectivité HTTP du tunnel avec :
     1. Une stratégie de retry via requests.
@@ -389,7 +389,7 @@ def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1
 
     # 2. Test complémentaire avec curl et stratégie de retry
     curl_command = [
-        "curl", "-A", "Wget/1.21.1", "-o", "/dev/null", "-s", "-w", "%{http_code}",
+        "curl", "-o", "/dev/null", "-s", "-w", "%{http_code}",
         "--retry", str(retries), "--retry-max-time", str(timeout), tunnel_url
     ]
     try:
@@ -406,7 +406,7 @@ def test_tunnel_connectivity(tunnel_url, retries=5, timeout=10, backoff_factor=1
 
     # 3. Test complémentaire avec wget et stratégie de retry
     wget_command = [
-        "wget", "--user-agent=curl/7.85.0", "--spider",
+        "wget", "--spider",
         "--tries", str(retries), "--timeout", str(timeout), tunnel_url
     ]
     try:
