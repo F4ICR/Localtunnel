@@ -11,7 +11,7 @@
     .fas { margin-right: 8px; }
     .status-icon { font-size: 0.9em; }
   </style>
-<script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
+<script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
 <body class="bg-light text-dark">
 
 <div class="container my-4">
@@ -25,7 +25,7 @@
     <div class="card-body">
       <p>
         <i class="fas fa-power-off status-icon"></i>
-        Statut : 
+        Statut :
         {% if tunnel_active %}
           <i class="fas fa-circle-notch fa-spin text-success"></i> Actif
         {% else %}
@@ -34,7 +34,7 @@
       </p>
       <p>
         <i class="fas fa-link status-icon"></i>
-        URL : 
+        URL :
         {% if tunnel_active %}
           <a href="{{ tunnel_url.split('your url is:')[-1].strip() }}" target="_blank">
             <i class="fas fa-external-link-alt"></i> {{ tunnel_url.split('your url is:')[-1].strip() }}
@@ -43,8 +43,17 @@
           Aucun
         {% endif %}
       </p>
+      <p>
+        <i class="fas fa-clock status-icon"></i>
+        Temps de connexion :
+        {% if tunnel_active %}
+          {{ uptime }}
+        {% else %}
+          Aucun
+        {% endif %}
+      </p>
     </div>
-  </div>
+</div>
 
   <!-- Section : Tests de Connectivité -->
   <div class="card mb-4">
