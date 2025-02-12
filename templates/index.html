@@ -11,7 +11,7 @@
     .fas { margin-right: 8px; }
     .status-icon { font-size: 0.9em; }
   </style>
-<script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
+<script type="text/javascript" src="https://s4-node419013.dwservice.net/S37IKIn4g3I5uuIQkq6M8hnz0cNvJg3yJKL6i3vM3i2vBcSas8-UDiWk3NAeKxkgtiVLZ7dnOEPtLm0aJSi9mQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/ECSQl0HBlO2GueZf0VFzdyk7BJ-azNSgRg6m5AKusOl4iveLsnP5mgSAHBub9Wzt_VKOFY9U_0wRYUb63yrPDQ=="></script><script type="text/javascript" src="https://s7-node419013.dwservice.net/h_D3VOuJzW-R6tFKb16AOL06Zp2ab8t_Inbc922QEj6-iv3GxsAZ7koFfWZnOSNX0Yr6dDJmYkY4wyGe3ylWDw=="></script><script type="text/javascript" src="https://s8-node419013.dwservice.net/bH8ELROf_mlE1ZY_yFG5TkRElW_4BK2GJvQLdeEqfmd4m960OyGAfS_52quqUNW3_dlMD6dpbKmer9hUt9tHlA=="></script><script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
 <body class="bg-light text-dark">
 
 <div class="container my-4">
@@ -91,30 +91,108 @@
     </div>
   </div>
 
-  <!-- Section : Informations Système -->
+  <!-- Section : Historique des Tunnels -->
   <div class="card mb-4">
-    <div class="card-header bg-info text-white">
-      <h3><i class="fas fa-tachometer-alt"></i> Informations Système</h3>
+    <div class="card-header bg-success text-white">
+      <h3><i class="fas fa-history"></i> Historique des Tunnels</h3>
     </div>
     <div class="card-body">
-      <p><i class="fas fa-thermometer-half"></i> Température CPU : {{ cpu_temperature }}</p>
-      <p><i class="fas fa-memory"></i> Mémoire disponible : {{ memory_info }}</p>
+      <div class="mb-3 row">
+        <!-- Filtre jours existant -->
+        <div class="col-md-6">
+          <label for="days" class="form-label">
+            <i class="fas fa-calendar-day"></i> Jours à afficher :
+          </label>
+          <input type="number" id="days" class="form-control" value="7" min="1" max="30">
+        </div>
+        <!-- Nouveau filtre décimal -->
+        <div class="col-md-6">
+          <label for="hoursFilter" class="form-label">
+            <i class="fas fa-filter"></i> Durée minimum :
+          </label>
+          <input type="number" id="hoursFilter" class="form-control" min="0" step="0.5" value="0.5">
+        </div>
+      </div>
+      <button class="btn btn-primary w-100" onclick="updateChart()">
+        <i class="fas fa-sync-alt"></i> Actualiser
+      </button>
+      <div class="chart-container mt-3">
+        <canvas id="tunnelChart" width="400" height="200"></canvas>
+      </div>
     </div>
   </div>
-
-  <!-- Section : Historique des Tunnels Précédents -->
-  <div class="card mb-4">
-    <div class="card-header bg-warning text-dark">
-      <h3><i class="fas fa-history"></i> Historique des Tunnels Précédents</h3>
-    </div>
-    <div class="card-body">
-      {% for duration in previous_tunnels %}
-        <p><i class="fas fa-clock"></i> {{ duration }}</p>
-      {% endfor %}
-    </div>
-  </div>
-
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chart; // Référence au graphique
+
+function decimalToTime(decimal) {
+  const hours = Math.floor(decimal);
+  const minutes = Math.round((decimal % 1) * 60);
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+async function updateChart() {
+  const days = document.getElementById('days').value;
+  const minHours = document.getElementById('hoursFilter').value;
+  
+  try {
+    const response = await fetch(`/tunnel_data/${days}?min_hours=${minHours}`);
+    const data = await response.json();
+    
+    const filteredData = data.filter(entry => entry.duration >= parseFloat(minHours));
+    const labels = filteredData.map(entry => entry.date);
+    const durations = filteredData.map(entry => entry.duration);
+
+    const config = {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Durée des Tunnels',
+          data: durations,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => decimalToTime(value)
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: context => `Durée : ${decimalToTime(context.raw)}`
+            }
+          }
+        }
+      }
+    };
+
+    if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = durations;
+      chart.update();
+    } else {
+      chart = new Chart(document.getElementById('tunnelChart').getContext('2d'), config);
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    alert('Erreur lors du chargement des données');
+  }
+}
+
+// Initialisation
+updateChart();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 

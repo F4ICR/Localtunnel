@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.2.5"
+APP_VERSION = "1.2.8"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -91,15 +91,56 @@ def schedule_test():
 
 
 def get_previous_tunnels():
-    """Récupère les durées des tunnels précédents."""
+    """Récupère toutes les entrées du fichier des durées des tunnels."""
     try:
         with open(TUNNEL_DURATIONS_FILE, "r") as f:
-            return f.readlines()[-5:]  # Retourne les 5 dernières entrées
+            return [line.strip() for line in f.readlines() if line.strip()]  # Supprimer les lignes vides
     except FileNotFoundError:
-        return ["Aucune donnée disponible."]
+        return []
     except Exception as e:
         app.logger.error(f"Erreur lors de la lecture des durées des tunnels : {e}")
-        return ["Erreur lors de la récupération des données."]
+        return []
+
+
+@app.route('/tunnel_data/<int:days>', methods=['GET'])
+def get_tunnel_data(days):
+    """Retourne les données historiques des tunnels pour les X derniers jours."""
+    try:
+        # Calculer la date limite
+        cutoff_date = datetime.now() - timedelta(days=days)
+        
+        # Lire les données du fichier
+        previous_tunnels = get_previous_tunnels()
+
+        data = []
+        for entry in previous_tunnels:
+            try:
+                # Extraire la date et la durée
+                if "Date" in entry and "Durée" in entry:
+                    date_part = entry.split("|")[0].split(":")[1].strip()
+                    duration_part = entry.split("|")[-1].split(":")[1].strip()
+
+                    # Convertir la date en objet datetime
+                    tunnel_date = datetime.strptime(date_part, "%Y-%m-%d")
+                    
+                    # Filtrer par date limite
+                    if tunnel_date >= cutoff_date:
+                        # Convertir la durée en heures
+                        hours, minutes, seconds = map(
+                            int,
+                            duration_part.replace("h", "").replace("m", "").replace("s", "").split()
+                        )
+                        total_hours = round(hours + minutes / 60 + seconds / 3600, 2)
+                        
+                        # Ajouter au tableau final
+                        data.append({"date": date_part, "duration": total_hours})
+            except Exception as e:
+                app.logger.warning(f"Erreur lors du traitement d'une entrée : {entry} - {e}")
+        
+        return jsonify(data)
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la récupération des données : {e}")
+        return jsonify({"error": "Impossible de récupérer les données"}), 500
 
 
 def get_tunnel_start_time():
@@ -232,4 +273,5 @@ if __name__ == '__main__':
     update_dynamic_metrics()
 
     # Lancement de l'application Flask
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    
