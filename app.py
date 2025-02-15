@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.2.9"
+APP_VERSION = "1.3.0"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 import psutil
+import time
+import subprocess
 from apscheduler.schedulers.background import BackgroundScheduler
 from threading import Lock
 from lib import (
@@ -43,6 +45,24 @@ scheduler.start()
 request_count = 0
 duration_logger = TunnelDurationLogger()
 
+
+def get_server_uptime():
+    """Récupère l'uptime système via la commande 'uptime'"""
+    try:
+        result = subprocess.run(
+            ['uptime', '-p'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip().replace('up', '').capitalize()
+    except subprocess.CalledProcessError as e:
+        app.logger.error(f"Erreur commande uptime : {e.stderr.decode()}")
+        return "N/A"
+    except Exception as e:
+        app.logger.error(f"Erreur inattendue : {str(e)}")
+        return "N/A"
+    
 
 ### Fonctions dynamiques ###
 def update_dynamic_metrics():
@@ -198,6 +218,7 @@ def index():
 
     return render_template(
         'index.html',
+        server_uptime=get_server_uptime(),
         app_version=APP_VERSION,
         developer_name=DEVELOPER_NAME,
         tunnel_active=tunnel_active,
@@ -275,4 +296,3 @@ if __name__ == '__main__':
 
     # Lancement de l'application Flask
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
-    

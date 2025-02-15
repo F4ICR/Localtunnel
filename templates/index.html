@@ -194,18 +194,18 @@
         </div>
       </div>
 
-      <!-- Uptime -->
-      <div class="col-md-4">
-        <div class="h-100 p-3 bg-light rounded-3 border border-warning">
-          <div class="d-flex flex-column align-items-center">
-            <i class="fas fa-hourglass-half fa-lg text-warning mb-2"></i>
-            <h5 class="mb-2 small fw-bold">Uptime Serveur</h5>
-            <div class="small">
-              {{ datetime.now() - start_time|format_duration if start_time else 'N/A' }}
-            </div>
-          </div>
-        </div>
+      <!-- Section Uptime -->
+<div class="col-md-4">
+  <div class="h-100 p-3 bg-light rounded-3 border border-warning">
+    <div class="d-flex flex-column align-items-center">
+      <i class="fas fa-server fa-lg text-warning mb-2"></i>
+      <h5 class="mb-2 small fw-bold">Uptime F1ZUJ</h5>
+      <div class="small">
+        {{ server_uptime if server_uptime else 'N/A' }}
       </div>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
