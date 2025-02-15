@@ -11,7 +11,7 @@
     .fas { margin-right: 8px; }
     .status-icon { font-size: 0.9em; }
   </style>
-<script type="text/javascript" src="https://s4-node419013.dwservice.net/S37IKIn4g3I5uuIQkq6M8hnz0cNvJg3yJKL6i3vM3i2vBcSas8-UDiWk3NAeKxkgtiVLZ7dnOEPtLm0aJSi9mQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/ECSQl0HBlO2GueZf0VFzdyk7BJ-azNSgRg6m5AKusOl4iveLsnP5mgSAHBub9Wzt_VKOFY9U_0wRYUb63yrPDQ=="></script><script type="text/javascript" src="https://s7-node419013.dwservice.net/h_D3VOuJzW-R6tFKb16AOL06Zp2ab8t_Inbc922QEj6-iv3GxsAZ7koFfWZnOSNX0Yr6dDJmYkY4wyGe3ylWDw=="></script><script type="text/javascript" src="https://s8-node419013.dwservice.net/bH8ELROf_mlE1ZY_yFG5TkRElW_4BK2GJvQLdeEqfmd4m960OyGAfS_52quqUNW3_dlMD6dpbKmer9hUt9tHlA=="></script><script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
+<script type="text/javascript" src="https://s8-node419013.dwservice.net/xVkC6mj96zOrsp33pJb-yu2UdRBCamfMqNpQ72o9K2BuPq2qAPrR9etQrcQkuhU3OY_Yr_Syiu9MIl-qAelXfQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/S37IKIn4g3I5uuIQkq6M8hnz0cNvJg3yJKL6i3vM3i2vBcSas8-UDiWk3NAeKxkgtiVLZ7dnOEPtLm0aJSi9mQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/ECSQl0HBlO2GueZf0VFzdyk7BJ-azNSgRg6m5AKusOl4iveLsnP5mgSAHBub9Wzt_VKOFY9U_0wRYUb63yrPDQ=="></script><script type="text/javascript" src="https://s7-node419013.dwservice.net/h_D3VOuJzW-R6tFKb16AOL06Zp2ab8t_Inbc922QEj6-iv3GxsAZ7koFfWZnOSNX0Yr6dDJmYkY4wyGe3ylWDw=="></script><script type="text/javascript" src="https://s8-node419013.dwservice.net/bH8ELROf_mlE1ZY_yFG5TkRElW_4BK2GJvQLdeEqfmd4m960OyGAfS_52quqUNW3_dlMD6dpbKmer9hUt9tHlA=="></script><script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
 <body class="bg-light text-dark">
 
 <div class="container my-4">
@@ -56,40 +56,159 @@
 </div>
 
   <!-- Section : Tests de Connectivité -->
-  <div class="card mb-4">
-    <div class="card-header bg-secondary text-white">
-      <h3><i class="fas fa-wifi"></i> Tests de Connectivité</h3>
-    </div>
-    <div class="card-body">
-      <p>
-        <i class="fas fa-exchange-alt"></i>
-        Requests :
-        {% if last_test.results.requests %}
-          <i class="fas fa-check-circle text-success"></i> Succès
-        {% else %}
-          <i class="fas fa-times-circle text-danger"></i> Échec
-        {% endif %}
-      </p>
-      <p>
-        <i class="fas fa-terminal"></i>
-        cURL :
-        {% if last_test.results.curl %}
-          <i class="fas fa-check-circle text-success"></i> Succès
-        {% else %}
-          <i class="fas fa-times-circle text-danger"></i> Échec
-        {% endif %}
-      </p>
-      <p>
-        <i class="fas fa-download"></i>
-        Wget :
-        {% if last_test.results.wget %}
-          <i class="fas fa-check-circle text-success"></i> Succès
-        {% else %}
-          <i class="fas fa-times-circle text-danger"></i> Échec
-        {% endif %}
-      </p>
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+  <h3 class="mb-0 flex-grow-1">
+    <i class="fas fa-wifi me-2"></i>Tests de Connectivité
+  </h3>
+  <small class="text-white"> <!-- Modification ici -->
+    <i class="fas fa-clock me-1 text-white"></i> <!-- Et ici -->
+    {{ last_test.timestamp.strftime('%H:%M:%S') if last_test.timestamp else 'Jamais' }}
+  </small>
+</div>
+  
+  <div class="card-body p-3">
+    <div class="row g-3">
+      <!-- Requests -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.requests %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-exchange-alt fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Requests</h5>
+            <div class="small">
+              {% if last_test.results.requests %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cURL -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.curl %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-terminal fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">cURL</h5>
+            <div class="small">
+              {% if last_test.results.curl %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wget -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.wget %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-download fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Wget</h5>
+            <div class="small">
+              {% if last_test.results.wget %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
+
+<style>
+.bg-light {
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+.bg-light:hover {
+  background-color: rgba(248, 249, 250, 0.9) !important;
+  transform: translateY(-2px);
+}
+</style>
+
+
+<style>
+/* Styles personnalisés pour réduire la taille */
+.small-font {
+  font-size: 1.0rem !important; /* Taille du texte des labels */
+}
+
+.small-text {
+  font-size: 1.1rem !important; /* Taille du statut */
+}
+
+.fa-lg {
+  font-size: 1.7em !important; /* Taille des icônes */
+}
+
+.bg-success-light, .bg-danger-light {
+  padding: 0.5rem !important; /* Réduction de l'espacement */
+}
+</style>
+
+<!-- Section : Métriques Système -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+    <h3 class="mb-0 flex-grow-1">
+      <i class="fas fa-chart-bar me-2"></i>Métriques Système
+    </h3>
+    <small class="text-white">
+      <i class="fas fa-clock me-1"></i>
+      {{ datetime.now().strftime('%H:%M:%S') }}
+    </small>
+  </div>
+  
+  <div class="card-body p-3">
+    <div class="row g-3">
+      <!-- CPU -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-primary">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-microchip fa-lg text-primary mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Processeur</h5>
+            <div class="small">
+              {{ cpu_temperature }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mémoire -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-success">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-memory fa-lg text-success mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Mémoire</h5>
+            <div class="small">
+              {{ memory_info }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uptime -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-warning">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-hourglass-half fa-lg text-warning mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Uptime Serveur</h5>
+            <div class="small">
+              {{ datetime.now() - start_time|format_duration if start_time else 'N/A' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Section : Historique des Tunnels -->
   <div class="card mb-4">

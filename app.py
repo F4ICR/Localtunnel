@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.2.8"
+APP_VERSION = "1.2.9"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -80,10 +80,11 @@ def schedule_test():
         try:
             tunnel_url = read_tunnel_url_from_log()
             if tunnel_url and tunnel_url != "Aucun":
-                success = test_tunnel_connectivity(tunnel_url)
+                results = test_tunnel_connectivity(tunnel_url)
+                
                 last_test.update({
                     "timestamp": datetime.now(),
-                    "results": {"requests": success, "curl": success, "wget": success},
+                    "results": results,  # Utilisation directe du dictionnaire
                     "next_check": datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL),
                 })
         except Exception as e:
