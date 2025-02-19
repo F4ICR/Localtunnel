@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.3.3"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 import psutil
-import time
 import subprocess
 from apscheduler.schedulers.background import BackgroundScheduler
 from threading import Lock
@@ -46,23 +45,25 @@ request_count = 0
 duration_logger = TunnelDurationLogger()
 
 
-def get_server_uptime():
-    """Récupère l'uptime système via la commande 'uptime'"""
+def get_system_uptime():
+    """Récupère l'uptime système avec la commande uptime"""
     try:
-        result = subprocess.run(
-            ['uptime', '-p'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return result.stdout.strip().replace('up', '').capitalize()
-    except subprocess.CalledProcessError as e:
-        app.logger.error(f"Erreur commande uptime : {e.stderr.decode()}")
-        return "N/A"
+        output = subprocess.check_output(["uptime", "-p"]).decode().strip()
+        return output.replace("up ", "").capitalize()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        try:
+            output = subprocess.check_output(["uptime"]).decode().lower()
+            match = re.search(r"up\s+(.*?),\s+\d+ user", output)
+            if match:
+                return match.group(1).replace(",", "")
+            return "Durée inconnue"
+        except Exception as e:
+            app.logger.error(f"Erreur uptime: {str(e)}")
+            return "Erreur de mesure"
     except Exception as e:
-        app.logger.error(f"Erreur inattendue : {str(e)}")
-        return "N/A"
-    
+        app.logger.error(f"Erreur générale uptime: {str(e)}")
+        return "Erreur"
+
 
 ### Fonctions dynamiques ###
 def update_dynamic_metrics():
@@ -193,37 +194,42 @@ def track_request():
 def index():
     """Page principale affichant les informations du tunnel."""
     tunnel_active = is_tunnel_active(PORT)
-    
+    system_uptime = get_system_uptime()  # Nouvelle fonction pour l'uptime système
+    previous_tunnels = get_previous_tunnels()
+
+    # Valeurs par défaut
+    tunnel_url = "Aucun"
+    tunnel_uptime = "Aucun"
+
     if tunnel_active:
         try:
             with open(TUNNEL_OUTPUT_FILE, "r") as file:
                 tunnel_url = file.read().strip()
             
             start_time = get_tunnel_start_time()
-            uptime_str = (
-                f"{(datetime.now() - start_time).days} jours, "
-                f"{(datetime.now() - start_time).seconds // 3600} heures, "
-                f"{((datetime.now() - start_time).seconds // 60) % 60} minutes"
-                if start_time else "Temps inconnu"
-            )
-        except FileNotFoundError:
-            tunnel_url, uptime_str = "Fichier non trouvé", "Temps inconnu"
-        except Exception as e:
-            app.logger.error(f"Erreur lors de la lecture du fichier : {e}")
-            tunnel_url, uptime_str = "Erreur", "Temps inconnu"
-    else:
-        tunnel_url, uptime_str = "Aucun", "Aucun"
+            if start_time:
+                delta = datetime.now() - start_time
+                tunnel_uptime = (
+                    f"{delta.days}j "
+                    f"{delta.seconds // 3600}h "
+                    f"{(delta.seconds // 60) % 60}min"
+                )
+            else:
+                tunnel_uptime = "Heure inconnue"
+                app.logger.warning("Heure de démarrage du tunnel non trouvée")
 
-    previous_tunnels = get_previous_tunnels()
+        except Exception as e:
+            app.logger.error(f"Erreur lecture fichier : {e}")
+            tunnel_url, tunnel_uptime = "Erreur", "Erreur"
 
     return render_template(
         'index.html',
-        server_uptime=get_server_uptime(),
+        system_uptime=system_uptime,  # Uptime système
+        tunnel_uptime=tunnel_uptime,  # Durée du tunnel
         app_version=APP_VERSION,
         developer_name=DEVELOPER_NAME,
         tunnel_active=tunnel_active,
         tunnel_url=tunnel_url,
-        uptime=uptime_str,
         request_count=request_count,
         previous_tunnels=previous_tunnels,
         cpu_temperature=cpu_temperature,
