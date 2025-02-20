@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.3.3"
+APP_VERSION = "1.3.5"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 import psutil
 import subprocess
+import platform
 from apscheduler.schedulers.background import BackgroundScheduler
 from threading import Lock
 from lib import (
@@ -25,6 +26,8 @@ from settings import PORT, SUBDOMAIN, TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE,
 app = Flask(__name__)
 
 # Verrou pour les tests concurrents et cache des résultats des tests
+latency_lock = Lock()
+last_latency = {"value": None, "timestamp": None}
 test_lock = Lock()
 last_test = {
     "timestamp": None,
@@ -43,6 +46,37 @@ scheduler.start()
 # Compteur de requêtes HTTP et gestion des durées de tunnels
 request_count = 0
 duration_logger = TunnelDurationLogger()
+
+
+def measure_latency(host="8.8.8.8"):
+    """Mesure la latence réseau via ping (méthode cross-platform)"""
+    try:
+        params = {'n': '4', 'w': '1000'} if platform.system().lower() == 'windows' else {'c': '4', 'W': '1'}
+        cmd = ['ping', f'-{list(params.keys())[0]}', list(params.values())[0], 
+               f'-{list(params.keys())[1]}', list(params.values())[1], host]
+        
+        output = subprocess.run(cmd, capture_output=True, text=True, timeout=5).stdout
+        
+        # Extraction de la latence moyenne
+        if 'moyenne' in output:  # Français
+            avg_line = [line for line in output.split('\n') if 'moyenne' in line][0]
+            latency = float(avg_line.split(' = ')[-1].split('/')[1])
+        elif 'avg' in output:  # Anglais
+            avg_line = [line for line in output.split('\n') if 'avg' in line][0]
+            latency = float(avg_line.split(' = ')[-1].split('/')[1])
+        else:
+            latency = None
+            
+        with latency_lock:
+            last_latency.update({
+                "value": f"{latency:.1f} ms" if latency else "Erreur",
+                "timestamp": datetime.now()
+            })
+            
+    except Exception as e:
+        app.logger.error(f"Erreur mesure latence: {str(e)}")
+        with latency_lock:
+            last_latency["value"] = "N/A"
 
 
 def get_system_uptime():
@@ -224,6 +258,7 @@ def index():
 
     return render_template(
         'index.html',
+        network_latency=last_latency,
         system_uptime=system_uptime,  # Uptime système
         tunnel_uptime=tunnel_uptime,  # Durée du tunnel
         app_version=APP_VERSION,
@@ -296,9 +331,11 @@ if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage
     scheduler.add_job(schedule_test, 'interval', seconds=TUNNEL_CHECK_INTERVAL, next_run_time=datetime.now())
     scheduler.add_job(update_dynamic_metrics, 'interval', seconds=60, next_run_time=datetime.now())
+    scheduler.add_job(measure_latency, 'interval', minutes=1, next_run_time=datetime.now())
 
     # Initialisation au démarrage
     update_dynamic_metrics()
 
     # Lancement de l'application Flask
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    

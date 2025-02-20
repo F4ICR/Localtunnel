@@ -354,68 +354,81 @@ def test_tunnel_connectivity(tunnel_url, retries=7, timeout=10, backoff_factor=1
     :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
     :return: True si tous les tests réussissent, False sinon.
     """
+    
     # Validation de l'URL avec urllib.parse
     parsed_url = urlparse(tunnel_url)
     if not (parsed_url.scheme in ["http", "https"] and parsed_url.netloc):
-        logger.error(f"URL invalide : {tunnel_url}")
-        return {"all": False, "requests": False, "curl": False, "wget": False}
+        logger.error(f"L'URL fournie n'est pas valide : {tunnel_url}")
+        return False
 
-    logger.info(f"Début des tests de connectivité pour {tunnel_url}")
+    logger.info(f"Test de connectivité pour l'URL : {tunnel_url}")
 
     # 1. Test avec requests et stratégie de retry
-    requests_ok = False
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=[429, 500, 502, 503, 504],  # Codes HTTP à réessayer
+        method_whitelist=["GET"]  # Méthodes HTTP autorisées pour le retry
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
     try:
-        retry_strategy = Retry(
-            total=retries,
-            backoff_factor=backoff_factor,
-            status_forcelist=[429, 500, 502, 503, 504], # Codes HTTP à réessayer
-            method_whitelist=["GET"] # Méthodes HTTP autorisées pour le retry
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session = requests.Session()
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        
         response = session.get(tunnel_url, timeout=timeout)
-        requests_ok = response.status_code == 200
-        logger.info("Test requests : %s", "SUCCÈS" if requests_ok else "ÉCHEC")
-    except Exception as e:
-        logger.error("Erreur requests : %s", str(e))
+        if response.status_code == 200:
+            logger.info(f"Connectivité réussie avec requests ({tunnel_url}).")
+            requests_success = True
+        else:
+            logger.warning(f"Échec avec requests : Code HTTP {response.status_code}.")
+            requests_success = False
+    except requests.RequestException as e:
+        logger.error(f"Erreur lors du test avec requests : {e}")
+        requests_success = False
 
-    # 2. Test avec curl et stratégie de retry
-    curl_ok = False
+    # 2. Test complémentaire avec curl et stratégie de retry
+    curl_command = [
+        "curl", "-o", "/dev/null", "-s", "-w", "%{http_code}",
+        "--retry", str(retries), "--retry-max-time", str(timeout), "--connect-timeout", str(timeout), tunnel_url
+    ]
     try:
-        curl_result = subprocess.run(
-            ["curl", "-sSf", "--max-time", str(timeout), tunnel_url],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        curl_ok = curl_result.returncode == 0
-        logger.info("Test curl : %s", "SUCCÈS" if curl_ok else "ÉCHEC")
+        curl_result = subprocess.run(curl_command, capture_output=True, text=True, timeout=timeout)
+        if curl_result.stdout.strip() == "200":
+            logger.info("Connectivité réussie avec curl.")
+            curl_success = True
+        else:
+            logger.warning(f"Échec avec curl : Code HTTP {curl_result.stdout.strip()}.")
+            curl_success = False
     except Exception as e:
-        logger.error("Erreur curl : %s", str(e))
+        logger.error(f"Erreur lors du test avec curl : {e}")
+        curl_success = False
 
-    # 3. Test avec wget et stratégie de retry
-    wget_ok = False
+    # 3. Test complémentaire avec wget et stratégie de retry
+    wget_command = [
+        "wget", "--spider",
+        "--tries", str(retries), "--timeout", str(timeout), tunnel_url
+    ]
     try:
-        wget_result = subprocess.run(
-            ["wget", "-q", "--spider", "--timeout", str(timeout), tunnel_url],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        wget_ok = wget_result.returncode == 0
-        logger.info("Test wget : %s", "SUCCÈS" if wget_ok else "ÉCHEC")
+        wget_result = subprocess.run(wget_command, capture_output=True, text=True, timeout=timeout)
+        if wget_result.returncode == 0:  # Code retour 0 indique succès pour wget
+            logger.info("Connectivité réussie avec wget.")
+            wget_success = True
+        else:
+            logger.warning(f"Échec avec wget : Code retour {wget_result.returncode}.")
+            wget_success = False
     except Exception as e:
-        logger.error("Erreur wget : %s", str(e))
+        logger.error(f"Erreur lors du test avec wget : {e}")
+        wget_success = False
 
-    # Résultats combinés
-    global_ok = requests_ok and curl_ok and wget_ok
-    return {
-        "all": global_ok,
-        "requests": requests_ok,
-        "curl": curl_ok,
-        "wget": wget_ok
-    }
+    # Résultat final basé sur les trois tests
+    if requests_success and curl_success and wget_success:
+        logger.info("Tous les tests réussis : L'URL est accessible via requests, curl et wget.")
+        return True
+    else:
+        logger.warning("Un ou plusieurs tests ont échoué : L'URL n'est pas pleinement accessible.")
+        
+        return False
     
     return False
   
