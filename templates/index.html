@@ -347,70 +347,80 @@ function showTooltip(element, message) {
 let chart; // Référence au graphique
 
 function decimalToTime(decimal) {
-  const hours = Math.floor(decimal);
-  const minutes = Math.round((decimal % 1) * 60);
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    const hours = Math.floor(decimal);
+    const minutes = Math.round((decimal % 1) * 60);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
 async function updateChart() {
-  const days = document.getElementById('days').value;
-  const minHours = document.getElementById('hoursFilter').value;
-  
-  try {
-    const response = await fetch(`/tunnel_data/${days}?min_hours=${minHours}`);
-    const data = await response.json();
+    const days = document.getElementById('days').value;
+    const minHours = document.getElementById('hoursFilter').value;
     
-    const filteredData = data.filter(entry => entry.duration >= parseFloat(minHours));
-    const labels = filteredData.map(entry => entry.date);
-    const durations = filteredData.map(entry => entry.duration);
+    try {
+        const response = await fetch(`/tunnel_data/${days}?min_hours=${minHours}`);
+        const data = await response.json();
+        
+        const filteredData = data.filter(entry => entry.duration >= parseFloat(minHours));
+        const labels = filteredData.map(entry => entry.date);
+        const durations = filteredData.map(entry => entry.duration);
 
-    const config = {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Durée des Tunnels',
-          data: durations,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: value => decimalToTime(value)
+        const config = {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Durée des Tunnels',
+                    data: durations,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => decimalToTime(value)
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dataPoint = filteredData[context.dataIndex];
+                                return [
+                                    `Durée : ${decimalToTime(context.raw)}`,
+                                    `Début : ${dataPoint.start_time}`,
+                                    `Fin : ${dataPoint.end_time}`,
+                                    `URL : ${dataPoint.url}`
+                                ];
+                            }
+                        }
+                    }
+                }
             }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: context => `Durée : ${decimalToTime(context.raw)}`
-            }
-          }
+        };
+
+        if (chart) {
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = durations;
+            chart.update();
+        } else {
+            chart = new Chart(document.getElementById('tunnelChart').getContext('2d'), config);
         }
-      }
-    };
-
-    if (chart) {
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = durations;
-      chart.update();
-    } else {
-      chart = new Chart(document.getElementById('tunnelChart').getContext('2d'), config);
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors du chargement des données');
     }
-  } catch (error) {
-    console.error('Erreur:', error);
-    alert('Erreur lors du chargement des données');
-  }
 }
 
 // Initialisation
-updateChart();
+document.addEventListener('DOMContentLoaded', function() {
+    updateChart();
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

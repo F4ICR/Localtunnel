@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenAI GPT-4
 
-APP_VERSION = "1.3.5"
+APP_VERSION = "1.3.6"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -160,36 +160,33 @@ def get_previous_tunnels():
 
 @app.route('/tunnel_data/<int:days>', methods=['GET'])
 def get_tunnel_data(days):
-    """Retourne les données historiques des tunnels pour les X derniers jours."""
     try:
-        # Calculer la date limite
         cutoff_date = datetime.now() - timedelta(days=days)
-        
-        # Lire les données du fichier
         previous_tunnels = get_previous_tunnels()
 
         data = []
         for entry in previous_tunnels:
             try:
-                # Extraire la date et la durée
-                if "Date" in entry and "Durée" in entry:
-                    date_part = entry.split("|")[0].split(":")[1].strip()
-                    duration_part = entry.split("|")[-1].split(":")[1].strip()
-
-                    # Convertir la date en objet datetime
-                    tunnel_date = datetime.strptime(date_part, "%Y-%m-%d")
+                parts = dict(item.strip().split(" : ") for item in entry.split(" | "))
+                
+                date_part = parts["Date"]
+                tunnel_date = datetime.strptime(date_part, "%Y-%m-%d")
+                
+                if tunnel_date >= cutoff_date:
+                    duration_part = parts["Durée"]
+                    hours, minutes, seconds = map(
+                        int,
+                        duration_part.replace("h", "").replace("m", "").replace("s", "").split()
+                    )
+                    total_hours = round(hours + minutes / 60 + seconds / 3600, 2)
                     
-                    # Filtrer par date limite
-                    if tunnel_date >= cutoff_date:
-                        # Convertir la durée en heures
-                        hours, minutes, seconds = map(
-                            int,
-                            duration_part.replace("h", "").replace("m", "").replace("s", "").split()
-                        )
-                        total_hours = round(hours + minutes / 60 + seconds / 3600, 2)
-                        
-                        # Ajouter au tableau final
-                        data.append({"date": date_part, "duration": total_hours})
+                    data.append({
+                        "date": date_part,
+                        "duration": total_hours,
+                        "start_time": parts["Heure de début"].split(".")[0],
+                        "end_time": parts["Heure de fin"].split(".")[0],
+                        "url": parts["URL"]
+                    })
             except Exception as e:
                 app.logger.warning(f"Erreur lors du traitement d'une entrée : {entry} - {e}")
         
