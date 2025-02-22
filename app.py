@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.3.6"
+APP_VERSION = "1.3.7"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -135,15 +135,35 @@ def schedule_test():
         try:
             tunnel_url = read_tunnel_url_from_log()
             if tunnel_url and tunnel_url != "Aucun":
-                results = test_tunnel_connectivity(tunnel_url)
+                # Exécuter le test de connectivité
+                test_result = test_tunnel_connectivity(tunnel_url)
                 
-                last_test.update({
-                    "timestamp": datetime.now(),
-                    "results": results,  # Utilisation directe du dictionnaire
-                    "next_check": datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL),
-                })
+                # Initialiser les résultats par défaut
+                results = {
+                    'requests': False,
+                    'curl': False, 
+                    'wget': False
+                }
+                
+                # Mise à jour des résultats selon le retour
+                if isinstance(test_result, dict):
+                    results.update(test_result)
+                elif isinstance(test_result, bool) and test_result:
+                    results = {
+                        'requests': True,
+                        'curl': True,
+                        'wget': True
+                    }
+                
+                last_test["timestamp"] = datetime.now()
+                last_test["results"] = results
+                last_test["next_check"] = datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL)
+                
         except Exception as e:
-            app.logger.error(f"Erreur lors des tests planifiés : {e}")
+            logger.error(f"Erreur lors des tests planifiés : {e}")
+            last_test["timestamp"] = datetime.now()
+            last_test["results"] = {'requests': False, 'curl': False, 'wget': False}
+            last_test["next_check"] = datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL)
 
 
 def get_previous_tunnels():
