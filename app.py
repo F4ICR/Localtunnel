@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# F4ICR & OpenAI GPT-4
+# F4ICR & OpenIA GPT-4
 
 APP_VERSION = "1.3.6"
-DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenAI GPT-4"
+DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
