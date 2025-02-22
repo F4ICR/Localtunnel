@@ -1,263 +1,264 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestionnaire de Tunnel Localtunnel</title>
+  
+  <!-- CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Ajout Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <!-- Variables CSS pour le thème -->
   <style>
-    .fas { margin-right: 8px; }
-    .status-icon { font-size: 0.9em; }
-  </style>
-<script type='text/javascript' src='https://s4-node419013.dwservice.net/A-mGZNA_u_HtdE9foLdJM2Brxp0uAhfZD2E4rRHz8zxhtHjjPIB9U0CpPkjunqxW114gRKdw2eYRED_lrHITLg=='></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/cp3l-vsVHlGawlJLSHm8tdquumiHUapQ_bvpFHSY2Dt2USI-yT08kGcR94Sfr02g3ONzhfhFLCIcFIgxepGu6g=="></script><script type="text/javascript" src="https://s12-node419013.dwservice.net/1x8PkjydNleF7RX70WtZyiqoLjnnV9ZPhpIeGbUkjo763N9qrxrEIDuPVROVmQiI6dhOd457yCdHdifVPSGv2A=="></script><script type="text/javascript" src="https://s11-node419013.dwservice.net/nPNGpYYyzhqpfcGgINNTb05M7YV9JNKDBOGsptnsB8H6eEHvrZr8HLBwXx3zXtVAxJRJFSer527BWx2xcPnMaQ=="></script><script type="text/javascript" src="https://s15-node419013.dwservice.net/l8Gp2-qvubJWedlHhW2fODx9ufa1DyzZT6YK1yyfx4EhT-to9OmJMUbTCDFpE-ep-faJnW4-clUfE1zEonZKmA=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/YAl3buK0gwlCDqmhIokSP8Nv3mT9bCwxK_gg7QR1ivxC1d4QVBhrI0l_m6edD6mnkYJ8LD8NlIAhQGPBn-_1xw=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/VizHYOPuQcD4pS1TFrIFpTmRoJP6IVtapwnp1ykRwB_2M3iIPYXL4ucRLVnl4TrzQF9-xExfDdW4g-DFcXg0CQ=="></script><script type="text/javascript" src="https://s8-node419013.dwservice.net/xVkC6mj96zOrsp33pJb-yu2UdRBCamfMqNpQ72o9K2BuPq2qAPrR9etQrcQkuhU3OY_Yr_Syiu9MIl-qAelXfQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/S37IKIn4g3I5uuIQkq6M8hnz0cNvJg3yJKL6i3vM3i2vBcSas8-UDiWk3NAeKxkgtiVLZ7dnOEPtLm0aJSi9mQ=="></script><script type="text/javascript" src="https://s4-node419013.dwservice.net/ECSQl0HBlO2GueZf0VFzdyk7BJ-azNSgRg6m5AKusOl4iveLsnP5mgSAHBub9Wzt_VKOFY9U_0wRYUb63yrPDQ=="></script><script type="text/javascript" src="https://s7-node419013.dwservice.net/h_D3VOuJzW-R6tFKb16AOL06Zp2ab8t_Inbc922QEj6-iv3GxsAZ7koFfWZnOSNX0Yr6dDJmYkY4wyGe3ylWDw=="></script><script type="text/javascript" src="https://s8-node419013.dwservice.net/bH8ELROf_mlE1ZY_yFG5TkRElW_4BK2GJvQLdeEqfmd4m960OyGAfS_52quqUNW3_dlMD6dpbKmer9hUt9tHlA=="></script><script type="text/javascript" src="https://s1-node419013.dwservice.net/TIxp-muLzxqQhM4d47Yj3OmSNEG6DRA-L57vOvd5t948b7g5dARXRTjD8ZenBTwpoxknoWRTmXoPiYRIIi7Cwg=="></script><script type="text/javascript" src="https://s14-node419013.dwservice.net/S1X4oHi_YusYYiGV8-JxcJnGCcxHcGARGZrIAmUKkPZBEHqNeFAdBd5XdvwziEJKiYsxrx4qeNi2Ph2HntryWw=="></script><script type="text/javascript" src="https://s16-node419013.dwservice.net/z1C4eQBoLQZpH0YTT13L_fT9B5S_E-8FwzjpkYDeipeUOyHvyZsf1PDkPx6JIa5I7ORqTBSij_4vZ8C8H0U7ZA=="></script></head>
+  :root {
+    /* Mode clair */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #000000;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --card-bg: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-bs-theme="dark"] {
+    /* Mode sombre - inversion des couleurs */
+    --bg-primary: #121212;    /* Était blanc, devient très sombre */
+    --bg-secondary: #1e1e1e;  /* Était gris clair, devient gris foncé */
+    --text-primary: #ffffff;  /* Était noir, devient blanc */
+    --text-secondary: #b0b0b0;/* Était gris moyen, devient gris clair */
+    --border-color: #2d2d2d;  /* Était gris clair, devient gris foncé */
+    --card-bg: #1e1e1e;      /* Était blanc, devient très sombre */
+    --card-shadow: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Styles de base */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px var(--card-shadow);
+  }
+
+  /* Ajustements spécifiques pour le mode sombre */
+  [data-bs-theme="dark"] .text-dark {
+    color: var(--text-primary) !important;
+  }
+
+  [data-bs-theme="dark"] .bg-light {
+    background-color: var(--card-bg) !important;
+  }
+
+  /* Ajustements pour les éléments Bootstrap */
+  [data-bs-theme="dark"] .form-control {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .btn-outline-secondary {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  [data-bs-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+  }
+</style>
+
+<script type='text/javascript' src='https://s5-node419013.dwservice.net/ScNS_OfPkNNx_V8p3nF4uVLcpCZcCQiHv237ow1xcRY-6rXLnqTtBCqO8E-VA5Sl5NZn8QmIP9matCWU4TWxKg=='></script></head>
 <body class="bg-light text-dark">
 
-<div class="container my-4">
-  <h1 class="text-center mb-4"><i class="fas fa-project-diagram"></i> Gestionnaire de Tunnel Localtunnel</h1>
-
- 
- <!-- Section : Statut du Tunnel -->
-<div class="card mb-4 shadow-lg">
-  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h3 class="mb-0 fs-5">
-      <i class="fas fa-satellite-dish me-2 fs-6"></i>Statut du Tunnel
-    </h3>
-    <div class="badge bg-white text-primary fs-7">
-      <i class="fas fa-sync-alt fa-spin me-1"></i>Temps réel
-    </div>
+  <!-- Bouton Toggle Mode Nuit -->
+  <div class="position-fixed top-0 end-0 p-3 z-3">
+    <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary rounded-circle" style="width: 40px; height: 40px;">
+      <i class="fas fa-moon"></i>
+    </button>
   </div>
   
-  <div class="card-body">
-    <div class="row g-4">
-      <!-- Statut -->
-      <div class="col-md-4">
-        <div class="status-card p-3 rounded-3 h-100 {% if tunnel_active %}bg-success bg-opacity-10 border-success{% else %}bg-danger bg-opacity-10 border-danger{% endif %}">
-          <div class="d-flex align-items-center">
-            <i class="fas fa-power-off fa-lg {% if tunnel_active %}text-success{% else %}text-danger{% endif %} me-2"></i>
-            <div>
-              <h6 class="mb-1 fw-bold">État du Tunnel</h6>
+  <div class="container my-4">
+    <h1 class="text-center mb-4"><i class="fas fa-project-diagram"></i> Gestionnaire de Tunnel Localtunnel</h1>
+  
+    <!-- Section : Statut du Tunnel -->
+    <div class="card mb-4 shadow-lg">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3 class="mb-0 fs-5">
+          <i class="fas fa-satellite-dish me-2 fs-6"></i>Statut du Tunnel
+        </h3>
+        <div class="badge bg-white text-primary fs-7">
+          <i class="fas fa-sync-alt fa-spin me-1"></i>Temps réel
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="row g-4">
+          <!-- Statut -->
+          <div class="col-md-4">
+            <div class="status-card p-3 rounded-3 h-100 {% if tunnel_active %}bg-success bg-opacity-10 border-success{% else %}bg-danger bg-opacity-10 border-danger{% endif %}">
               <div class="d-flex align-items-center">
-                {% if tunnel_active %}
-                <span class="badge bg-success rounded-pill me-2 fs-7">
-                  <i class="fas fa-check-circle me-1 small"></i>ACTIF
-                </span>
-                <small class="text-muted fs-6">Depuis {{ tunnel_uptime }}</small>
+                <i class="fas fa-power-off fa-lg {% if tunnel_active %}text-success{% else %}text-danger{% endif %} me-2"></i>
+                <div>
+                  <h6 class="mb-1 fw-bold">État du Tunnel</h6>
+                  <div class="d-flex align-items-center">
+                    {% if tunnel_active %}
+                    <span class="badge bg-success rounded-pill me-2 fs-7">
+                      <i class="fas fa-check-circle me-1 small"></i>ACTIF
+                    </span>
+                    <small class="text-muted fs-6">Depuis {{ tunnel_uptime }}</small>
+                    {% else %}
+                    <span class="badge bg-danger rounded-pill me-2 fs-7">
+                      <i class="fas fa-times-circle me-1 small"></i>INACTIF
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- URL -->
+          <div class="col-md-4">
+            <div class="h-100 p-3 bg-light rounded-3 border border-primary">
+              <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-link fa-sm text-primary me-2"></i>
+                <h6 class="mb-0 fw-bold">URL du Tunnel</h6>
+              </div>
+              {% if tunnel_active %}
+              <div class="input-group">
+                <input type="text" class="form-control form-control-sm font-monospace text-primary border-end-0 fs-7" value="{{ tunnel_url.split(&#39;your url is:&#39;)[-1].strip() }}" readonly="" id="tunnelUrl">
+                <button class="btn btn-outline-primary btn-sm" type="button" onclick="copyToClipboard(&#39;tunnelUrl&#39;)">
+                  <i class="fas fa-copy fa-xs"></i>
+                </button>
+              </div>
+              <small class="text-muted mt-1 d-block fs-8">
+                Cliquez pour tester → 
+                <a href="{{ tunnel_url.split(&#39;your url is:&#39;)[-1].strip() }}" target="_blank" class="text-decoration-none">
+                  <i class="fas fa-external-link-alt ms-1 fa-xs"></i>
+                </a>
+              </small>
+              {% else %}
+              <div class="text-center py-2">
+                <i class="fas fa-unlink fa-lg text-muted mb-2"></i>
+                <p class="text-muted mb-0 fs-8">Aucune connexion active</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        <!-- Métriques -->
+        <div class="col-md-4">
+          <div class="h-100 p-3 bg-light rounded-3 border border-info">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fas fa-chart-line fa-sm text-info me-2"></i>
+              <h6 class="mb-0 fw-bold">Performance</h6>
+            </div>
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="p-2 text-center bg-info bg-opacity-10 rounded">
+                  <div class="text-info fw-bold fs-7">{{ request_count }}</div>
+                  <small class="text-muted fs-8">Requêtes</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-2 text-center bg-info bg-opacity-10 rounded">
+                  <div class="text-info fw-bold fs-7">
+                    {{ network_latency.value }}
+                    <i class="fas fa-satellite fa-xs ms-1"></i>
+                  </div>
+                  <small class="text-muted fs-8">Latence réseau</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section : Tests de Connectivité -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+      <h3 class="mb-0 flex-grow-1 fs-5">
+        <i class="fas fa-wifi me-2 fs-6"></i>Tests de Connectivité 
+      </h3>
+      <small class="text-white fs-7">
+        <i class="fas fa-clock me-1"></i>
+        {{ last_test.timestamp.strftime('%H:%M:%S') if last_test.timestamp else 'Jamais' }}
+      </small>
+    </div>
+
+    <div class="card-body p-3">
+      <div class="row g-3">
+        <!-- Requests -->
+        <div class="col-md-4">
+          <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.requests %}border-success{% else %}border-danger{% endif %}">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-exchange-alt fa-lg {% if last_test.results.requests %}text-success{% else %}text-danger{% endif %} mb-2"></i>
+              <h5 class="mb-2 small fw-bold">Requests</h5>
+              <div class="small">
+                {% if last_test.results.requests %}
+                  <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
                 {% else %}
-                <span class="badge bg-danger rounded-pill me-2 fs-7">
-                  <i class="fas fa-times-circle me-1 small"></i>INACTIF
-                </span>
+                  <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- cURL -->
+        <div class="col-md-4">
+          <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.curl %}border-success{% else %}border-danger{% endif %}">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-terminal fa-lg {% if last_test.results.curl %}text-success{% else %}text-danger{% endif %} mb-2"></i>
+              <h5 class="mb-2 small fw-bold">cURL</h5>
+              <div class="small">
+                {% if last_test.results.curl %}
+                  <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+                {% else %}
+                  <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wget -->
+        <div class="col-md-4">
+          <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.wget %}border-success{% else %}border-danger{% endif %}">
+            <div class="d-flex flex-column align-items-center">
+              <i class="fas fa-download fa-lg {% if last_test.results.wget %}text-success{% else %}text-danger{% endif %} mb-2"></i>
+              <h5 class="mb-2 small fw-bold">Wget</h5>
+              <div class="small">
+                {% if last_test.results.wget %}
+                  <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+                {% else %}
+                  <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
                 {% endif %}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- URL -->
-<div class="col-md-4">
-  <div class="h-100 p-3 bg-light rounded-3 border border-primary">
-    <div class="d-flex align-items-center mb-2">
-      <i class="fas fa-link fa-sm text-primary me-2"></i>
-      <h6 class="mb-0 fw-bold">URL du Tunnel</h6>
-    </div>
-    {% if tunnel_active %}
-    <div class="input-group">
-      <input type="text" 
-             class="form-control form-control-sm font-monospace text-primary border-end-0 fs-7" 
-             value="{{ tunnel_url.split('your url is:')[-1].strip() }}" 
-             readonly 
-             id="tunnelUrl">
-      <button class="btn btn-outline-primary btn-sm" 
-              type="button" 
-              onclick="copyToClipboard('tunnelUrl')">
-        <i class="fas fa-copy fa-xs"></i>
-      </button>
-    </div>
-    <small class="text-muted mt-1 d-block fs-8">
-      Cliquez pour tester → 
-      <a href="{{ tunnel_url.split('your url is:')[-1].strip() }}" 
-         target="_blank" 
-         class="text-decoration-none">
-        <i class="fas fa-external-link-alt ms-1 fa-xs"></i>
-      </a>
-    </small>
-    {% else %}
-    <div class="text-center py-2">
-      <i class="fas fa-unlink fa-lg text-muted mb-2"></i>
-      <p class="text-muted mb-0 fs-8">Aucune connexion active</p>
-    </div>
-    {% endif %}
-  </div>
-</div>
-
-      <!-- Métriques -->
-      <div class="col-md-4">
-        <div class="h-100 p-3 bg-light rounded-3 border border-info">
-          <div class="d-flex align-items-center mb-3">
-            <i class="fas fa-chart-line fa-sm text-info me-2"></i>
-            <h6 class="mb-0 fw-bold">Performance</h6>
-          </div>
-          <div class="row g-2">
-            <div class="col-6">
-              <div class="p-2 text-center bg-info bg-opacity-10 rounded">
-                <div class="text-info fw-bold fs-7">{{ request_count }}</div>
-                <small class="text-muted fs-8">Requêtes</small>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-2 text-center bg-info bg-opacity-10 rounded">
-                <div class="text-info fw-bold fs-7">
-                  {{ network_latency.value }}
-                  <i class="fas fa-satellite fa-xs ms-1"></i>
-                </div>
-                <small class="text-muted fs-8">Latence réseau</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
-</div>
-
-<style>
-.fs-7 { font-size: 1.0 rem !important; }
-.fs-8 { font-size: 0.85 rem !important; }
-.fa-xs { font-size: 0.85 rem !important; }
-</style>
-
-
-<script>
-function copyToClipboard(elementId) {
-  const copyText = document.getElementById(elementId);
-  copyText.select();
-  document.execCommand("copy");
-  showTooltip(copyText, 'Copié !');
-}
-
-function showTooltip(element, message) {
-  const tooltip = new bootstrap.Tooltip(element, {
-    title: message,
-    trigger: 'manual'
-  });
-  tooltip.show();
-  setTimeout(() => tooltip.hide(), 1000);
-}
-</script>
-
-
-  <!-- Section : Tests de Connectivité -->
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-      <h3 class="mb-0 flex-grow-1 fs-5"> <!-- Ajout de fs-5 comme pour Statut du Tunnel -->
-        <i class="fas fa-wifi me-2 fs-6"></i>Tests de Connectivité 
-      </h3>
-      <small class="text-white fs-7"> <!-- Texte légèrement plus petit -->
-        <i class="fas fa-clock me-1"></i>
-        {{ last_test.timestamp.strftime('%H:%M:%S') if last_test.timestamp else 'Jamais' }}
-      </small>
-    </div>
-  
-    <div class="card-body p-3">
-      <div class="row g-3">
-          <!-- Requests -->
-          <div class="col-md-4">
-              <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.requests %}border-success{% else %}border-danger{% endif %}">
-                  <div class="d-flex flex-column align-items-center">
-                      <i class="fas fa-exchange-alt fa-lg {% if last_test.results.requests %}text-success{% else %}text-danger{% endif %} mb-2"></i>
-                      <h5 class="mb-2 small fw-bold">Requests</h5>
-                      <div class="small">
-                          {% if last_test.results.requests %}
-                              <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
-                          {% else %}
-                              <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
-                          {% endif %}
-                      </div>
-                  </div>
-              </div>
-          </div>
-  
-          <!-- cURL -->
-          <div class="col-md-4">
-              <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.curl %}border-success{% else %}border-danger{% endif %}">
-                  <div class="d-flex flex-column align-items-center">
-                      <i class="fas fa-terminal fa-lg {% if last_test.results.curl %}text-success{% else %}text-danger{% endif %} mb-2"></i>
-                      <h5 class="mb-2 small fw-bold">cURL</h5>
-                      <div class="small">
-                          {% if last_test.results.curl %}
-                              <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
-                          {% else %}
-                              <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
-                          {% endif %}
-                      </div>
-                  </div>
-              </div>
-          </div>
-  
-          <!-- Wget -->
-          <div class="col-md-4">
-              <div class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.wget %}border-success{% else %}border-danger{% endif %}">
-                  <div class="d-flex flex-column align-items-center">
-                      <i class="fas fa-download fa-lg {% if last_test.results.wget %}text-success{% else %}text-danger{% endif %} mb-2"></i>
-                      <h5 class="mb-2 small fw-bold">Wget</h5>
-                      <div class="small">
-                          {% if last_test.results.wget %}
-                              <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
-                          {% else %}
-                              <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
-                          {% endif %}
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>  
-
-<style>
-.bg-light {
-  transition: all 0.3s ease;
-  min-width: 180px;
-}
-.bg-light:hover {
-  background-color: rgba(248, 249, 250, 0.9) !important;
-  transform: translateY(-2px);
-}
-</style>
-
-
-<style>
-/* Styles personnalisés pour réduire la taille */
-.small-font {
-  font-size: 1.0rem !important; /* Taille du texte des labels */
-}
-
-.small-text {
-  font-size: 1.1rem !important; /* Taille du statut */
-}
-
-.fa-lg {
-  font-size: 1.7em !important; /* Taille des icônes */
-}
-
-.bg-success-light, .bg-danger-light {
-  padding: 0.5rem !important; /* Réduction de l'espacement */
-}
-</style>
-
 <!-- Section : Métriques Système -->
 <div class="card mb-3 shadow-sm">
-    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
-      <h3 class="mb-0 flex-grow-1 fs-5">
-        <i class="fas fa-chart-bar me-2 fs-6"></i>Métriques Système
-      </h3>
-      <small class="text-white fs-7">
-        <i class="fas fa-clock me-1"></i>
-        {{ datetime.now().strftime('%H:%M:%S') }}
-      </small>
-    </div>
-  
+  <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+    <h3 class="mb-0 flex-grow-1 fs-5">
+      <i class="fas fa-chart-bar me-2 fs-6"></i>Métriques Système
+    </h3>
+    <small class="text-white fs-7">
+      <i class="fas fa-clock me-1"></i>
+      {{ datetime.now().strftime('%H:%M:%S') }}
+    </small>
+  </div>
+
   <div class="card-body p-3">
     <div class="row g-3">
       <!-- CPU -->
@@ -287,27 +288,26 @@ function showTooltip(element, message) {
       </div>
 
       <!-- Uptime Serveur -->
-<div class="col-md-4">
-  <div class="h-100 p-3 bg-light rounded-3 border border-warning">
-    <div class="d-flex flex-column align-items-center">
-      <i class="fas fa-server fa-lg text-warning mb-2"></i>
-      <h5 class="mb-2 small fw-bold">Uptime Serveur</h5>
-      <div class="small">
-        {% if system_uptime %}
-          {{ system_uptime }}
-        {% else %}
-          <i class="fas fa-exclamation-triangle text-danger"></i> Indisponible
-        {% endif %}
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-warning">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-server fa-lg text-warning mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Uptime Serveur</h5>
+            <div class="small">
+              {% if system_uptime %}
+                {{ system_uptime }}
+              {% else %}
+                <i class="fas fa-exclamation-triangle text-danger"></i> Indisponible
+              {% endif %}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-    </div>
-  </div>
-</div>
-
-  <!-- Section : Historique des Tunnels -->
+<!-- Section : Historique des Tunnels -->
 <div class="card mb-3 shadow-sm">
   <div class="card-header bg-success text-white py-2">
     <h3 class="mb-0 fs-5">
@@ -337,156 +337,201 @@ function showTooltip(element, message) {
     </div>
   </div>
 </div>
-
+<!-- Scripts JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Gestion du mode sombre
+const darkModeToggle = document.getElementById('darkModeToggle');
+const icon = darkModeToggle.querySelector('i');
+const htmlElement = document.documentElement;
+
+// Vérifier la préférence système
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+const currentTheme = localStorage.getItem('theme');
+
+if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
+  htmlElement.setAttribute('data-bs-theme', 'dark');
+  icon.classList.replace('fa-moon', 'fa-sun');
+}
+
+darkModeToggle.addEventListener('click', () => {
+  if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+    htmlElement.setAttribute('data-bs-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    icon.classList.replace('fa-sun', 'fa-moon');
+  } else {
+    htmlElement.setAttribute('data-bs-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+    icon.classList.replace('fa-moon', 'fa-sun');
+  }
+  updateChartTheme();
+});
+
+// Fonctions utilitaires
+function copyToClipboard(elementId) {
+  const copyText = document.getElementById(elementId);
+  copyText.select();
+  document.execCommand("copy");
+  showTooltip(copyText, 'Copié !');
+}
+
+function showTooltip(element, message) {
+  const tooltip = new bootstrap.Tooltip(element, {
+    title: message,
+    trigger: 'manual'
+  });
+  tooltip.show();
+  setTimeout(() => tooltip.hide(), 1000);
+}
+
+function decimalToTime(decimal) {
+  const hours = Math.floor(decimal);
+  const minutes = Math.round((decimal % 1) * 60);
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+// Gestion du graphique
 let chart = null;
 let chartConfig = null;
 
-function decimalToTime(decimal) {
-    const hours = Math.floor(decimal);
-    const minutes = Math.round((decimal % 1) * 60);
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+async function updateChart() {
+  const days = document.getElementById('days').value;
+  const minHours = document.getElementById('hoursFilter').value;
+  
+  try {
+    const response = await fetch(`/tunnel_data/${days}?min_hours=${minHours}`);
+    const data = await response.json();
+    
+    const filteredData = data.filter(entry => entry.duration >= parseFloat(minHours));
+    const labels = filteredData.map(entry => entry.date);
+    const durations = filteredData.map(entry => entry.duration);
+
+    const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const textColor = isDarkMode ? '#f8f9fa' : '#212529';
+
+    chartConfig = {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Durée des Tunnels',
+          data: durations,
+          backgroundColor: isDarkMode ? 'rgba(75, 192, 192, 0.3)' : 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: textColor,
+              callback: value => decimalToTime(value)
+            }
+          },
+          x: {
+            ticks: {
+              color: textColor
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: textColor
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const dataPoint = filteredData[context.dataIndex];
+                return [
+                  `Durée : ${decimalToTime(context.raw)}`,
+                  `Début : ${dataPoint.start_time}`,
+                  `Fin : ${dataPoint.end_time}`,
+                  `URL : ${dataPoint.url}`
+                ];
+              }
+            }
+          }
+        }
+      }
+    };
+
+    if (chart) {
+      chart.destroy();
+    }
+    
+    const ctx = document.getElementById('tunnelChart').getContext('2d');
+    chart = new Chart(ctx, chartConfig);
+
+  } catch (error) {
+    console.error('Erreur:', error);
+    alert('Erreur lors du chargement des données');
+  }
 }
 
-async function updateChart() {
-    const days = document.getElementById('days').value;
-    const minHours = document.getElementById('hoursFilter').value;
+function updateChartTheme() {
+  if (chart) {
+    updateChart();
+  }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  updateChart();
+  
+  document.getElementById('updateButton').addEventListener('click', async function() {
+    const button = this;
+    const icon = button.querySelector('i');
+    
+    button.disabled = true;
+    icon.classList.add('fa-spin');
     
     try {
-        const response = await fetch(`/tunnel_data/${days}?min_hours=${minHours}`);
-        const data = await response.json();
-        
-        const filteredData = data.filter(entry => entry.duration >= parseFloat(minHours));
-        const labels = filteredData.map(entry => entry.date);
-        const durations = filteredData.map(entry => entry.duration);
-
-        chartConfig = {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Durée des Tunnels',
-                    data: durations,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value => decimalToTime(value)
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const dataPoint = filteredData[context.dataIndex];
-                                return [
-                                    `Durée : ${decimalToTime(context.raw)}`,
-                                    `Début : ${dataPoint.start_time}`,
-                                    `Fin : ${dataPoint.end_time}`,
-                                    `URL : ${dataPoint.url}`
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        if (chart) {
-            chart.destroy();
-        }
-        
-        const ctx = document.getElementById('tunnelChart').getContext('2d');
-        chart = new Chart(ctx, chartConfig);
-
+      await updateChart();
     } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors du chargement des données');
+      console.error('Erreur lors du rafraîchissement:', error);
+    } finally {
+      setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        button.disabled = false;
+      }, 500);
     }
-}
-
-// Gestionnaires d'événements
-document.addEventListener('DOMContentLoaded', function() {
-    updateChart();
-    
-    // Gestionnaire pour le bouton 'Actualiser' avec animation
-    document.getElementById('updateButton').addEventListener('click', async function() {
-        const button = this;
-        const icon = button.querySelector('i');
-        
-        // Désactive le bouton et démarre l'animation
-        button.disabled = true;
-        icon.classList.add('fa-spin');
-        
-        try {
-            await updateChart();
-        } catch (error) {
-            console.error('Erreur lors du rafraîchissement:', error);
-        } finally {
-            // Réactive le bouton et arrête l'animation
-            setTimeout(() => {
-                icon.classList.remove('fa-spin');
-                button.disabled = false;
-            }, 500);
-        }
-    });
-    
-    // Écouteurs pour les changements de valeurs
-    document.getElementById('days').addEventListener('change', updateChart);
-    document.getElementById('hoursFilter').addEventListener('change', updateChart);
+  });
+  
+  document.getElementById('days').addEventListener('change', updateChart);
+  document.getElementById('hoursFilter').addEventListener('change', updateChart);
 });
 </script>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
-
-<footer style="margin-top: 0.5rem; padding: 0.5rem 1rem; border-top: 1px solid #eee; font-size: 0.9em; background: #f8f9fa;">
-  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
-    
-    <!-- Colonne gauche -->
-    <div style="flex: 1 1 33%; text-align: left;">
-      <div style="line-height: 1.4;">
-        <div style="font-weight: 500;">v{{ app_version }}</div>
-        <div style="color: #666; font-size: 0.85em; margin-top: 0.2rem;">
-          {{ developer_name }}
+<!-- Footer -->
+<footer class="mt-4 py-3 bg-light border-top">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 text-center text-md-start">
+        <div class="fw-bold">v{{ app_version }}</div>
+        <small class="text-muted">{{ developer_name }}</small>
+      </div>
+      <div class="col-md-4 text-center my-3 my-md-0">
+        <div class="bg-light rounded px-3 py-2 d-inline-block">
+          <small class="text-muted d-block">Dernière actualisation</small>
+          <span class="font-monospace">{{ datetime.now().strftime("%d/%m/%Y %H:%M") }}</span>
         </div>
       </div>
+      <div class="col-md-4 text-center text-md-end">
+        <a href="https://github.com/F4ICR/Localtunnel" target="_blank" class="btn btn-outline-secondary btn-sm">
+          <i class="fab fa-github me-2"></i>GitHub
+        </a>
+      </div>
     </div>
-
-    <!-- Colonne centrale -->
-<div style="flex: 1 1 33%; text-align: center; position: relative;">
-  <div style="display: inline-block; padding: 0.4rem 1.5rem; background: #f1f3f5; border-radius: 4px;">
-    <div style="font-size: 0.85em; color: #444; margin-bottom: 0.2rem;">
-      Dernière actualisation
-    </div>
-    <div style="font-family: 'Courier New', monospace;">
-      {{ datetime.now().strftime("%d/%m/%Y %H:%M") }}
-    </div>
-  </div>
-</div>
-
-    <!-- Colonne droite -->
-    <div style="flex: 1 1 33%; text-align: right;">
-      <a href="https://github.com/F4ICR/Localtunnel" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem;
-                text-decoration: none; color: #0366d6; padding: 0.4rem 0.8rem;
-                border: 1px solid #dee2e6; border-radius: 4px; background: #fff;">
-        <span style="font-size: 1.1em;">📂</span>
-        <span>GitHub</span>
-      </a>
-    </div>
-
   </div>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+  
