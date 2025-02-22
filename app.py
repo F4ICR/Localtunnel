@@ -160,7 +160,7 @@ def schedule_test():
                 last_test["next_check"] = datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL)
                 
         except Exception as e:
-            logger.error(f"Erreur lors des tests planifiés : {e}")
+            app.logger.error(f"Erreur lors des tests planifiés : {e}")
             last_test["timestamp"] = datetime.now()
             last_test["results"] = {'requests': False, 'curl': False, 'wget': False}
             last_test["next_check"] = datetime.now() + timedelta(seconds=TUNNEL_CHECK_INTERVAL)

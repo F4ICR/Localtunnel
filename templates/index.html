@@ -131,14 +131,14 @@
               </div>
               {% if tunnel_active %}
               <div class="input-group">
-                <input type="text" class="form-control form-control-sm font-monospace text-primary border-end-0 fs-7" value="{{ tunnel_url.split(&#39;your url is:&#39;)[-1].strip() }}" readonly="" id="tunnelUrl">
-                <button class="btn btn-outline-primary btn-sm" type="button" onclick="copyToClipboard(&#39;tunnelUrl&#39;)">
+                <input type="text" class="form-control form-control-sm font-monospace text-primary border-end-0 fs-7" value="{{ tunnel_url.split('your url is:')[-1].strip() }}" readonly="" id="tunnelUrl">
+                <button class="btn btn-outline-primary btn-sm" type="button" onclick="copyToClipboard('tunnelUrl')">
                   <i class="fas fa-copy fa-xs"></i>
                 </button>
               </div>
               <small class="text-muted mt-1 d-block fs-8">
                 Cliquez pour tester → 
-                <a href="{{ tunnel_url.split(&#39;your url is:&#39;)[-1].strip() }}" target="_blank" class="text-decoration-none">
+                <a href="{{ tunnel_url.split('your url is:')[-1].strip() }}" target="_blank" class="text-decoration-none">
                   <i class="fas fa-external-link-alt ms-1 fa-xs"></i>
                 </a>
               </small>
