@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.3.9"
+APP_VERSION = "1.4.0"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -50,6 +50,18 @@ request_count = 0
 duration_logger = TunnelDurationLogger()
 
 
+@app.route('/admin/logs')
+def get_logs():
+    try:
+        with open('nohup.out', 'r') as f:
+            # Lire les 1000 dernières lignes pour éviter une surcharge
+            logs = f.readlines()[-1000:]
+            return ''.join(logs)
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la lecture des logs : {e}")
+        return "Erreur lors de la lecture des logs"
+
+
 @app.route('/test_curl', methods=['POST'])
 def test_curl():
     try:
@@ -75,7 +87,7 @@ def test_curl():
         return f"Erreur: {str(e)}"
 
 
-def measure_latency(host="8.8.8.8"):
+def measure_latency(host="localtunnel.me"):
     """Mesure la latence réseau via ping (méthode cross-platform)"""
     try:
         params = {'n': '4', 'w': '1000'} if platform.system().lower() == 'windows' else {'c': '4', 'W': '1'}
