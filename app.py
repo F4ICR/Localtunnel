@@ -50,18 +50,6 @@ request_count = 0
 duration_logger = TunnelDurationLogger()
 
 
-@app.route('/admin/logs')
-def get_logs():
-    try:
-        with open('nohup.out', 'r') as f:
-            # Lire les 1000 dernières lignes pour éviter une surcharge
-            logs = f.readlines()[-1000:]
-            return ''.join(logs)
-    except Exception as e:
-        app.logger.error(f"Erreur lors de la lecture des logs : {e}")
-        return "Erreur lors de la lecture des logs"
-
-
 @app.route('/test_curl', methods=['POST'])
 def test_curl():
     try:
