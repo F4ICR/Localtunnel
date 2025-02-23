@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -22,7 +22,7 @@ from lib import (
     test_tunnel_connectivity,
 )
 from tunnel_duration_logger import TunnelDurationLogger
-from settings import PORT, SUBDOMAIN, TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE, TUNNEL_CHECK_INTERVAL
+from settings import PORT, SUBDOMAIN, TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE, TUNNEL_CHECK_INTERVAL, APPLICATION_LOG
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
@@ -48,6 +48,21 @@ scheduler.start()
 # Compteur de requêtes HTTP et gestion des durées de tunnels
 request_count = 0
 duration_logger = TunnelDurationLogger()
+
+
+@app.route('/admin/logs')
+def get_logs():
+    try:
+        # Lire les 1000 dernières lignes pour éviter une surcharge
+        with open(APPLICATION_LOG, 'r') as f:
+            logs = f.readlines()[-1000:]
+            return ''.join(logs)
+    except FileNotFoundError:
+        app.logger.error(f"Fichier de log non trouvé : {APPLICATION_LOG}")
+        return "Fichier de log non trouvé"
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la lecture des logs : {e}")
+        return f"Erreur lors de la lecture des logs : {str(e)}"
 
 
 @app.route('/test_curl', methods=['POST'])
