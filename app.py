@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.4.2"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -22,7 +22,22 @@ from lib import (
     test_tunnel_connectivity,
 )
 from tunnel_duration_logger import TunnelDurationLogger
-from settings import PORT, SUBDOMAIN, TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE, TUNNEL_CHECK_INTERVAL, APPLICATION_LOG
+from settings import (
+    PORT, 
+    SUBDOMAIN, 
+    TUNNEL_DURATIONS_FILE, 
+    TUNNEL_OUTPUT_FILE, 
+    TUNNEL_CHECK_INTERVAL, 
+    APPLICATION_LOG,
+    EMAIL_NOTIFICATIONS,
+    EMAIL,
+    SMTP_SERVER,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASSWORD,
+    LOG_BACKUP_COUNT,
+    LOG_MAX_BYTES
+)
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
@@ -138,6 +153,7 @@ def get_system_uptime():
             return "Erreur de mesure"
     except Exception as e:
         app.logger.error(f"Erreur générale uptime: {str(e)}")
+
         return "Erreur"
 
 
@@ -317,6 +333,16 @@ def index():
 
     return render_template(
         'index.html',
+        PORT=PORT,
+        SUBDOMAIN=SUBDOMAIN,
+        EMAIL_NOTIFICATIONS=EMAIL_NOTIFICATIONS,
+        EMAIL=EMAIL,
+        SMTP_SERVER=SMTP_SERVER,
+        SMTP_PORT=SMTP_PORT,
+        SMTP_USER=SMTP_USER,
+        SMTP_PASSWORD=SMTP_PASSWORD,
+        LOG_BACKUP_COUNT=LOG_BACKUP_COUNT,
+        LOG_MAX_BYTES=LOG_MAX_BYTES,
         network_latency=last_latency,
         system_uptime=system_uptime,  # Uptime système
         tunnel_uptime=tunnel_uptime,  # Durée du tunnel
