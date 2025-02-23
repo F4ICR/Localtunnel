@@ -7,6 +7,8 @@ DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
+import validators
 import psutil
 import subprocess
 import platform
@@ -52,12 +54,15 @@ duration_logger = TunnelDurationLogger()
 def test_curl():
     try:
         data = request.get_json()
-        tunnel_url = data['url']
+        tunnel_url = data.get('url')
         
-        # Obtenir l'IP publique
+        if not tunnel_url or not validators.url(tunnel_url):
+            return jsonify({'error': 'URL invalide'}), 400
+            
         ip = subprocess.run(['curl', 'ifconfig.me'], 
-                          capture_output=True, 
-                          text=True).stdout.strip()
+                          capture_output=True,
+                          text=True,
+                          timeout=5).stdout.strip()
         
         # Construire et exécuter la commande curl
         full_url = f"{tunnel_url}/{ip}"
