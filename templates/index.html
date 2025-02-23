@@ -714,13 +714,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Actualisation des logs
-function refreshLogs() {
+  function refreshLogs() {
     fetch('/admin/logs')
         .then(response => response.text())
         .then(logs => {
             const logsElement = document.getElementById('tunnelLogs');
             logsElement.textContent = logs;
-            logsElement.scrollTop = logsElement.scrollHeight;
+            // Forcer le scroll vers le bas immédiatement après l'actualisation
+            requestAnimationFrame(() => {
+                logsElement.scrollTop = logsElement.scrollHeight;
+            });
         })
         .catch(error => {
             console.error('Erreur:', error);
