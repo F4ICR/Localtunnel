@@ -138,11 +138,27 @@
                 </button>
               </div>
               <small class="text-muted mt-1 d-block fs-8">
-                Cliquez pour tester → 
-                <a href="{{ tunnel_url.split('your url is:')[-1].strip() }}" target="_blank" class="text-decoration-none">
+                Cliquez pour test → 
+                <a href="#" onclick="testCurl('{{ tunnel_url.split('your url is:')[-1].strip() }}'); return false;" class="text-decoration-none">
                   <i class="fas fa-external-link-alt ms-1 fa-xs"></i>
                 </a>
+                <span id="curlResult"></span>
               </small>
+              
+              <script>
+              async function testCurl(tunnelUrl) {
+                const response = await fetch('/test_curl', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({url: tunnelUrl})
+                });
+                const result = await response.text();
+                document.getElementById('curlResult').innerHTML = ' → ' + result;
+              }
+              </script>              
+              
               {% else %}
               <div class="text-center py-2">
                 <i class="fas fa-unlink fa-lg text-muted mb-2"></i>

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.3.8"
+APP_VERSION = "1.3.9"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -46,6 +46,28 @@ scheduler.start()
 # Compteur de requêtes HTTP et gestion des durées de tunnels
 request_count = 0
 duration_logger = TunnelDurationLogger()
+
+
+@app.route('/test_curl', methods=['POST'])
+def test_curl():
+    try:
+        data = request.get_json()
+        tunnel_url = data['url']
+        
+        # Obtenir l'IP publique
+        ip = subprocess.run(['curl', 'ifconfig.me'], 
+                          capture_output=True, 
+                          text=True).stdout.strip()
+        
+        # Construire et exécuter la commande curl
+        full_url = f"{tunnel_url}/{ip}"
+        result = subprocess.run(['curl', full_url], 
+                              capture_output=True, 
+                              text=True)
+        
+        return result.stdout
+    except Exception as e:
+        return f"Erreur: {str(e)}"
 
 
 def measure_latency(host="8.8.8.8"):
