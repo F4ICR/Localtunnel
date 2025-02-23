@@ -737,15 +737,25 @@ let logsInterval;
 document.addEventListener('DOMContentLoaded', function() {
     const checkbox = document.getElementById('autoRefreshLogs');
     
+    // Récupérer l'état sauvegardé
+    const savedState = localStorage.getItem('autoRefreshEnabled');
+    
+    // Si un état était sauvegardé, l'appliquer
+    if (savedState === 'true') {
+        checkbox.checked = true;
+        logsInterval = setInterval(refreshLogs, 5000);
+    }
     // Actualisation initiale
     refreshLogs();
     
     // Gestion de l'auto-actualisation
     checkbox.addEventListener('change', function() {
-        if (this.checked) {
+      if (this.checked) {
             logsInterval = setInterval(refreshLogs, 5000);
+            localStorage.setItem('autoRefreshEnabled', 'true');
         } else {
             clearInterval(logsInterval);
+            localStorage.setItem('autoRefreshEnabled', 'false');
         }
     });
 });
