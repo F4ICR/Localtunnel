@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.2"
+APP_VERSION = "1.4.3"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -63,6 +63,46 @@ scheduler.start()
 # Compteur de requêtes HTTP et gestion des durées de tunnels
 request_count = 0
 duration_logger = TunnelDurationLogger()
+
+# Pour stocker l'historique des requêtes
+requests_history = []
+last_reset = datetime.now()
+
+
+@app.before_request
+def track_request():
+    global request_count, requests_history, last_reset
+    
+    # Réinitialiser le compteur à minuit
+    now = datetime.now()
+    if now.date() > last_reset.date():
+        request_count = 0
+        last_reset = now
+    
+    # Incrémenter le compteur et sauvegarder pour l'historique
+    request_count += 1
+    requests_history.append({
+        'timestamp': now.isoformat(),
+        'count': request_count
+    })
+
+
+@app.route('/requests_data/')
+def get_requests_data():
+    """Retourne les données historiques des requêtes pour le graphique."""
+    try:
+        # Convertir les données d'historique en format adapté pour Chart.js
+        data = [
+            {
+                "timestamp": entry["timestamp"],
+                "count": entry["count"]
+            }
+            for entry in requests_history
+        ]
+        return jsonify(data)
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la récupération des données de requêtes : {e}")
+        return jsonify({"error": "Impossible de récupérer les données"}), 500
 
 
 @app.route('/admin/logs')
