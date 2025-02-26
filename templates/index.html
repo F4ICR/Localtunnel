@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
   transform: scale(1.1);
 }
 </style>
-
+    
 <!-- Modal Administration -->
 <div class="modal fade" id="adminModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
@@ -615,8 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <i class="fas fa-shield-alt me-2 fs-6"></i>Administration Tunnel
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      
+      </div>     
       <div class="modal-body">
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
@@ -820,9 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>// Gestion de l'interface d'administration
@@ -895,27 +892,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-  
-  // Fonction utilitaire pour afficher les notifications
-  function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type} position-fixed bottom-0 end-0 m-3`;
-    toast.innerHTML = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-  </script>
+</script>
 
 <script>
-  // Fonction utilitaire pour afficher les notifications
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type} position-fixed bottom-0 end-0 m-3`;
-  toast.innerHTML = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
-
 // Initialiser le graphique lorsqu'on clique sur l'onglet Statistiques
 document.addEventListener('DOMContentLoaded', function() {
     const statsTab = document.querySelector('a[href="#stats"]');
@@ -924,22 +903,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-  // Fonction d'initialisation du graphique statistique
-  function initRequestsChart() {
+// Fonction d'initialisation du graphique statistique
+function initRequestsChart() {
     fetch('/requests_data/')
         .then(response => response.json())
         .then(data => {
+            // Regrouper les données par période (heure)
+            const groupedData = {};
+            
+            data.forEach(item => {
+                const hour = new Date(item.timestamp).getHours();
+                const timeKey = `${hour}h`;
+                
+                if (!groupedData[timeKey]) {
+                    groupedData[timeKey] = 0;
+                }
+                
+                groupedData[timeKey]++;
+            });
+            
+            // Trier les périodes chronologiquement
+            const sortedPeriods = Object.keys(groupedData).sort((a, b) => {
+                return parseInt(a) - parseInt(b);
+            });
+            
             const ctx = document.getElementById('requestsChart').getContext('2d');
             new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: data.map(item => new Date(item.timestamp).toLocaleTimeString()),
-                    datasets: [{
-                        label: 'Nombre de requêtes',
-                        data: data.map(item => item.count),
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    }]
+                    labels: sortedPeriods,
+                    datasets: [
+                        {
+                            label: 'Nombre de requêtes',
+                            data: sortedPeriods.map(period => groupedData[period]),
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -947,7 +948,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Heure'
+                                text: 'Période'
                             }
                         },
                         y: {
@@ -966,7 +967,137 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('requestsChart').innerHTML = 'Erreur lors du chargement des données';
         });
 }
-
 </script>
+    
+<!-- Modal Authentification -->
+<div class="modal fade" id="authModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="card-header bg-dark text-white">
+        <h5 class="modal-title fs-5">
+          <i class="fas fa-lock me-2 fs-6"></i>Authentification
+        </h5>
+      </div>
+      <div class="modal-body">
+        <form id="authForm">
+          <div class="mb-3">
+            <label for="password" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="adminPassword" required>
+            <div class="invalid-feedback">
+              Mot de passe incorrect
+            </div>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-sign-in-alt me-2"></i>Connexion
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+    
+<button class="admin-button" id="adminButton">
+  <i class="fas fa-cog"></i>
+</button>
+   
+<script>
+// Mot de passe hashé (à remplacer par votre propre hash)
+const ADMIN_PASSWORD_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // "password" en SHA-256
+
+// Variables pour la limitation des tentatives
+let loginAttempts = 0;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_TIME = 30 * 60 * 1000; // 30 minutes
+
+// Fonction pour hacher le mot de passe avec SHA-256
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
+// Gestionnaire pour le bouton d'administration
+document.getElementById('adminButton').addEventListener('click', function() {
+  // Vérifier si l'utilisateur est verrouillé
+  const lockoutTime = localStorage.getItem('loginLockout');
+  if (lockoutTime && parseInt(lockoutTime) > Date.now()) {
+    const remainingMinutes = Math.ceil((parseInt(lockoutTime) - Date.now()) / 60000);
+    alert(`Accès temporairement bloqué. Veuillez réessayer dans ${remainingMinutes} minute(s).`);
+    return;
+  }
+  
+  // Vérifier si une session est déjà active
+  if (sessionStorage.getItem('adminAuthenticated') === 'true') {
+    // Ouvrir directement le modal d'administration
+    new bootstrap.Modal(document.getElementById('adminModal')).show();
+  } else {
+    // Ouvrir le modal d'authentification
+    new bootstrap.Modal(document.getElementById('authModal')).show();
+  }
+});
+
+// Gestionnaire pour le formulaire d'authentification
+document.getElementById('authForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  // Vérifier si le nombre maximum de tentatives est atteint
+  if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+    alert("Trop de tentatives échouées. Veuillez réessayer plus tard.");
+    localStorage.setItem('loginLockout', Date.now() + LOCKOUT_TIME);
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    return;
+  }
+  
+  const password = document.getElementById('adminPassword').value;
+  const passwordHash = await hashPassword(password);
+  
+  if (passwordHash === ADMIN_PASSWORD_HASH) {
+    // Authentification réussie
+    loginAttempts = 0; // Réinitialiser le compteur en cas de succès
+    sessionStorage.setItem('adminAuthenticated', 'true');
+    
+    // Fermer le modal d'authentification
+    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    
+    // Ouvrir le modal d'administration
+    new bootstrap.Modal(document.getElementById('adminModal')).show();
+    
+    // Réinitialiser le formulaire
+    this.reset();
+    document.getElementById('adminPassword').classList.remove('is-invalid');
+  } else {
+    // Authentification échouée
+    loginAttempts++;
+    document.getElementById('adminPassword').classList.add('is-invalid');
+    
+    // Afficher un message avec le nombre de tentatives restantes
+    const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
+    if (attemptsLeft > 0) {
+      document.querySelector('.invalid-feedback').textContent = 
+        `Mot de passe incorrect. ${attemptsLeft} tentative(s) restante(s).`;
+    } else {
+      document.querySelector('.invalid-feedback').textContent = 
+        "Dernière tentative avant verrouillage temporaire.";
+    }
+  }
+});
+
+// Déconnexion à la fermeture du modal d'administration
+document.getElementById('adminModal').addEventListener('hidden.bs.modal', function() {
+  // Option 1: Déconnexion immédiate (décommentez pour activer)
+  // sessionStorage.removeItem('adminAuthenticated');
+  
+  // Option 2: Session temporaire (15 minutes)
+  setTimeout(() => {
+    sessionStorage.removeItem('adminAuthenticated');
+  }, 15 * 60 * 1000);
+});
+    </script>
   </body>  
 </html>
