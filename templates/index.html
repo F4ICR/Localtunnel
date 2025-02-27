@@ -1010,7 +1010,7 @@ const ADMIN_PASSWORD_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a1
 // Variables pour la limitation des tentatives
 let loginAttempts = 0;
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+const LOCKOUT_TIME = 30 * 60 * 1000; // 30 minutes
 
 // Fonction pour hacher le mot de passe avec SHA-256
 async function hashPassword(password) {
@@ -1093,10 +1093,10 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
   // Option 1: Déconnexion immédiate (décommentez pour activer)
   // sessionStorage.removeItem('adminAuthenticated');
   
-  // Option 2: Session temporaire (5 minutes)
+  // Option 2: Session temporaire (15 minutes)
   setTimeout(() => {
     sessionStorage.removeItem('adminAuthenticated');
-  }, 5 * 60 * 1000);
+  }, 15 * 60 * 1000);
 });
     </script>
   </body>  
