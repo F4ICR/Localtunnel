@@ -442,5 +442,3 @@ def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=
         logger.warning(f"Seulement {success_count}/3 tests réussis : L'URL n'est pas considérée comme accessible.")
         return False
     
-    return False
-  
