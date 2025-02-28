@@ -342,7 +342,7 @@ def check_lt_process(port):
         return False
 
 
-def test_tunnel_connectivity(tunnel_url, retries=7, timeout=10, backoff_factor=1.5):
+def test_tunnel_connectivity(tunnel_url, retries=12, timeout=15, backoff_factor=2.0):
     """
     Teste la connectivité HTTP du tunnel avec :
     1. Une stratégie de retry via requests.
@@ -375,59 +375,71 @@ def test_tunnel_connectivity(tunnel_url, retries=7, timeout=10, backoff_factor=1
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
-    try:
-        response = session.get(tunnel_url, timeout=timeout)
-        if response.status_code == 200:
-            logger.info(f"Connectivité réussie avec requests ({tunnel_url}).")
-            requests_success = True
-        else:
-            logger.warning(f"Échec avec requests : Code HTTP {response.status_code}.")
-            requests_success = False
-    except requests.RequestException as e:
-        logger.error(f"Erreur lors du test avec requests : {e}")
-        requests_success = False
+    # Augmenter le nombre de tentatives pour les tests individuels
+    requests_success = False
+    for attempt in range(3):  # Essayer 3 fois le test requests
+        try:
+            response = session.get(tunnel_url, timeout=timeout)
+            if response.status_code == 200:
+                logger.info(f"Connectivité réussie avec requests ({tunnel_url}) à la tentative {attempt+1}.")
+                requests_success = True
+                break
+            else:
+                logger.warning(f"Échec avec requests : Code HTTP {response.status_code} à la tentative {attempt+1}.")
+                time.sleep(5)  # Attendre 5 secondes entre les tentatives
+        except requests.RequestException as e:
+            logger.error(f"Erreur lors du test avec requests à la tentative {attempt+1}: {e}")
+            time.sleep(5)  # Attendre 5 secondes entre les tentatives
 
     # 2. Test complémentaire avec curl et stratégie de retry
     curl_command = [
         "curl", "-o", "/dev/null", "-s", "-w", "%{http_code}",
-        "--retry", str(retries), "--retry-max-time", str(timeout), "--connect-timeout", str(timeout), tunnel_url
+        "--retry", str(retries), "--retry-max-time", str(timeout*3), "--connect-timeout", str(timeout), tunnel_url
     ]
-    try:
-        curl_result = subprocess.run(curl_command, capture_output=True, text=True, timeout=timeout)
-        if curl_result.stdout.strip() == "200":
-            logger.info("Connectivité réussie avec curl.")
-            curl_success = True
-        else:
-            logger.warning(f"Échec avec curl : Code HTTP {curl_result.stdout.strip()}.")
-            curl_success = False
-    except Exception as e:
-        logger.error(f"Erreur lors du test avec curl : {e}")
-        curl_success = False
+    curl_success = False
+    for attempt in range(2):  # Essayer 2 fois le test curl
+        try:
+            curl_result = subprocess.run(curl_command, capture_output=True, text=True, timeout=timeout*2)
+            if curl_result.stdout.strip() == "200":
+                logger.info(f"Connectivité réussie avec curl à la tentative {attempt+1}.")
+                curl_success = True
+                break
+            else:
+                logger.warning(f"Échec avec curl : Code HTTP {curl_result.stdout.strip()} à la tentative {attempt+1}.")
+                time.sleep(5)
+        except Exception as e:
+            logger.error(f"Erreur lors du test avec curl à la tentative {attempt+1}: {e}")
+            time.sleep(5)
 
     # 3. Test complémentaire avec wget et stratégie de retry
     wget_command = [
-        "wget", "--spider",
+        "wget", "--spider", "--no-check-certificate",
         "--tries", str(retries), "--timeout", str(timeout), tunnel_url
     ]
-    try:
-        wget_result = subprocess.run(wget_command, capture_output=True, text=True, timeout=timeout)
-        if wget_result.returncode == 0:  # Code retour 0 indique succès pour wget
-            logger.info("Connectivité réussie avec wget.")
-            wget_success = True
-        else:
-            logger.warning(f"Échec avec wget : Code retour {wget_result.returncode}.")
-            wget_success = False
-    except Exception as e:
-        logger.error(f"Erreur lors du test avec wget : {e}")
-        wget_success = False
+    wget_success = False
+    for attempt in range(2):  # Essayer 2 fois le test wget
+        try:
+            wget_result = subprocess.run(wget_command, capture_output=True, text=True, timeout=timeout*2)
+            if wget_result.returncode == 0:  # Code retour 0 indique succès pour wget
+                logger.info(f"Connectivité réussie avec wget à la tentative {attempt+1}.")
+                wget_success = True
+                break
+            else:
+                logger.warning(f"Échec avec wget : Code retour {wget_result.returncode} à la tentative {attempt+1}.")
+                time.sleep(5)
+        except Exception as e:
+            logger.error(f"Erreur lors du test avec wget à la tentative {attempt+1}: {e}")
+            time.sleep(5)
 
-    # Résultat final basé sur les trois tests
-    if requests_success and curl_success and wget_success:
-        logger.info("Tous les tests réussis : L'URL est accessible via requests, curl et wget.")
+    # Résultat final basé sur les trois tests, mais avec plus de souplesse
+    # Considérer comme succès si au moins 2 tests sur 3 réussissent
+    success_count = sum([requests_success, curl_success, wget_success])
+    
+    if success_count >= 2:
+        logger.info(f"{success_count}/3 tests réussis : L'URL est considérée comme accessible.")
         return True
     else:
-        logger.warning("Un ou plusieurs tests ont échoué : L'URL n'est pas pleinement accessible.")
-        
+        logger.warning(f"Seulement {success_count}/3 tests réussis : L'URL n'est pas considérée comme accessible.")
         return False
     
     return False
