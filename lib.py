@@ -342,7 +342,7 @@ def check_lt_process(port):
         return False
 
 
-def test_tunnel_connectivity(tunnel_url, retries=12, timeout=15, backoff_factor=2.0):
+def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=2.0):
     """
     Teste la connectivité HTTP du tunnel avec :
     1. Une stratégie de retry via requests.
