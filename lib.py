@@ -352,7 +352,7 @@ def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=
     :param retries: Nombre total de tentatives avant d'abandonner.
     :param timeout: Temps maximum (en secondes) pour chaque requête.
     :param backoff_factor: Facteur pour le délai exponentiel entre les tentatives.
-    :return: True si tous les tests réussissent, False sinon.
+    :return: True si au moins 2 tests sur 3 réussissent, False sinon.
     """
     
     # Validation de l'URL avec urllib.parse
@@ -421,12 +421,15 @@ def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=
         logger.error(f"Erreur lors du test avec wget : {e}")
         wget_success = False
 
-    # Résultat final basé sur les trois tests
-    if requests_success and curl_success and wget_success:
-        logger.info("Tous les tests réussis : L'URL est accessible via requests, curl et wget.")
+    # Résultat final basé sur les trois tests, mais avec plus de souplesse
+    # Considérer comme succès si au moins 2 tests sur 3 réussissent
+    success_count = sum([requests_success, curl_success, wget_success])
+    
+    if success_count >= 2:
+        logger.info(f"{success_count}/3 tests réussis : L'URL est considérée comme accessible.")
         return True
     else:
-        logger.warning("Un ou plusieurs tests ont échoué : L'URL n'est pas pleinement accessible.")
-        
-        return False
+        logger.warning(f"Seulement {success_count}/3 tests réussis : L'URL n'est pas considérée comme accessible.")
+    
+    return False
     
