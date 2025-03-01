@@ -406,7 +406,7 @@ def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=
 
     # 3. Test complémentaire avec wget et stratégie de retry
     wget_command = [
-        "wget", "--spider",
+        "wget", "--spider", "--no-check-certificate",
         "--tries", str(retries), "--timeout", str(timeout), tunnel_url
     ]
     try:
