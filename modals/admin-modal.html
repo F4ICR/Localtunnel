@@ -1,0 +1,213 @@
+<!-- Modal Administration -->
+<div class="modal fade" id="adminModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fs-5">
+          <i class="fas fa-shield-alt me-2 fs-6"></i>Administration Tunnel
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>     
+      <div class="modal-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#config">Configuration</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#control">Contrôle</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#logs">Logs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#stats">Statistiques</a>
+          </li>
+        </ul>
+
+        <div class="tab-content pt-3">
+          <!-- Configuration -->
+          <div class="tab-pane fade show active" id="config">
+            <form id="tunnelConfig">
+              <!-- Configuration des Notifications -->
+              <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0"><i class="fas fa-envelope"></i> Notifications Email</h5>
+                </div>
+                <div class="card-body">
+                  <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="email_notifications" id="emailNotifications" {% if EMAIL_NOTIFICATIONS %}checked{% endif %}>
+                    <label class="form-check-label" for="emailNotifications">Activer les notifications email</label>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Email de réception</label>
+                        <input type="email" class="form-control" name="email" value="{{ EMAIL }}">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Serveur SMTP</label>
+                        <input type="text" class="form-control" name="smtp_server" value="{{ SMTP_SERVER }}">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Port SMTP</label>
+                        <input type="number" class="form-control" name="smtp_port" value="{{ SMTP_PORT }}">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Utilisateur SMTP</label>
+                        <input type="text" class="form-control" name="smtp_user" value="{{ SMTP_USER }}">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Mot de passe SMTP</label>
+                        <input type="password" class="form-control" name="smtp_password" value="{{ SMTP_PASSWORD }}">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Configuration des Logs -->
+              <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                  <h5 class="mb-0"><i class="fas fa-file-alt"></i> Configuration des Logs</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Nombre de sauvegardes</label>
+                        <input type="number" class="form-control" name="log_backup_count" value="{{ LOG_BACKUP_COUNT }}">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Taille max des logs (Mo)</label>
+                        <input type="number" class="form-control" name="log_max_bytes" value="{{ LOG_MAX_BYTES // (1024*1024) }}">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Contrôle -->
+          <div class="tab-pane fade" id="control">
+            <!-- Configuration du Tunnel -->
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-tunnel"></i> Configuration du Tunnel</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Port Local</label>
+                      <input type="number" class="form-control" name="port" value="{{ PORT }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Sous-domaine</label>
+                      <input type="text" class="form-control" name="subdomain" value="{{ SUBDOMAIN or '' }}" placeholder="Sous-domaine personnalisé">
+                      <small class="text-muted">Laissez vide pour un sous-domaine aléatoire</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-cog"></i> Contrôle du Tunnel</h5>
+              </div>
+              <div class="card-body">
+                <!-- Contrôle du Tunnel -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Démarrage/Arrêt Manuel</h6>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" onclick="startTunnel()">
+                      <i class="fas fa-play"></i> Démarrer Tunnel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="stopTunnel()">
+                      <i class="fas fa-stop"></i> Arrêter Tunnel
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Contrôle du Service -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Service Système</h6>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary" onclick="enableService()">
+                      <i class="fas fa-power-off"></i> Activer Service
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="disableService()">
+                      <i class="fas fa-power-off"></i> Désactiver Service
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Contrôle du Crontab -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Planification Crontab</h6>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-info" onclick="enableCrontab()">
+                      <i class="fas fa-clock"></i> Activer Crontab
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="disableCrontab()">
+                      <i class="fas fa-clock"></i> Désactiver Crontab
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logs -->
+          <div class="tab-pane fade" id="logs">
+            <div class="bg-light p-3 rounded">
+              <pre id="tunnelLogs" class="small" style="max-height: 300px; overflow-y: auto; font-family: monospace; white-space: pre-wrap;"></pre>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <button class="btn btn-sm btn-secondary" onclick="refreshLogs()">
+                <i class="fas fa-sync"></i> Actualiser
+              </button>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="autoRefreshLogs">
+                <label class="form-check-label text-muted">
+                  Auto-actualisation (5s)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistiques -->
+          <div class="tab-pane fade" id="stats">
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Statistiques des Requêtes</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="requestsChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-primary" onclick="saveConfig()">
+          <i class="fas fa-save"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

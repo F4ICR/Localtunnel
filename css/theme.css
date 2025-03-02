@@ -1,0 +1,59 @@
+:root {
+  /* Mode clair */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #000000;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --card-bg: #ffffff;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] {
+  /* Mode sombre - inversion des couleurs */
+  --bg-primary: #121212;    /* Était blanc, devient très sombre */
+  --bg-secondary: #1e1e1e;  /* Était gris clair, devient gris foncé */
+  --text-primary: #ffffff;  /* Était noir, devient blanc */
+  --text-secondary: #b0b0b0;/* Était gris moyen, devient gris clair */
+  --border-color: #2d2d2d;  /* Était gris clair, devient gris foncé */
+  --card-bg: #1e1e1e;      /* Était blanc, devient très sombre */
+  --card-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Styles de base */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+/* Ajustements spécifiques pour le mode sombre */
+[data-bs-theme="dark"] .text-dark {
+  color: var(--text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--card-bg) !important;
+}
+
+/* Ajustements pour les éléments Bootstrap */
+[data-bs-theme="dark"] .form-control {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .text-muted {
+  color: var(--text-secondary) !important;
+}
