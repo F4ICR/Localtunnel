@@ -14,7 +14,7 @@ Ce tunnel bien entendu est dédié dans le cadre du projet ***RRFRemote*** mais 
 Toutefois une petite précision : ***Localtunnel*** ne permet pas de tunneliser des connexions TCP génériques (comme SSH ou FTP), car il est spécifiquement conçu pour les services web utilisant HTTP/HTTPS. 
 En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l'URL devra être en HTTP
 
-## Ajout d'un Frontal en test :
+## Ajout d'un Frontal en test, bouton Administration du tunnel, le mot de passe est 'password':
 https://1743-77-133-250-153.ngrok-free.app/
 
 ## Pré-requis
