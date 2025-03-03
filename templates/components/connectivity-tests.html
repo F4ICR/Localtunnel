@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- Section : Tests de Connectivité -->
+<div class="card mb-4 shadow-lg">
+  <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+    <h3 class="mb-0 fs-5">
+      <i class="fas fa-wifi me-2 fs-6"></i>Tests de Connectivité
+    </h3>
+    <small class="text-white fs-7">
+      <i class="fas fa-clock me-1"></i>
+      {{ last_test.timestamp.strftime('%H:%M:%S') if last_test.timestamp else 'Jamais' }}
+    </small>
+  </div>
+  
+  <div class="card-body p-3">
+    <div class="row g-3">
+      <!-- Requests -->
+      <div class="col-md-4">
+        <div id="requests-card" class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.requests %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-exchange-alt fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Requests</h5>
+            <div class="small" id="requests-status">
+              {% if last_test.results.requests %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cURL -->
+      <div class="col-md-4">
+        <div id="curl-card" class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.curl %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-terminal fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">cURL</h5>
+            <div class="small" id="curl-status">
+              {% if last_test.results.curl %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wget -->
+      <div class="col-md-4">
+        <div id="wget-card" class="h-100 p-3 bg-light rounded-3 border {% if last_test.results.wget %}border-success{% else %}border-danger{% endif %}">
+          <div class="d-flex flex-column align-items-center">
+            <i class="fas fa-download fa-lg text-muted mb-2"></i>
+            <h5 class="mb-2 small fw-bold">Wget</h5>
+            <div class="small" id="wget-status">
+              {% if last_test.results.wget %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>Connecté</span>
+              {% else %}
+                <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Échec</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

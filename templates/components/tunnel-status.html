@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- Section : Statut du Tunnel -->
+<div class="card mb-4 shadow-lg">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h3 class="mb-0 fs-5">
+      <i class="fas fa-satellite-dish me-2 fs-6"></i>Statut du Tunnel
+    </h3>
+    <div class="badge bg-white text-primary fs-7">
+      <i class="fas fa-sync-alt fa-spin me-1"></i>Temps réel
+    </div>
+  </div>
+  
+  <div class="card-body">
+    <div class="row g-4">
+      <!-- Statut -->
+      <div class="col-md-4">
+        <div class="status-card p-3 rounded-3 h-100 {% if tunnel_active %}bg-success bg-opacity-10 border-success{% else %}bg-danger bg-opacity-10 border-danger{% endif %}">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-power-off fa-lg {% if tunnel_active %}text-success{% else %}text-danger{% endif %} me-2"></i>
+            <div>
+              <h6 class="mb-1 fw-bold">État du Tunnel</h6>
+              <div class="d-flex align-items-center">
+                {% if tunnel_active %}
+                <span class="badge bg-success rounded-pill me-2 fs-7">
+                  <i class="fas fa-check-circle me-1 small"></i>ACTIF
+                </span>
+                <small class="text-muted fs-6">Depuis {{ tunnel_uptime }}</small>
+                {% else %}
+                <span class="badge bg-danger rounded-pill me-2 fs-7">
+                  <i class="fas fa-times-circle me-1 small"></i>INACTIF
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- URL -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-primary">
+          <div class="d-flex align-items-center mb-2">
+            <i class="fas fa-link fa-sm text-primary me-2"></i>
+            <h6 class="mb-0 fw-bold">URL du Tunnel</h6>
+          </div>
+          {% if tunnel_active %}
+          <div class="input-group">
+            <input type="text" class="form-control form-control-sm font-monospace text-primary border-end-0 fs-7" value="{{ tunnel_url.split('your url is:')[-1].strip() }}" readonly="" id="tunnelUrl">
+            <button class="btn btn-outline-primary btn-sm" type="button" onclick="copyToClipboard('tunnelUrl')">
+              <i class="fas fa-copy fa-xs"></i>
+            </button>
+          </div>
+          <small class="text-muted mt-1 d-block fs-8">
+            Cliquez pour test → 
+            <a href="#" onclick="testCurl('{{ tunnel_url.split('your url is:')[-1].strip() }}'); return false;" class="text-decoration-none">
+              <i class="fas fa-external-link-alt ms-1 fa-xs"></i>
+            </a>
+            <span id="curlResult"></span>
+          </small>
+          {% else %}
+          <div class="text-center py-2">
+            <i class="fas fa-unlink fa-lg text-muted mb-2"></i>
+            <p class="text-muted mb-0 fs-8">Aucune connexion active</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Métriques -->
+      <div class="col-md-4">
+        <div class="h-100 p-3 bg-light rounded-3 border border-info">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fas fa-chart-line fa-sm text-info me-2"></i>
+            <h6 class="mb-0 fw-bold">Performance</h6>
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="p-2 text-center bg-info bg-opacity-10 rounded">
+                <div class="text-info fw-bold fs-7">{{ request_count }}</div>
+                <small class="text-muted fs-8">Requêtes</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 text-center bg-info bg-opacity-10 rounded">
+                <div class="text-info fw-bold fs-7">
+                  {{ network_latency.value }}
+                  <i class="fas fa-satellite fa-xs ms-1"></i>
+                </div>
+                <small class="text-muted fs-8">Latence Localtunnel</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

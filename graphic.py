@@ -130,13 +130,19 @@ def main():
             maintenant = datetime.now()
             annee_actuelle = maintenant.year
             mois_actuel = maintenant.month
+            jour_actuel = maintenant.day
 
             # Calculer le dernier jour du mois actuel
             dernier_jour_du_mois = (datetime(annee_actuelle, mois_actuel + 1, 1) - timedelta(days=1)).day if mois_actuel < 12 else 31
 
             while True:  # Boucle pour garantir une saisie valide
                 try:
-                    jour_saisi = int(input(f"Entrez un jour du mois actuel ({mois_actuel:02d}/{annee_actuelle}), entre 1 et {dernier_jour_du_mois} : "))
+                    # Demander à l'utilisateur d'entrer un jour ou d'utiliser la valeur par défaut
+                    jour_saisi_input = input(f"Entrez un jour du mois actuel ({mois_actuel:02d}/{annee_actuelle}), entre 1 et {dernier_jour_du_mois} (par défaut : {jour_actuel}) : ").strip()
+                    
+                    # Utiliser le jour actuel si aucune saisie n'est fournie
+                    jour_saisi = int(jour_saisi_input) if jour_saisi_input else jour_actuel
+                    
                     if 1 <= jour_saisi <= dernier_jour_du_mois:
                         # Construire la date cible automatiquement
                         date_cible = f"{annee_actuelle}-{mois_actuel:02d}-{jour_saisi:02d}"
@@ -169,3 +175,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
