@@ -5,6 +5,8 @@
 import time
 import sys
 import threading
+import subprocess
+import os
 from datetime import datetime
 
 # Importer les variables de configuration depuis settings.py
@@ -158,16 +160,46 @@ def manage_tunnel():
         duration_logger.end_tunnel()
 
 
+def launch_app():
+    logger.info("Démarrage de l'application web (app.py)")
+    try:
+        # Obtenir le chemin du répertoire contenant le script actuel
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Construire le chemin complet vers app.py
+        app_path = os.path.join(script_dir, "app.py")
+        
+        # Vérifier que le fichier existe
+        if not os.path.exists(app_path):
+            logger.error(f"Le fichier app.py n'existe pas au chemin : {app_path}")
+            return
+            
+        logger.info(f"Lancement de app.py depuis : {app_path}")
+        
+        # Lancer app.py avec le chemin complet
+        subprocess.run(["python3", app_path], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Erreur lors du démarrage de app.py : {e}")
+        if hasattr(e, 'stderr') and e.stderr:
+            logger.error(f"Détails de l'erreur : {e.stderr}")
+    except Exception as e:
+        logger.error(f"Exception lors du démarrage de app.py : {e}")
+
+
 # Boucle principale pour gérer les tunnels et surveiller les processus
 def main():
     """
     Point d'entrée principal de l'application avec gestion globale des exceptions.
+    - Lance un thread séparé pour l'application web (app.py).
     - Lance un thread séparé pour surveiller le processus Localtunnel.
     - Gère la connectivité du tunnel dans une boucle principale.
     """
     try:
         logger.info("Démarrage de l'application Localtunnel Manager.")
-
+        
+        # Lancer app.py dans un processus séparé
+        threading.Thread(target=launch_app, daemon=True).start()
+        
         # Lancer un thread séparé pour surveiller le processus Localtunnel
         threading.Thread(target=monitor_lt_process, daemon=True).start()
 
