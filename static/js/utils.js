@@ -1,4 +1,3 @@
-js/utils.js
 // Fonctions utilitaires
 function copyToClipboard(elementId) {
   const copyText = document.getElementById(elementId);
