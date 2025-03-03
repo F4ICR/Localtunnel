@@ -1,4 +1,6 @@
 // Fonctions utilitaires
+
+// Fonction qui permet de copier le contenu d’un élément HTML
 function copyToClipboard(elementId) {
   const copyText = document.getElementById(elementId);
   copyText.select();
@@ -6,6 +8,7 @@ function copyToClipboard(elementId) {
   showTooltip(copyText, 'Copié !');
 }
 
+// Fonction qui affiche temporairement un message tooltip
 function showTooltip(element, message) {
   const tooltip = new bootstrap.Tooltip(element, {
     title: message,
@@ -15,12 +18,14 @@ function showTooltip(element, message) {
   setTimeout(() => tooltip.hide(), 1000);
 }
 
+// Fonction pour convertir un nombre décimal représentant des heures en format horaire “HH:MM”
 function decimalToTime(decimal) {
   const hours = Math.floor(decimal);
   const minutes = Math.round((decimal % 1) * 60);
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+// Fonction pour tester l'adresse url via l'ip public avec 'curl ifconfig.me'
 async function testCurl(tunnelUrl) {
   const response = await fetch('/test_curl', {
     method: 'POST',
@@ -33,6 +38,7 @@ async function testCurl(tunnelUrl) {
   document.getElementById('curlResult').innerHTML = ' → ' + result;
 }
 
+// Fonction pour les tests de connectivités
 function updateTestStatus() {
     fetch('/check_url')
         .then(response => response.json())
