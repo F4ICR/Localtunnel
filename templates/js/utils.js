@@ -63,3 +63,44 @@ function updateTestStatus() {
 }
 // Actualisation toutes les 10 secondes
 setInterval(updateTestStatus, 10000);
+
+// Fonction pour actualiser les métriques système
+function updateSystemMetrics() {
+    fetch('/system_metrics')
+        .then(response => response.json())
+        .then(data => {
+            // Mise à jour de l'horloge
+            document.getElementById('current-time').innerHTML = 
+                `<i class="fas fa-clock me-1"></i> ${data.current_time}`;
+            
+            // Mise à jour de la température CPU
+            document.getElementById('cpu-temperature').textContent = data.cpu_temperature;
+            
+            // Mise à jour de la mémoire
+            document.getElementById('memory-info').textContent = data.memory_info;
+            
+            // Mise à jour de l'uptime serveur avec gestion d'erreur éventuelle
+            const uptimeElement = document.getElementById('system-uptime');
+            if (data.system_uptime && data.system_uptime !== "Erreur") {
+                uptimeElement.textContent = data.system_uptime;
+            } else {
+                uptimeElement.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Indisponible';
+            }
+            
+            // Animation subtile pour indiquer l'actualisation
+            const metricsCard = document.getElementById('system-metrics-card');
+            metricsCard.classList.add('border-info');
+            setTimeout(() => {
+                metricsCard.classList.remove('border-info');
+            }, 300);
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'actualisation des métriques:', error);
+        });
+}
+
+// Actualisation toutes les 60 secondes (1 minute)
+setInterval(updateSystemMetrics, 60000);
+
+// Exécuter immédiatement pour la première actualisation
+updateSystemMetrics();
