@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.7"
+APP_VERSION = "1.4.8"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -55,6 +55,7 @@ last_test = {
 # Variables dynamiques pour CPU et mémoire
 cpu_temperature = "Température non disponible."
 memory_info = "Mémoire non disponible."
+system_uptime = "Durée inconnue"
 
 # Scheduler pour les tâches planifiées
 scheduler = BackgroundScheduler()
@@ -217,8 +218,10 @@ def get_system_uptime():
 
 ### Fonctions dynamiques ###
 def update_dynamic_metrics():
-    """Met à jour les informations CPU et mémoire."""
-    global cpu_temperature, memory_info
+    """Met à jour les informations CPU et mémoire et uptime."""
+    global cpu_temperature, memory_info, system_uptime
+    
+    # Pour la température CPU
     try:
         if hasattr(psutil, "sensors_temperatures"):
             temps = psutil.sensors_temperatures()
@@ -234,6 +237,7 @@ def update_dynamic_metrics():
         app.logger.error(f"Erreur lors de la récupération de la température CPU : {e}")
         cpu_temperature = "Erreur."
 
+    # Pour la mémoire
     try:
         mem = psutil.virtual_memory()
         total = round(mem.total / (1024 ** 3), 2)
@@ -242,6 +246,36 @@ def update_dynamic_metrics():
     except Exception as e:
         app.logger.error(f"Erreur lors de la récupération de la mémoire : {e}")
         memory_info = "Erreur."
+
+    # Pour l'uptime système
+    try:
+        system_uptime = get_system_uptime()  # Utilise la fonction existante
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la récupération de l'uptime système : {e}")
+        system_uptime = "Erreur."
+
+
+@app.route('/system_metrics')
+def system_metrics():
+    """Retourne les métriques système actualisées au format JSON."""
+    try:
+        # Mettre à jour les métriques en temps réel
+        update_dynamic_metrics()
+        
+        return jsonify({
+            'current_time': datetime.now().strftime('%H:%M:%S'),
+            'cpu_temperature': cpu_temperature,
+            'memory_info': memory_info,
+            'system_uptime': system_uptime
+        })
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la récupération des métriques système : {e}")
+        return jsonify({
+            'current_time': datetime.now().strftime('%H:%M:%S'),
+            'cpu_temperature': 'Erreur',
+            'memory_info': 'Erreur',
+            'system_uptime': 'Erreur'
+        }), 500
 
 
 def schedule_test():
@@ -347,14 +381,6 @@ def get_tunnel_start_time():
     except Exception as e:
         app.logger.error(f"Erreur lors de la lecture du fichier : {e}")
         return None
-
-
-### Routes Flask ###
-@app.before_request
-def track_request():
-    """Incrémente le compteur avant chaque requête."""
-    global request_count
-    request_count += 1
 
 
 @app.route('/')
@@ -477,7 +503,7 @@ if __name__ == '__main__':
     scheduler.add_job(measure_latency, 'interval', minutes=1, next_run_time=datetime.now())
 
     # Initialisation au démarrage
-    update_dynamic_metrics()
+    #update_dynamic_metrics()
 
     # Lancement de l'application Flask
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
