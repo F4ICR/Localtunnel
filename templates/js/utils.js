@@ -104,3 +104,26 @@ setInterval(updateSystemMetrics, 60000);
 
 // Exécuter immédiatement pour la première actualisation
 updateSystemMetrics();
+
+// Fonction d'actualisation du compteur de requêtes
+async function refreshRequestCount() {
+  try {
+    const response = await fetch('/requests_data/');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    const data = await response.json();
+    
+    // Récupérer la dernière valeur du compteur
+    const latestCount = data.length > 0 ? data[data.length - 1].count : 0;
+    
+    // Mettre à jour l'affichage dans l'élément HTML
+    document.getElementById('request-count').innerText = latestCount;
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du compteur:', error);
+  }
+}
+
+// Actualiser immédiatement au chargement puis toutes les 5 secondes
+refreshRequestCount();
+setInterval(refreshRequestCount, 5000);
