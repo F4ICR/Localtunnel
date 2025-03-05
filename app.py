@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.8"
+APP_VERSION = "1.4.9"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -195,6 +195,16 @@ def measure_latency(host="localtunnel.me"):
             last_latency["value"] = "N/A"
 
 
+@app.route('/latency_data/')
+def get_latency_data():
+    """Retourne la dernière latence mesurée."""
+    with latency_lock:
+        return jsonify({
+            "value": last_latency["value"],
+            "timestamp": last_latency["timestamp"].isoformat()
+        })
+
+
 def get_system_uptime():
     """Récupère l'uptime système avec la commande uptime"""
     try:
@@ -383,6 +393,21 @@ def get_tunnel_start_time():
         return None
 
 
+@app.route('/tunnel_uptime/')
+def get_tunnel_uptime():
+    start_time = get_tunnel_start_time()
+    if start_time:
+        uptime_duration = datetime.now() - start_time
+        days = uptime_duration.days
+        hours, remainder = divmod(uptime_duration.seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        uptime_str = f"{days}j {hours}h {minutes}m"
+    else:
+        uptime_str = "N/A"
+
+    return jsonify({"uptime": uptime_str})
+
+
 @app.route('/')
 def index():
     """Page principale affichant les informations du tunnel."""
@@ -503,7 +528,7 @@ if __name__ == '__main__':
     scheduler.add_job(measure_latency, 'interval', minutes=1, next_run_time=datetime.now())
 
     # Initialisation au démarrage
-    #update_dynamic_metrics()
+    update_dynamic_metrics()
 
     # Lancement de l'application Flask
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)

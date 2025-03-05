@@ -24,7 +24,9 @@
                 <span class="badge bg-success rounded-pill me-2 fs-7">
                   <i class="fas fa-check-circle me-1 small"></i>ACTIF
                 </span>
-                <small class="text-muted fs-6">Depuis {{ tunnel_uptime }}</small>
+                <small class="text-muted fs-6">
+                  Depuis <span id="tunnel-uptime">{{ tunnel_uptime }}</span>
+                </small>
                 {% else %}
                 <span class="badge bg-danger rounded-pill me-2 fs-7">
                   <i class="fas fa-times-circle me-1 small"></i>INACTIF
@@ -82,7 +84,7 @@
             </div>
             <div class="col-6">
               <div class="p-2 text-center bg-info bg-opacity-10 rounded">
-                <div class="text-info fw-bold fs-7">
+                <div class="text-info fw-bold fs-7" id="latency-value">
                   {{ network_latency.value }}
                   <i class="fas fa-satellite fa-xs ms-1"></i>
                 </div>
