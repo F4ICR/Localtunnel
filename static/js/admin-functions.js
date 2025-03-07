@@ -1,6 +1,9 @@
 // Mot de passe hashé (à remplacer par votre propre hash)
 const ADMIN_PASSWORD_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // "password" en SHA-256
 
+// Mettre à false pour réactiver la vérification du mot de passe
+const DISABLE_PASSWORD_CHECK = true;
+
 // Variables pour la limitation des tentatives
 let loginAttempts = 0;
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -39,38 +42,31 @@ document.getElementById('adminButton').addEventListener('click', function() {
 // Gestionnaire pour le formulaire d'authentification
 document.getElementById('authForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  
-  // Vérifier si le nombre maximum de tentatives est atteint
-  if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-    alert("Trop de tentatives échouées. Veuillez réessayer plus tard.");
-    localStorage.setItem('loginLockout', Date.now() + LOCKOUT_TIME);
+
+  if (DISABLE_PASSWORD_CHECK) {
+    // Authentification automatique si la vérification est désactivée
+    sessionStorage.setItem('adminAuthenticated', 'true');
     bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+    new bootstrap.Modal(document.getElementById('adminModal')).show();
+    this.reset();
     return;
   }
-  
+
+  // Vérification normale du mot de passe si activée
   const password = document.getElementById('adminPassword').value;
   const passwordHash = await hashPassword(password);
-  
+
   if (passwordHash === ADMIN_PASSWORD_HASH) {
-    // Authentification réussie
-    loginAttempts = 0; // Réinitialiser le compteur en cas de succès
+    loginAttempts = 0; 
     sessionStorage.setItem('adminAuthenticated', 'true');
-    
-    // Fermer le modal d'authentification
     bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
-    
-    // Ouvrir le modal d'administration
     new bootstrap.Modal(document.getElementById('adminModal')).show();
-    
-    // Réinitialiser le formulaire
     this.reset();
     document.getElementById('adminPassword').classList.remove('is-invalid');
   } else {
-    // Authentification échouée
     loginAttempts++;
     document.getElementById('adminPassword').classList.add('is-invalid');
     
-    // Afficher un message avec le nombre de tentatives restantes
     const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
     if (attemptsLeft > 0) {
       document.querySelector('.invalid-feedback').textContent = 
