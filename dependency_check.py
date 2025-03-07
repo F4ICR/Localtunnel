@@ -57,7 +57,7 @@ def check_required_modules():
         'requests': 'pip install requests',
         'smtplib': 'Module intégré à Python',
         'email.mime.text': 'Module intégré à Python',
-        'Flask': 'pip install Flask',
+        'flask': 'pip install Flask',
         'validators': 'pip install validators',
         'apscheduler': 'pip install apscheduler'
     }

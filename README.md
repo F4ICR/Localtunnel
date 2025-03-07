@@ -14,9 +14,6 @@ Ce tunnel bien entendu est dédié dans le cadre du projet ***RRFRemote*** mais 
 Toutefois une petite précision : ***Localtunnel*** ne permet pas de tunneliser des connexions TCP génériques (comme SSH ou FTP), car il est spécifiquement conçu pour les services web utilisant HTTP/HTTPS. 
 En ce qui concerne la configuration du fichier _.ini_ pour le ***RRFRemote***, l'URL devra être en HTTP
 
-## Ajout d'un Frontal en test, bouton Administration du tunnel, le mot de passe est 'password':
-https://1743-77-133-250-153.ngrok-free.app/
-
 ## Pré-requis
 • **Python 3** : Assurez-vous que Python 3 est installé sur votre machine ainsi que **requests** nécessaire pour tester la connectivité HTTP du tunnel mais également **APScheduler** une bibliothèque Python qui permet de planifier l’exécution de code Python à des moments précis, que ce soit une seule fois ou périodiquement, **Flask** un framework web léger et Jinja2 son moteur de templates qui s'installera automatiquement avec **Flask**.
 
