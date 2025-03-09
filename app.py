@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.4.9"
+APP_VERSION = "1.5.0"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -395,15 +395,22 @@ def get_tunnel_start_time():
 
 @app.route('/tunnel_uptime/')
 def get_tunnel_uptime():
-    start_time = get_tunnel_start_time()
-    if start_time:
-        uptime_duration = datetime.now() - start_time
-        days = uptime_duration.days
-        hours, remainder = divmod(uptime_duration.seconds, 3600)
-        minutes, _ = divmod(remainder, 60)
-        uptime_str = f"{days}j {hours}h {minutes}m"
-    else:
-        uptime_str = "N/A"
+    try:
+        with open("/tmp/tunnel_start_time.txt", "r") as f:
+            start_time_str = f.read().strip()
+            start_time = datetime.fromisoformat(start_time_str)
+    except FileNotFoundError:
+        app.logger.warning("Fichier /tmp/tunnel_start_time.txt introuvable.")
+        return jsonify({"uptime": "N/A"})
+    except ValueError as e:
+        app.logger.error(f"Format invalide dans /tmp/tunnel_start_time.txt : {e}")
+        return jsonify({"uptime": "N/A"})
+    
+    uptime_duration = datetime.now() - start_time
+    days = uptime_duration.days
+    hours, remainder = divmod(uptime_duration.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    uptime_str = f"{days}j {hours}h {minutes}m"
 
     return jsonify({"uptime": uptime_str})
 
