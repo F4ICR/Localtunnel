@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.0"
+APP_VERSION = "1.5.1"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
+import os
 import validators
 import psutil
 import subprocess
@@ -527,6 +528,75 @@ def check_url():
             "next_check": last_test["next_check"].isoformat(),
         })
 
+
+@app.route('/admin/save-config', methods=['POST'])
+def save_config():
+    try:
+        # Récupérer les données envoyées par le formulaire
+        config_data = request.get_json()
+
+        # Convertir "on"/"off" en True/False pour EMAIL_NOTIFICATIONS
+        email_notifications = config_data.get('email_notifications', 'off') == 'on'
+
+        # Préparer les données à sauvegarder
+        new_config = {
+            "email_notifications": email_notifications,
+            "email": config_data.get('email', ''),
+            "smtp_server": config_data.get('smtp_server', ''),
+            "smtp_port": int(config_data.get('smtp_port', 0)),
+            "smtp_user": config_data.get('smtp_user', ''),
+            "smtp_password": config_data.get('smtp_password', '')
+        }
+
+        # Mettre à jour settings.py
+        if update_settings(new_config):
+            app.logger.info("Configuration mise à jour avec succès.")
+            return jsonify({"status": "success"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Échec de la mise à jour"}), 500
+
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la sauvegarde : {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+def update_settings(new_config):
+    """Met à jour les valeurs dans le fichier settings.py tout en conservant les commentaires."""
+    try:
+        settings_file = "settings.py"
+        with open(settings_file, "r") as f:
+            lines = f.readlines()
+
+        # Modifier uniquement les lignes correspondant aux paramètres à mettre à jour
+        with open(settings_file, "w") as f:
+            for line in lines:
+                if line.startswith("EMAIL_NOTIFICATIONS"):
+                    # Remplace True/False tout en conservant le commentaire
+                    f.write(f"EMAIL_NOTIFICATIONS = {str(new_config['email_notifications'])}  # Mettre à False pour désactiver les emails\n")
+                elif line.startswith("EMAIL ="):
+                    # Remplace l'email tout en conservant le commentaire
+                    f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
+                elif line.startswith("SMTP_SERVER ="):
+                    # Remplace le serveur SMTP tout en conservant le commentaire
+                    f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP (exemple avec Gmail)\n")
+                elif line.startswith("SMTP_PORT ="):
+                    # Remplace le port SMTP tout en conservant le commentaire
+                    f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
+                elif line.startswith("SMTP_USER ="):
+                    # Remplace l'utilisateur SMTP tout en conservant le commentaire
+                    f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Adresse email utilisée pour l'envoi\n")
+                elif line.startswith("SMTP_PASSWORD ="):
+                    # Remplace le mot de passe SMTP tout en conservant le commentaire
+                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
+                else:
+                    # Garder toutes les autres lignes inchangées (y compris les commentaires)
+                    f.write(line)
+
+        return True
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la mise à jour de settings.py : {e}")
+        return False
+    
 
 if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage
