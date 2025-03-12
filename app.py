@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.1"
+APP_VERSION = "1.5.2"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -45,7 +45,7 @@ app = Flask(__name__)
 
 # Verrou pour les tests concurrents et cache des résultats des tests
 latency_lock = Lock()
-last_latency = {"value": None, "timestamp": None}
+last_latency = {"value": "N/A", "timestamp": None}
 test_lock = Lock()
 last_test = {
     "timestamp": None,
@@ -200,10 +200,22 @@ def measure_latency(host="localtunnel.me"):
 def get_latency_data():
     """Retourne la dernière latence mesurée."""
     with latency_lock:
-        return jsonify({
-            "value": last_latency["value"],
-            "timestamp": last_latency["timestamp"].isoformat()
-        })
+        if last_latency and last_latency.get("timestamp") and last_latency.get("value") is not None:
+            # Données valides disponibles
+            response = {
+                "value": last_latency["value"],
+                "timestamp": last_latency["timestamp"].isoformat()
+            }
+        else:
+            # Aucune donnée valide disponible
+            app.logger.warning("Aucune donnée de latence disponible actuellement.")
+            response = {
+                "value": None,
+                "timestamp": None,
+                "message": "Aucune donnée de latence disponible pour le moment."
+            }
+
+        return jsonify(response)
 
 
 def get_system_uptime():
