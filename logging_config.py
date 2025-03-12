@@ -3,6 +3,7 @@
 
 import logging
 from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
+from datetime import datetime, time
 import socket
 from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
@@ -24,7 +25,8 @@ try:
         when='midnight',
         interval=1,
         backupCount=LOG_BACKUP_COUNT,
-        encoding='utf-8'
+        encoding='utf-8',
+      	atTime=time(0, 0, 0)  # Rotation précisément à 00:00:00
     )
     file_handler.setLevel(logging.DEBUG)
 except Exception as e:
