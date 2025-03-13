@@ -428,6 +428,26 @@ def get_tunnel_uptime():
     return jsonify({"uptime": uptime_str})
 
 
+@app.route('/get_tunnel_url')
+def get_tunnel_url():
+    """Endpoint pour récupérer dynamiquement l'URL du tunnel."""
+    tunnel_active = is_tunnel_active(PORT)
+    if tunnel_active:
+        try:
+            with open(TUNNEL_OUTPUT_FILE, "r") as file:
+                # Lire et nettoyer l'URL
+                raw_url = file.read().strip()
+                # Supprimer le texte 'your url is: ' si présent
+                tunnel_url = raw_url.replace('your url is: ', '')
+        except Exception as e:
+            app.logger.error(f"Erreur lecture fichier : {e}")
+            tunnel_url = "Erreur"
+    else:
+        tunnel_url = "Aucun"
+
+    return jsonify({"tunnel_url": tunnel_url})
+
+
 @app.route('/')
 def index():
     """Page principale affichant les informations du tunnel."""

@@ -184,3 +184,51 @@ async function updateTunnelUptime() {
 // Actualisation immédiate puis toutes les minutes (60000 ms)
 updateTunnelUptime();
 setInterval(updateTunnelUptime, 60000);
+
+// Fonction pour mettre à jour dynamiquement l'URL du tunnel
+function updateTunnelUrl() {
+  fetch('/get_tunnel_url')
+    .then(response => response.json())
+    .then(data => {
+      const tunnelInput = document.getElementById('tunnelUrl');
+      const testLink = document.getElementById('tunnelTestLink');
+      const noTunnelMessage = document.getElementById('noTunnelMessage');
+
+      if (data.tunnel_url && data.tunnel_url !== "Aucun") {
+        // Si le tunnel est actif, mettre à jour l'input et le lien
+        if (tunnelInput) {
+          tunnelInput.value = data.tunnel_url;
+        }
+        if (testLink) {
+          testLink.href = data.tunnel_url;
+          testLink.onclick = function () {
+            testCurl(data.tunnel_url);
+            return false;
+          };
+        }
+        // Masquer le message "Aucune connexion active"
+        if (noTunnelMessage) {
+          noTunnelMessage.style.display = 'none';
+        }
+      } else {
+        // Si le tunnel est inactif, afficher un message
+        if (noTunnelMessage) {
+          noTunnelMessage.style.display = 'block';
+        }
+        if (tunnelInput) {
+          tunnelInput.value = '';
+        }
+        if (testLink) {
+          testLink.href = '#';
+          testLink.onclick = null;
+        }
+      }
+    })
+    .catch(error => console.error('Erreur lors de la mise à jour de l\'URL du tunnel:', error));
+}
+
+// Mettre à jour l'URL toutes les heures (3600000 ms)
+setInterval(updateTunnelUrl, 3600000);
+
+// Appeler la fonction immédiatement au chargement de la page
+updateTunnelUrl();
