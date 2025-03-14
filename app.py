@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.2"
+APP_VERSION = "1.5.3"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -629,6 +629,56 @@ def update_settings(new_config):
         app.logger.error(f"Erreur lors de la mise à jour de settings.py : {e}")
         return False
     
+
+@app.route('/admin/save-logs-config', methods=['POST'])
+def save_logs_config():
+    try:
+        # Récupérer les données envoyées par le formulaire ou via JSON
+        config_data = request.get_json()
+
+        # Préparer les données à sauvegarder
+        new_config = {
+            "log_backup_count": int(config_data.get('log_backup_count', 0)),
+            "log_max_bytes": int(config_data.get('log_max_bytes', 0)) * (1024 * 1024)  # Conversion Mo -> octets
+        }
+
+        # Mettre à jour settings.py
+        if update_logs_settings(new_config):
+            app.logger.info("Configuration des logs mise à jour avec succès.")
+            return jsonify({"status": "success"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Échec de la mise à jour"}), 500
+
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la sauvegarde de la configuration des logs : {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+def update_logs_settings(new_config):
+    """Met à jour les valeurs des logs dans le fichier settings.py tout en conservant les commentaires."""
+    try:
+        settings_file = "settings.py"
+        with open(settings_file, "r") as f:
+            lines = f.readlines()
+
+        # Modifier uniquement les lignes correspondant aux paramètres des logs
+        with open(settings_file, "w") as f:
+            for line in lines:
+                if line.startswith("LOG_BACKUP_COUNT"):
+                    # Remplace le nombre de sauvegardes tout en conservant le commentaire
+                    f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes de logs à conserver\n")
+                elif line.startswith("LOG_MAX_BYTES"):
+                    # Remplace la taille maximale des fichiers log tout en conservant le commentaire
+                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille maximale des fichiers log (en octets)\n")
+                else:
+                    # Garder toutes les autres lignes inchangées (y compris les commentaires)
+                    f.write(line)
+
+        return True
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la mise à jour de settings.py : {e}")
+        return False
+
 
 if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage

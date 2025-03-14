@@ -89,6 +89,29 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
   }, 15 * 60 * 1000);
 });
 
+// Script pour la configuration du mail
+document.querySelector('#monFormulaire').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    // Gestion spéciale pour checkbox (on/off)
+    data.email_notifications = formData.get('email_notifications') ? 'on' : 'off';
+
+    fetch('/admin/save-config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log(result);
+        // Gérer le résultat ici
+    })
+    .catch(error => console.error('Erreur:', error));
+});
+
 // Gestion de l'interface d'administration
 function saveConfig() {
   const tunnelConfig = Object.fromEntries(new FormData(document.getElementById('tunnelConfig')));
@@ -258,4 +281,3 @@ function disableCrontab() {
       showToast('Erreur lors de la désactivation du crontab', 'error');
     });
 }
-
