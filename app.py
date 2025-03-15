@@ -593,7 +593,7 @@ def save_config():
 
 
 def update_settings(new_config):
-    """Met à jour les valeurs dans le fichier settings.py tout en conservant les commentaires."""
+    """Met à jour les valeurs dans le fichier settings.py."""
     try:
         settings_file = "settings.py"
         with open(settings_file, "r") as f:
@@ -603,26 +603,19 @@ def update_settings(new_config):
         with open(settings_file, "w") as f:
             for line in lines:
                 if line.startswith("EMAIL_NOTIFICATIONS"):
-                    # Remplace True/False tout en conservant le commentaire
-                    f.write(f"EMAIL_NOTIFICATIONS = {str(new_config['email_notifications'])}  # Mettre à False pour désactiver les emails\n")
+                        f.write(f"EMAIL_NOTIFICATIONS = {str(new_config['email_notifications'])}  # Mettre à False pour désactiver les emails\n")
                 elif line.startswith("EMAIL ="):
-                    # Remplace l'email tout en conservant le commentaire
-                    f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
+                        f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
                 elif line.startswith("SMTP_SERVER ="):
-                    # Remplace le serveur SMTP tout en conservant le commentaire
-                    f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP (exemple avec Gmail)\n")
+                        f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP (exemple avec Gmail)\n")
                 elif line.startswith("SMTP_PORT ="):
-                    # Remplace le port SMTP tout en conservant le commentaire
-                    f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
+                        f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
                 elif line.startswith("SMTP_USER ="):
-                    # Remplace l'utilisateur SMTP tout en conservant le commentaire
-                    f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Adresse email utilisée pour l'envoi\n")
+                        f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Adresse email utilisée pour l'envoi\n")
                 elif line.startswith("SMTP_PASSWORD ="):
-                    # Remplace le mot de passe SMTP tout en conservant le commentaire
-                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
+                        f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
                 else:
-                    # Garder toutes les autres lignes inchangées (y compris les commentaires)
-                    f.write(line)
+                     f.write(line)
 
         return True
     except Exception as e:
@@ -639,7 +632,7 @@ def save_logs_config():
         # Préparer les données à sauvegarder
         new_config = {
             "log_backup_count": int(config_data.get('log_backup_count', 0)),
-            "log_max_bytes": int(config_data.get('log_max_bytes', 0)) * (1024 * 1024)  # Conversion Mo -> octets
+            "log_max_bytes": int(config_data.get('log_max_bytes', 0))  # Taille en Mo directement
         }
 
         # Mettre à jour settings.py
@@ -655,7 +648,7 @@ def save_logs_config():
 
 
 def update_logs_settings(new_config):
-    """Met à jour les valeurs des logs dans le fichier settings.py tout en conservant les commentaires."""
+    """Met à jour les valeurs des logs dans le fichier settings.py."""
     try:
         settings_file = "settings.py"
         with open(settings_file, "r") as f:
@@ -665,14 +658,11 @@ def update_logs_settings(new_config):
         with open(settings_file, "w") as f:
             for line in lines:
                 if line.startswith("LOG_BACKUP_COUNT"):
-                    # Remplace le nombre de sauvegardes tout en conservant le commentaire
-                    f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes de logs à conserver\n")
+                        f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes de logs à conserver\n")
                 elif line.startswith("LOG_MAX_BYTES"):
-                    # Remplace la taille maximale des fichiers log tout en conservant le commentaire
-                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille maximale des fichiers log (en octets)\n")
+                        f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille maximale des fichiers log (en octets)\n")
                 else:
-                    # Garder toutes les autres lignes inchangées (y compris les commentaires)
-                    f.write(line)
+                        f.write(line)
 
         return True
     except Exception as e:
