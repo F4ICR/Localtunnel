@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version du script
-version = '3.1'
+version = '3.2'
 
 import os
 

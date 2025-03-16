@@ -89,27 +89,51 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
   }, 15 * 60 * 1000);
 });
 
-// Gestion de l'interface d'administration
+/// Fonction unique et complète pour sauvegarder toute la configuration
 function saveConfig() {
-  const tunnelConfig = Object.fromEntries(new FormData(document.getElementById('tunnelConfig')));
-  
+  // Récupération du formulaire complet
+  const formElement = document.getElementById('tunnelConfig');
+  const formData = new FormData(formElement);
+
+  // Conversion FormData en objet JavaScript
+  const tunnelConfig = Object.fromEntries(formData.entries());
+
+  // Gestion explicite de la checkbox email_notifications
+  tunnelConfig.email_notifications = document.getElementById('emailNotifications').checked;
+
   fetch('/admin/save-config', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(tunnelConfig)
   })
-  .then(response => {
-    if (response.ok) {
-      showToast('Configuration sauvegardée');
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast('Configuration sauvegardée avec succès !');
       setTimeout(() => location.reload(), 1000);
     } else {
-      showToast('Erreur lors de la sauvegarde', 'error');
+      showToast(`Erreur : ${data.message}`, 'error');
     }
   })
   .catch(error => {
     console.error('Erreur:', error);
     showToast('Erreur lors de la sauvegarde', 'error');
   });
+}
+
+function saveLogsConfig() {
+    const formDataLogs = {
+      log_backup_count: document.querySelector("[name='log_backup_count']").value,
+      log_max_bytes: document.querySelector("[name='log_max_bytes']").value
+    };
+
+    fetch('/admin/save-logs-config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(formDataLogs)
+    })
+    .then(res => res.json())
+    .then(data => alert(data.status === 'success' ? 'Configuration logs enregistrée !' : data.message));
 }
 
 // Actualisation des logs
@@ -258,4 +282,3 @@ function disableCrontab() {
       showToast('Erreur lors de la désactivation du crontab', 'error');
     });
 }
-
