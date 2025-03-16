@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.3"
+APP_VERSION = "1.5.4"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -564,27 +564,31 @@ def check_url():
 @app.route('/admin/save-config', methods=['POST'])
 def save_config():
     try:
-        # Récupérer les données envoyées par le formulaire
         config_data = request.get_json()
 
-        # Convertir "on"/"off" en True/False pour EMAIL_NOTIFICATIONS
-        email_notifications = config_data.get('email_notifications', 'off') == 'on'
+        # Email notifications
+        email_notifications = config_data.get('email_notifications', False)
+        if isinstance(email_notifications, str):
+            email_notifications = email_notifications.lower() in ['true', 'on', '1']
 
-        # Préparer les données à sauvegarder
+        # Préparer toutes les configurations dans un seul dictionnaire
         new_config = {
             "email_notifications": email_notifications,
             "email": config_data.get('email', ''),
             "smtp_server": config_data.get('smtp_server', ''),
             "smtp_port": int(config_data.get('smtp_port', 0)),
             "smtp_user": config_data.get('smtp_user', ''),
-            "smtp_password": config_data.get('smtp_password', '')
+            "smtp_password": config_data.get('smtp_password', ''),
+            "log_backup_count": int(config_data.get('log_backup_count', 0)),
+            "log_max_bytes": int(config_data.get('log_max_bytes', 0))  # Taille directement en Mo
         }
 
-        # Mettre à jour settings.py
+        # Mettre à jour settings.py avec toutes les configurations
         if update_settings(new_config):
             app.logger.info("Configuration mise à jour avec succès.")
             return jsonify({"status": "success"}), 200
         else:
+            app.logger.error("Échec de la mise à jour.")
             return jsonify({"status": "error", "message": "Échec de la mise à jour"}), 500
 
     except Exception as e:
@@ -593,82 +597,42 @@ def save_config():
 
 
 def update_settings(new_config):
-    """Met à jour les valeurs dans le fichier settings.py."""
+    """
+    Met à jour les paramètres dans settings.py.
+    new_config est un dictionnaire contenant toutes les clés et valeurs à modifier.
+    """
     try:
         settings_file = "settings.py"
         with open(settings_file, "r") as f:
             lines = f.readlines()
 
-        # Modifier uniquement les lignes correspondant aux paramètres à mettre à jour
         with open(settings_file, "w") as f:
             for line in lines:
+                # Vérifier chaque clé dans new_config et mettre à jour la ligne correspondante
                 if line.startswith("EMAIL_NOTIFICATIONS"):
-                        f.write(f"EMAIL_NOTIFICATIONS = {str(new_config['email_notifications'])}  # Mettre à False pour désactiver les emails\n")
+                    f.write(f"EMAIL_NOTIFICATIONS = {new_config['email_notifications']}  # Activer ou désactiver les emails\n")
                 elif line.startswith("EMAIL ="):
-                        f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
+                    f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
                 elif line.startswith("SMTP_SERVER ="):
-                        f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP (exemple avec Gmail)\n")
+                    f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP\n")
                 elif line.startswith("SMTP_PORT ="):
-                        f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
+                    f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
                 elif line.startswith("SMTP_USER ="):
-                        f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Adresse email utilisée pour l'envoi\n")
+                    f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Utilisateur SMTP\n")
                 elif line.startswith("SMTP_PASSWORD ="):
-                        f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
-                else:
-                     f.write(line)
-
-        return True
-    except Exception as e:
-        app.logger.error(f"Erreur lors de la mise à jour de settings.py : {e}")
-        return False
-    
-
-@app.route('/admin/save-logs-config', methods=['POST'])
-def save_logs_config():
-    try:
-        # Récupérer les données envoyées par le formulaire ou via JSON
-        config_data = request.get_json()
-
-        # Préparer les données à sauvegarder
-        new_config = {
-            "log_backup_count": int(config_data.get('log_backup_count', 0)),
-            "log_max_bytes": int(config_data.get('log_max_bytes', 0))  # Taille en Mo directement
-        }
-
-        # Mettre à jour settings.py
-        if update_logs_settings(new_config):
-            app.logger.info("Configuration des logs mise à jour avec succès.")
-            return jsonify({"status": "success"}), 200
-        else:
-            return jsonify({"status": "error", "message": "Échec de la mise à jour"}), 500
-
-    except Exception as e:
-        app.logger.error(f"Erreur lors de la sauvegarde de la configuration des logs : {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-def update_logs_settings(new_config):
-    """Met à jour les valeurs des logs dans le fichier settings.py."""
-    try:
-        settings_file = "settings.py"
-        with open(settings_file, "r") as f:
-            lines = f.readlines()
-
-        # Modifier uniquement les lignes correspondant aux paramètres des logs
-        with open(settings_file, "w") as f:
-            for line in lines:
-                if line.startswith("LOG_BACKUP_COUNT"):
-                        f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes de logs à conserver\n")
+                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe SMTP\n")
+                elif line.startswith("LOG_BACKUP_COUNT"):
+                    f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes logs\n")
                 elif line.startswith("LOG_MAX_BYTES"):
-                        f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille maximale des fichiers log (en octets)\n")
+                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille max logs (en Mo)\n")
                 else:
-                        f.write(line)
+                    # Conserver les lignes non modifiées
+                    f.write(line)
 
         return True
     except Exception as e:
-        app.logger.error(f"Erreur lors de la mise à jour de settings.py : {e}")
+        app.logger.error(f"Erreur lors de l'écriture settings.py : {e}")
         return False
-
 
 if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage
