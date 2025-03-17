@@ -2,12 +2,10 @@
 # F4ICR & OpenAI GPT-4
 
 import logging
-from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, timedelta, time as datetime_time
 import socket
-import os
-import time
-from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, GENERAL_LOG_BACKUP_COUNT, ERROR_LOG_BACKUP_COUNT, LOG_MAX_BYTES
+from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, GENERAL_LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
 # Classe pour ajouter l'hostname aux logs
 class ContextFilter(logging.Filter):
@@ -20,15 +18,38 @@ class ContextFilter(logging.Filter):
 # Classe personnalisée pour corriger le problème de rotation des logs
 class FixedTimedRotatingFileHandler(TimedRotatingFileHandler):
     def computeRollover(self, currentTime):
-        # Calcule précisément la prochaine rotation à minuit (heure locale)
+        """
+        Calcule précisément la prochaine rotation à minuit (heure locale).
+        """
         t = datetime.fromtimestamp(currentTime)
         tomorrow = t + timedelta(days=1)
         rollover_time = datetime.combine(tomorrow.date(), self.atTime)
         return rollover_time.timestamp()
 
-    def getFilesToDelete(self):
-        # Utilise la méthode par défaut pour déterminer les fichiers à supprimer
-        return super().getFilesToDelete()
+    def doRollover(self):
+        """
+        Effectue la rotation et renomme le fichier avec la date correcte correspondant au contenu.
+        """
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+        # Calculer la date correspondant au contenu (jour écoulé)
+        yesterday = datetime.now() - timedelta(days=1)
+        dated_filename = f"{self.baseFilename}.{yesterday.strftime('%Y-%m-%d')}"
+
+        # Renommer le fichier actuel avec la date du contenu
+        if os.path.exists(self.baseFilename):
+            os.rename(self.baseFilename, dated_filename)
+
+        # Supprimer les anciens fichiers si nécessaire
+        if self.backupCount > 0:
+            for s in self.getFilesToDelete():
+                os.remove(s)
+
+        # Réouvrir le fichier pour continuer à écrire les logs
+        if not self.delay:
+            self.stream = self._open()
 
 # Configurer la journalisation générale (niveau global par défaut)
 logging.basicConfig(level=logging.DEBUG)
@@ -48,12 +69,10 @@ except Exception as e:
     print(f"Erreur lors de la configuration du gestionnaire de fichier : {e}")
     file_handler = None
 
-# Gestionnaire pour les erreurs (rotation par taille)
+# Gestionnaire pour les erreurs (sans rotation)
 try:
-    error_handler = RotatingFileHandler(
-        ERROR_LOG,
-        maxBytes=LOG_MAX_BYTES,
-        backupCount=ERROR_LOG_BACKUP_COUNT,
+    error_handler = logging.FileHandler(
+        ERROR_LOG,  # Un seul fichier pour toutes les erreurs
         encoding='utf-8'
     )
     error_handler.setLevel(logging.ERROR)
