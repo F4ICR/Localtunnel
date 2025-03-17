@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, time as datetime_time
 import socket
 import os
 import time
-from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
+from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, GENERAL_LOG_BACKUP_COUNT, ERROR_LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
 # Classe pour ajouter l'hostname aux logs
 class ContextFilter(logging.Filter):
@@ -39,7 +39,7 @@ try:
         APPLICATION_LOG,
         when='midnight',
         interval=1,
-        backupCount=LOG_BACKUP_COUNT,
+        backupCount=GENERAL_LOG_BACKUP_COUNT,
         encoding='utf-8',
         atTime=datetime_time(0, 0, 0)  # Rotation précisément à 00:00:00
     )
@@ -53,7 +53,7 @@ try:
     error_handler = RotatingFileHandler(
         ERROR_LOG,
         maxBytes=LOG_MAX_BYTES,
-        backupCount=LOG_BACKUP_COUNT,
+        backupCount=ERROR_LOG_BACKUP_COUNT,
         encoding='utf-8'
     )
     error_handler.setLevel(logging.ERROR)
@@ -96,4 +96,4 @@ logger.propagate = False
 
 # Exemple d'utilisation du logger corrigé :
 if __name__ == "__main__":
-    logger.info("Le système de journalisation corrigé est opérationnel.")
+    logger.info("Le système de journalisation est opérationnel.")

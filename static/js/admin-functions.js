@@ -123,7 +123,7 @@ function saveConfig() {
 
 function saveLogsConfig() {
     const formDataLogs = {
-      log_backup_count: document.querySelector("[name='log_backup_count']").value,
+      general_log_backup_count: document.querySelector("[name='general_log_backup_count']").value,
       log_max_bytes: document.querySelector("[name='log_max_bytes']").value
     };
 
