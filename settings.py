@@ -25,19 +25,20 @@ TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 PORT = 3000  # Le port local à exposer
 
 # Configuration email
-EMAIL_NOTIFICATIONS = True  # Mettre à False pour désactiver les emails
-EMAIL = "votre_mail@blabla.com"  # Adresse email pour recevoir l'URL du tunnel
-SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
+EMAIL_NOTIFICATIONS = True  # Activer ou désactiver les emails
+EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
+SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP
 SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
-SMTP_USER = "votre_mail@blabla.com"  # Adresse email utilisée pour l'envoi
-SMTP_PASSWORD = "mot_de_passe"  # Mot de passe ou App Password (si Gmail)
+SMTP_USER = "pascal.paquet@gmail.com"  # Utilisateur SMTP
+SMTP_PASSWORD = "xgprpgltwbhpahot"  # Mot de passe SMTP
 
 # Sous-domaine pour le tunnel
 SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 
 # Configuration des logs
-LOG_BACKUP_COUNT = 6  # Nombre de sauvegardes de logs à conserver
-LOG_MAX_BYTES = 5 * 1024 * 1024  # Taille maximale des fichiers log (en octets)
+GENERAL_LOG_BACKUP_COUNT = 5  # Nombre de sauvegardes logs
+ERROR_LOG_BACKUP_COUNT = 2  # Nombre de sauvegardes de logs d'erreurs à conserver
+LOG_MAX_BYTES = 2  # Taille max logs (en Mo)
 
 # Paramètres pour démarrer le tunnel
 MAX_RETRIES = 10  # Nombre de tentatives pour établir le tunnel
