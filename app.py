@@ -579,7 +579,7 @@ def save_config():
             "smtp_port": int(config_data.get('smtp_port', 0)),
             "smtp_user": config_data.get('smtp_user', ''),
             "smtp_password": config_data.get('smtp_password', ''),
-            "general_log_backup_count": int(config_data.get('general_log_backup_count', 0)),
+            "log_backup_count": int(config_data.get('log_backup_count', 0)),
             "log_max_bytes": int(config_data.get('log_max_bytes', 0))  # Taille directement en Mo
         }
 
@@ -621,8 +621,8 @@ def update_settings(new_config):
                     f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Utilisateur SMTP\n")
                 elif line.startswith("SMTP_PASSWORD ="):
                     f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe SMTP\n")
-                elif line.startswith("GENERAL_LOG_BACKUP_COUNT"):
-                    f.write(f"GENERAL_LOG_BACKUP_COUNT = {new_config['general_log_backup_count']}  # Nombre de sauvegardes logs\n")
+                elif line.startswith("LOG_BACKUP_COUNT"):
+                    f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes logs\n")
                 elif line.startswith("LOG_MAX_BYTES"):
                     f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille max logs (en Mo)\n")
                 else:
