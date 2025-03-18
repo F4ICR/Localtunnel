@@ -27,12 +27,22 @@ Téléchargez le projet Localtunnel depuis votre répertoire de travail qui est 
 
 `git clone https://github.com/F4ICR/Localtunnel.git`
 
-Rendre executable le script localtunnel.py en se rendant dans le répertoire Localtunnel
+Rendre executable le script **install.sh** en se rendant dans le répertoire ***Localtunnel***
 
 `cd Localtunnel/`
 
-`chmod +x localtunnel.py`
+`chmod +x install.sh`
 
+`./install.sh`
+
+Cette dernière commande créera les services nécessaires au bon fonctionnement de l’application ***Localtunnel*** puis lancera les services afin de prévenir toute interruption de son fonctionnement. J’ai également inclus une boucle dans le script 'localtunnel.py' qui tourne en mode deamon afin de verifier la connectivité du tunnel toutes les 300s (5mn).
+
+Petite précision concernant le script **install.sh** : l’installation des services se fait en partant du principe que vous avez installé mon projet GitHub **localtunnel** depuis le repertoire `/root/`, si tel n'était pas le cas, il vous appartient de modifié les chemins d'execution dans **install.sh**
+
+`ExecStart=/usr/bin/python3 /root/Localtunnel/localtunnel.py`
+`ExecStart=/usr/bin/python3 /root/Localtunnel/app.py`
+
+## Configuration
 Renseignez les variables suivantes soit en éditant le fichier 'settings.py' avec 'nano' depuis la ligne de commande ou depuis votre navigateur web en étant sur le même reseau que le serveur sur lequel vous avec installé ***Localtunnel*** via son IP et le numéro de port 5000, exemple : http://192.168.1.101:5000/
 Puis cliquez sur l’icône en forme de roue dentée, saisissez le mot de passe 'password' et rendez-vous dans l'onglet 'Configuration'
 
@@ -55,18 +65,6 @@ Ne modifié les autres variables que si vous savez ce que vous faites.
 ## Présentation du Programme
 
 Le programme utilise ***Localtunnel*** pour exposer un port local à Internet. Il s’assure qu’un tunnel est actif, teste sa connectivité, et le redémarre si nécessaire. En cas de changement d’URL, il met à jour un fichier de log et envoie une notification par email.
-
-Pour prévenir une éventuelle interruption du tunnel, nous allons créer une entrée dans la crontab pour relancer le script toutes les 15 minutes (cela pourrait être une toute autre valeur) j'ai egalement inclus une boucle dans le script 'localtunnel.py' qui tourne en mode deamon afin de verifier la connectivité du tunnel toutes les 300s (5mn), au cas ou vous mettriez ce programme en mode service.
-
-`nano /etc/crontab`
-
-Puis ajouter la ligne suivant:
-
-> `*/15 * * * * root /root/Localtunel/localtunnel.py >/dev/null 2>&1`
-
-Relancer le service crontab pour que ce changement soit pris en compte.
-
-`service cron restart`
 
 Le script vérifiera si le tunnel est actif ou non :
 
