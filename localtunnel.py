@@ -164,15 +164,11 @@ def manage_tunnel():
 def main():
     """
     Point d'entrée principal de l'application avec gestion globale des exceptions.
-    - Lance un thread séparé pour l'application web (app.py).
     - Lance un thread séparé pour surveiller le processus Localtunnel.
     - Gère la connectivité du tunnel dans une boucle principale.
     """
     try:
         logger.info("Démarrage de l'application Localtunnel Manager.")
-        
-        # Lancer app.py dans un processus séparé
-        threading.Thread(target=launch_app, daemon=True).start()
         
         # Lancer un thread séparé pour surveiller le processus Localtunnel
         threading.Thread(target=monitor_lt_process, daemon=True).start()
