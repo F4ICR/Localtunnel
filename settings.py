@@ -2,7 +2,7 @@
 # F4ICR & OpenIA GPT-4
 
 # Version du script
-version = '3.2'
+version = '3.3'
 
 import os
 
@@ -36,8 +36,7 @@ SMTP_PASSWORD = "xgprpgltwbhpahot"  # Mot de passe SMTP
 SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 
 # Configuration des logs
-GENERAL_LOG_BACKUP_COUNT = 5  # Nombre de sauvegardes logs
-ERROR_LOG_BACKUP_COUNT = 2  # Nombre de sauvegardes de logs d'erreurs à conserver
+LOG_BACKUP_COUNT = 5  # Nombre de sauvegardes logs
 LOG_MAX_BYTES = 2  # Taille max logs (en Mo)
 
 # Paramètres pour démarrer le tunnel
