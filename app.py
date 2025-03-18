@@ -490,7 +490,7 @@ def index():
         SMTP_PORT=SMTP_PORT,
         SMTP_USER=SMTP_USER,
         SMTP_PASSWORD=SMTP_PASSWORD,
-        GENERAL_LOG_BACKUP_COUNT=GENERAL_LOG_BACKUP_COUNT,
+        LOG_BACKUP_COUNT=LOG_BACKUP_COUNT,
         LOG_MAX_BYTES=LOG_MAX_BYTES,
         network_latency=last_latency,
         system_uptime=system_uptime,  # Uptime système
