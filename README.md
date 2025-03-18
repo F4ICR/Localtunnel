@@ -33,8 +33,8 @@ Rendre executable le script localtunnel.py en se rendant dans le répertoire Loc
 
 `chmod +x localtunnel.py`
 
-Renseignez les variables suivantes en éditant le fichier 'settings.py' avec 'nano' depuis la ligne de commande ou lancer votre navigateur web en étant sur le même reseau que le serveur sur lequel vous avec installé ***Localtunnel*** via son IP et le numéro de port 5000, exemple : http://192.168.1.101:5000/
-Puis cliquez sur l’icône en forme de roue dentée et saisissez le mot de passe 'password' et rendez-vous dans l'onglet 'Configuration'
+Renseignez les variables suivantes soit en éditant le fichier 'settings.py' avec 'nano' depuis la ligne de commande ou depuis votre navigateur web en étant sur le même reseau que le serveur sur lequel vous avec installé ***Localtunnel*** via son IP et le numéro de port 5000, exemple : http://192.168.1.101:5000/
+Puis cliquez sur l’icône en forme de roue dentée, saisissez le mot de passe 'password' et rendez-vous dans l'onglet 'Configuration'
 
 `nano settings.py`
 
