@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# F4ICR & OpenIA GPT-4
+# F4ICR & OpenAI GPT-4
 
 import logging
 from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
@@ -7,7 +7,9 @@ from datetime import time
 import socket
 from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
-# Classe pour ajouter l'hostname aux logs
+# ────────────────────────────────────────────────────────────────────────────────
+# Classe pour ajouter automatiquement le nom d'hôte aux enregistrements de logs
+# ────────────────────────────────────────────────────────────────────────────────
 class ContextFilter(logging.Filter):
     hostname = socket.gethostname()
 
@@ -15,63 +17,72 @@ class ContextFilter(logging.Filter):
         record.hostname = ContextFilter.hostname
         return True
 
-# Configurer la journalisation
-logging.basicConfig(level=logging.DEBUG)
+# ────────────────────────────────────────────────────────────────────────────────
+# Gestionnaire personnalisé pour éviter les problèmes de troncature à la rotation
+# ────────────────────────────────────────────────────────────────────────────────
+class SafeTimedRotatingFileHandler(TimedRotatingFileHandler):
+    def doRollover(self):
+        if self.stream:
+            self.stream.flush()
+            self.stream.close()
+            self.stream = None
+        super().doRollover()
 
-# Créer le gestionnaire de rotation pour les logs généraux
+# ────────────────────────────────────────────────────────────────────────────────
+# Configuration des gestionnaires de logs (fichier journal, erreurs et console)
+# ────────────────────────────────────────────────────────────────────────────────
+
+# Gestionnaire principal : rotation quotidienne à minuit précise
 try:
-    file_handler = TimedRotatingFileHandler(
-        APPLICATION_LOG,
+    file_handler = SafeTimedRotatingFileHandler(
+        filename=APPLICATION_LOG,
         when='midnight',
         interval=1,
         backupCount=LOG_BACKUP_COUNT,
         encoding='utf-8',
-      	atTime=time(0, 0, 0)  # Rotation précisément à 00:00:00
+        atTime=time(0, 0, 0)
     )
     file_handler.setLevel(logging.DEBUG)
+    file_handler.suffix = "%Y-%m-%d"  # Nom du fichier avec la date du jour précédent après rotation
 except Exception as e:
-    print(f"Erreur lors de la configuration du gestionnaire de fichier : {e}")
+    print(f"[ERREUR] Impossible d'initialiser le gestionnaire principal : {e}")
     file_handler = None
 
-# Gestionnaire pour les erreurs
+# Gestionnaire des erreurs : rotation basée sur la taille maximale du fichier
 try:
     error_handler = RotatingFileHandler(
-        ERROR_LOG,
+        filename=ERROR_LOG,
         maxBytes=LOG_MAX_BYTES,
         backupCount=LOG_BACKUP_COUNT,
         encoding='utf-8'
     )
     error_handler.setLevel(logging.ERROR)
 except Exception as e:
-    print(f"Erreur lors de la configuration du gestionnaire d'erreurs : {e}")
+    print(f"[ERREUR] Impossible d'initialiser le gestionnaire d'erreurs : {e}")
     error_handler = None
 
-# Créer le gestionnaire pour la console
+# Gestionnaire console pour affichage temps réel des logs à l'écran
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 
-# Définir le format des logs
+# ────────────────────────────────────────────────────────────────────────────────
+# Formatage uniforme des messages de logs (fichier journal, erreurs et console)
+# ────────────────────────────────────────────────────────────────────────────────
 formatter = logging.Formatter(VERBOSE_FORMAT)
-if file_handler:
-    file_handler.setFormatter(formatter)
-if error_handler:
-    error_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
 
-# Configurer le logger principal
+for handler in [file_handler, error_handler, console_handler]:
+    if handler:
+        handler.setFormatter(formatter)
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Configuration finale du logger principal avec filtres et gestionnaires associés
+# ────────────────────────────────────────────────────────────────────────────────
 logger = logging.getLogger("LocaltunnelApp")
 logger.setLevel(logging.DEBUG)
+logger.addFilter(ContextFilter())
 
-# Ajouter le filtre contextuel
-context_filter = ContextFilter()
-logger.addFilter(context_filter)
+for handler in [file_handler, error_handler, console_handler]:
+    if handler:
+        logger.addHandler(handler)
 
-# Ajouter les gestionnaires au logger principal
-if file_handler:
-    logger.addHandler(file_handler)
-if error_handler:
-    logger.addHandler(error_handler)
-logger.addHandler(console_handler)
-
-# Désactiver la propagation si nécessaire
-logger.propagate = False
+logger.propagate = False  # Évite la duplication des messages dans les loggers parents

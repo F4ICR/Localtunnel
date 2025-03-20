@@ -580,7 +580,7 @@ def save_config():
             "smtp_user": config_data.get('smtp_user', ''),
             "smtp_password": config_data.get('smtp_password', ''),
             "log_backup_count": int(config_data.get('log_backup_count', 0)),
-            "log_max_bytes": int(config_data.get('log_max_bytes', 0))  # Taille directement en Mo
+            "log_max_bytes": int(config_data.get('log_max_bytes', 0)) * (1024 * 1024) # Conversion explicite vers octets
         }
 
         # Mettre à jour settings.py avec toutes les configurations
@@ -620,11 +620,11 @@ def update_settings(new_config):
                 elif line.startswith("SMTP_USER ="):
                     f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Utilisateur SMTP\n")
                 elif line.startswith("SMTP_PASSWORD ="):
-                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe SMTP\n")
+                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
                 elif line.startswith("LOG_BACKUP_COUNT"):
                     f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes logs\n")
                 elif line.startswith("LOG_MAX_BYTES"):
-                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille max logs (en Mo)\n")
+                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille max logs (exprimée en octets)\n")
                 else:
                     # Conserver les lignes non modifiées
                     f.write(line)
