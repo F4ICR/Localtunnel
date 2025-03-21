@@ -26,18 +26,18 @@ PORT = 3000  # Le port local à exposer
 
 # Configuration email
 EMAIL_NOTIFICATIONS = True  # Mettre à False pour désactiver les emails
-EMAIL = "votre_mail@blabla.com"  # Adresse email pour recevoir l'URL du tunnel
+EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
 SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
 SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
-SMTP_USER = "votre_mail@blabla.com"  # Adresse email utilisée pour l'envoi
-SMTP_PASSWORD = "mot_de_passe"  # Mot de passe ou App Password (si Gmail)
+SMTP_USER = "pascal.paquet@gmail.com"  # Adresse email utilisée pour l'envoi
+SMTP_PASSWORD = "hxbmpvemyilmdthx"  # Mot de passe ou App Password (si Gmail)
 
 # Sous-domaine pour le tunnel
 SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
 
 # Configuration des logs
-LOG_BACKUP_COUNT = 5  # Nombre de sauvegardes logs
-LOG_MAX_BYTES = 2 * 1024 * 1024  # Taille max logs (ici : 2 Mo exprimés en octets)
+LOG_BACKUP_COUNT = 6  # Nombre de sauvegardes logs
+LOG_MAX_BYTES = 1048576  # Taille max logs (ici : 1 Mo exprimés en octets)
 
 # Paramètres pour démarrer le tunnel
 MAX_RETRIES = 10  # Nombre de tentatives pour établir le tunnel
@@ -56,8 +56,8 @@ INCLUDE_DEBUG_INFO = False  # Inclure les informations de debug (fonction et lig
 # Format des logs avec gestion conditionnelle
 VERBOSE_FORMAT = (
     "%(asctime)s - %(name)s - %(levelname)s - "
-    "[PID: %(process)d - Thread: %(thread)d] - "
+    "[PID: %(process)d - %(session_id)s] - "
     + ("[File: %(filename)s] - " if INCLUDE_FILENAME else "")
-    + ("[Function: %(funcName)s - Line: %(lineno)d] - " if INCLUDE_DEBUG_INFO else "")
+    + ("[Thread: %(thread)d] - [Function: %(funcName)s - Line: %(lineno)d] - " if INCLUDE_DEBUG_INFO else "")
     + "%(message)s"
 )
