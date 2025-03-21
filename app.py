@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.4"
+APP_VERSION = "1.5.5"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 import os
+import re
 import validators
 import psutil
 import subprocess
@@ -42,6 +43,9 @@ from settings import (
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
+
+# Chemin vers le fichier settings.py
+SETTINGS_FILE_PATH = os.path.join(os.path.dirname(__file__), 'settings.py')
 
 # Verrou pour les tests concurrents et cache des résultats des tests
 latency_lock = Lock()
@@ -561,79 +565,56 @@ def check_url():
         })
 
 
-@app.route('/admin/save-config', methods=['POST'])
-def save_config():
+@app.route('/update-settings', methods=['POST'])
+def update_settings():
     try:
-        config_data = request.get_json()
+        # Récupérer les données du formulaire
+        email_notifications = request.form.get("email_notifications") == "on"
+        email = request.form.get("email")
+        smtp_server = request.form.get("smtp_server")
+        smtp_port = int(request.form.get("smtp_port", 465))
+        smtp_user = request.form.get("smtp_user")
+        smtp_password = request.form.get("smtp_password")
+        log_backup_count = int(request.form.get("log_backup_count", 5))
+        
+        # Convertir Mo en octets
+        log_max_bytes_mb = int(request.form.get("log_max_bytes", 2))
+        log_max_bytes = log_max_bytes_mb * 1024 * 1024
 
-        # Email notifications
-        email_notifications = config_data.get('email_notifications', False)
-        if isinstance(email_notifications, str):
-            email_notifications = email_notifications.lower() in ['true', 'on', '1']
+        # Lire le fichier settings.py
+        with open(SETTINGS_FILE_PATH, "r") as file:
+            lines = file.readlines()
 
-        # Préparer toutes les configurations dans un seul dictionnaire
-        new_config = {
-            "email_notifications": email_notifications,
-            "email": config_data.get('email', ''),
-            "smtp_server": config_data.get('smtp_server', ''),
-            "smtp_port": int(config_data.get('smtp_port', 0)),
-            "smtp_user": config_data.get('smtp_user', ''),
-            "smtp_password": config_data.get('smtp_password', ''),
-            "log_backup_count": int(config_data.get('log_backup_count', 0)),
-            "log_max_bytes": int(config_data.get('log_max_bytes', 0)) * (1024 * 1024) # Conversion explicite vers octets
-        }
+        updated_lines = []
+        for line in lines:
+            if re.match(r"EMAIL_NOTIFICATIONS\s*=", line):
+                updated_lines.append(f"EMAIL_NOTIFICATIONS = {str(email_notifications)}  # Mettre à False pour désactiver les emails\n")
+            elif re.match(r"EMAIL\s*=", line):
+                updated_lines.append(f'EMAIL = "{email}"  # Adresse email pour recevoir l\'URL du tunnel\n')
+            elif re.match(r"SMTP_SERVER\s*=", line):
+                updated_lines.append(f'SMTP_SERVER = "{smtp_server}"  # Serveur SMTP (exemple avec Gmail)\n')
+            elif re.match(r"SMTP_PORT\s*=", line):
+                updated_lines.append(f"SMTP_PORT = {smtp_port}  # Port SMTP sécurisé (SSL)\n")
+            elif re.match(r"SMTP_USER\s*=", line):
+                updated_lines.append(f'SMTP_USER = "{smtp_user}"  # Adresse email utilisée pour l\'envoi\n')
+            elif re.match(r"SMTP_PASSWORD\s*=", line):
+                updated_lines.append(f'SMTP_PASSWORD = "{smtp_password}"  # Mot de passe ou App Password (si Gmail)\n')
+            elif re.match(r"LOG_BACKUP_COUNT\s*=", line):
+                updated_lines.append(f"LOG_BACKUP_COUNT = {log_backup_count}  # Nombre de sauvegardes logs\n")
+            elif re.match(r"LOG_MAX_BYTES\s*=", line):
+                updated_lines.append(f"LOG_MAX_BYTES = {log_max_bytes}  # Taille max logs (ici : {log_max_bytes_mb} Mo exprimés en octets)\n")
+            else:
+                updated_lines.append(line)
 
-        # Mettre à jour settings.py avec toutes les configurations
-        if update_settings(new_config):
-            app.logger.info("Configuration mise à jour avec succès.")
-            return jsonify({"status": "success"}), 200
-        else:
-            app.logger.error("Échec de la mise à jour.")
-            return jsonify({"status": "error", "message": "Échec de la mise à jour"}), 500
+        # Écrire les nouvelles lignes dans settings.py
+        with open(SETTINGS_FILE_PATH, "w") as file:
+            file.writelines(updated_lines)
 
+        return jsonify({"success": True, "message": "Paramètres mis à jour avec succès."})
     except Exception as e:
-        app.logger.error(f"Erreur lors de la sauvegarde : {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"success": False, "message": f"Erreur : {str(e)}"}), 500
 
-
-def update_settings(new_config):
-    """
-    Met à jour les paramètres dans settings.py.
-    new_config est un dictionnaire contenant toutes les clés et valeurs à modifier.
-    """
-    try:
-        settings_file = "settings.py"
-        with open(settings_file, "r") as f:
-            lines = f.readlines()
-
-        with open(settings_file, "w") as f:
-            for line in lines:
-                # Vérifier chaque clé dans new_config et mettre à jour la ligne correspondante
-                if line.startswith("EMAIL_NOTIFICATIONS"):
-                    f.write(f"EMAIL_NOTIFICATIONS = {new_config['email_notifications']}  # Activer ou désactiver les emails\n")
-                elif line.startswith("EMAIL ="):
-                    f.write(f"EMAIL = \"{new_config['email']}\"  # Adresse email pour recevoir l'URL du tunnel\n")
-                elif line.startswith("SMTP_SERVER ="):
-                    f.write(f"SMTP_SERVER = \"{new_config['smtp_server']}\"  # Serveur SMTP\n")
-                elif line.startswith("SMTP_PORT ="):
-                    f.write(f"SMTP_PORT = {new_config['smtp_port']}  # Port SMTP sécurisé (SSL)\n")
-                elif line.startswith("SMTP_USER ="):
-                    f.write(f"SMTP_USER = \"{new_config['smtp_user']}\"  # Utilisateur SMTP\n")
-                elif line.startswith("SMTP_PASSWORD ="):
-                    f.write(f"SMTP_PASSWORD = \"{new_config['smtp_password']}\"  # Mot de passe ou App Password (si Gmail)\n")
-                elif line.startswith("LOG_BACKUP_COUNT"):
-                    f.write(f"LOG_BACKUP_COUNT = {new_config['log_backup_count']}  # Nombre de sauvegardes logs\n")
-                elif line.startswith("LOG_MAX_BYTES"):
-                    f.write(f"LOG_MAX_BYTES = {new_config['log_max_bytes']}  # Taille max logs (exprimée en octets)\n")
-                else:
-                    # Conserver les lignes non modifiées
-                    f.write(line)
-
-        return True
-    except Exception as e:
-        app.logger.error(f"Erreur lors de l'écriture settings.py : {e}")
-        return False
-
+      
 if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage
     scheduler.add_job(schedule_test, 'interval', seconds=TUNNEL_CHECK_INTERVAL, next_run_time=datetime.now())

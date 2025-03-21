@@ -89,51 +89,29 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
   }, 15 * 60 * 1000);
 });
 
-/// Fonction unique et complète pour sauvegarder toute la configuration
 function saveConfig() {
-  // Récupération du formulaire complet
-  const formElement = document.getElementById('tunnelConfig');
-  const formData = new FormData(formElement);
-
-  // Conversion FormData en objet JavaScript
-  const tunnelConfig = Object.fromEntries(formData.entries());
-
-  // Gestion explicite de la checkbox email_notifications
-  tunnelConfig.email_notifications = document.getElementById('emailNotifications').checked;
-
-  fetch('/admin/save-config', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tunnelConfig)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status === 'success') {
-      showToast('Configuration sauvegardée avec succès !');
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      showToast(`Erreur : ${data.message}`, 'error');
-    }
-  })
-  .catch(error => {
-    console.error('Erreur:', error);
-    showToast('Erreur lors de la sauvegarde', 'error');
-  });
-}
-
-function saveLogsConfig() {
-    const formDataLogs = {
-      log_backup_count: document.querySelector("[name='log_backup_count']").value,
-      log_max_bytes: document.querySelector("[name='log_max_bytes']").value
-    };
-
-    fetch('/admin/save-logs-config', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(formDataLogs)
+    const form = document.getElementById('tunnelConfig');
+    
+    // Utiliser fetch pour soumettre le formulaire en AJAX
+    fetch('/update-settings', {
+        method: 'POST',
+        body: new FormData(form)
     })
-    .then(res => res.json())
-    .then(data => alert(data.status === 'success' ? 'Configuration logs enregistrée !' : data.message));
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Afficher un message de succès
+            alert(data.message);
+            // Éventuellement recharger la page pour afficher les nouvelles valeurs
+            // window.location.reload();
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de la mise à jour des paramètres.');
+    });
 }
 
 // Actualisation des logs
