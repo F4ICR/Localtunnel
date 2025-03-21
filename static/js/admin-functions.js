@@ -243,35 +243,3 @@ function disableService() {
       showToast('Erreur lors de la désactivation du service', 'error');
     });
 }
-
-function enableCrontab() {
-  fetch('/admin/enable-crontab', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Crontab activé avec succès');
-      } else {
-        showToast('Erreur lors de l\'activation du crontab', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de l\'activation du crontab', 'error');
-    });
-}
-
-function disableCrontab() {
-  fetch('/admin/disable-crontab', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Crontab désactivé avec succès');
-      } else {
-        showToast('Erreur lors de la désactivation du crontab', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de la désactivation du crontab', 'error');
-    });
-}
