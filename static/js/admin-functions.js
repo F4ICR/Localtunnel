@@ -91,8 +91,12 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
 
 function saveConfig() {
     const form = document.getElementById('tunnelConfig');
+    const statusDiv = document.getElementById('statusMessage') || createStatusElement();
     
-    // Utiliser fetch pour soumettre le formulaire en AJAX
+    statusDiv.textContent = "Enregistrement en cours...";
+    statusDiv.className = "status-message status-pending";
+    statusDiv.style.display = "block";
+    
     fetch('/update-settings', {
         method: 'POST',
         body: new FormData(form)
@@ -100,18 +104,29 @@ function saveConfig() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Afficher un message de succès
-            alert(data.message);
-            // Éventuellement recharger la page pour afficher les nouvelles valeurs
-            // window.location.reload();
+            statusDiv.textContent = data.message;
+            statusDiv.className = "status-message status-success";
+            // Faire disparaître après quelques secondes
+            setTimeout(() => { statusDiv.style.display = "none"; }, 1000);
         } else {
-            alert('Erreur: ' + data.message);
+            statusDiv.textContent = 'Erreur: ' + data.message;
+            statusDiv.className = "status-message status-error";
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Une erreur est survenue lors de la mise à jour des paramètres.');
+        statusDiv.textContent = 'Une erreur est survenue lors de la mise à jour des paramètres.';
+        statusDiv.className = "status-message status-error";
     });
+}
+
+function createStatusElement() {
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'statusMessage';
+    statusDiv.className = 'status-message';
+    // Insérer à un endroit approprié dans votre page
+    document.querySelector('form').after(statusDiv);
+    return statusDiv;
 }
 
 // Actualisation des logs
