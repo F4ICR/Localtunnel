@@ -10,42 +10,62 @@ from datetime import time, datetime, timedelta
 from settings import APPLICATION_LOG, ERROR_LOG, VERBOSE_FORMAT, LOG_BACKUP_COUNT, LOG_MAX_BYTES
 
 # ────────────────────────────────────────────────────────────────────────────────
+# Utiliser un fichier JSON temporaire pour stocker l’identifiant de session
+# ────────────────────────────────────────────────────────────────────────────────
+def get_shared_session_id():
+    session_file = "/tmp/localtunnel_session_id.json"
+    
+    # Si le fichier existe, lire l'identifiant
+    if os.path.exists(session_file):
+        try:
+            with open(session_file, 'r') as f:
+                data = json.load(f)
+                return data['session_id']
+        except:
+            pass
+    
+    # Sinon, générer un nouvel identifiant
+    session_id = f"session_{datetime.now().strftime('%d%H%M%S')}"
+    
+    # Le stocker dans un fichier temporaire
+    try:
+        with open(session_file, 'w') as f:
+            json.dump({'session_id': session_id}, f)
+    except:
+        pass
+    
+    return session_id
+
+# ────────────────────────────────────────────────────────────────────────────────
 # Classe pour ajouter des informations contextuelles aux logs
 # ────────────────────────────────────────────────────────────────────────────────
 class EnhancedContextFilter(logging.Filter):
-    def __init__(self, app_state_file="app_state.json"):
+    def __init__(self, app_state_file=None):
         super().__init__()
-        self.app_state_file = app_state_file
-        self.app_state = self._load_app_state()
-        self.pid = os.getpid()  # Récupère le PID du processus actuel
+        self.app_state = {
+            'session_id': get_shared_session_id(),
+            'tunnel_port': "",
+            'tunnel_url': ""
+        }
+        self.pid = os.getpid()
     
     def filter(self, record):
-        # Ajout d'un identifiant unique de session et du PID
         if not hasattr(record, 'session_id'):
             record.session_id = self.app_state.get('session_id', 'unknown')
-        record.pid = self.pid  # Ajoute le PID à chaque enregistrement
+        record.pid = self.pid
         return True
-    
-    def _load_app_state(self):
-        """Charge l'état de l'application depuis un fichier JSON"""
-        if os.path.exists(self.app_state_file):
-            try:
-                with open(self.app_state_file, 'r') as f:
-                    return json.load(f)
-            except Exception:
-                pass
-        # État par défaut avec un nouvel ID de session simplifié
-        return {'session_id': f"{datetime.now().strftime('%Y%m%d%H%M%S')}"}
     
     def save_app_state(self, key, value):
         """Sauvegarde une information dans l'état de l'application"""
         self.app_state[key] = value
-        try:
-            with open(self.app_state_file, 'w') as f:
-                json.dump(self.app_state, f)
-        except Exception as e:
-            print(f"Erreur lors de la sauvegarde de l'état: {e}")
-
+        if key == 'session_id':
+            session_file = "/tmp/localtunnel_session_id.json"
+            try:
+                with open(session_file, 'w') as f:
+                    json.dump({'session_id': value}, f)
+            except:
+                pass
+            
 # ────────────────────────────────────────────────────────────────────────────────
 # Gestionnaire personnalisé pour éviter les problèmes de troncature à la rotation
 # ────────────────────────────────────────────────────────────────────────────────
@@ -188,7 +208,6 @@ if file_handler:
 if error_handler:
     error_handler.setFormatter(formatter)
 console_handler.setFormatter(formatter)
-
 # ────────────────────────────────────────────────────────────────────────────────
 # Configuration finale du logger principal avec filtres et gestionnaires associés
 # ────────────────────────────────────────────────────────────────────────────────

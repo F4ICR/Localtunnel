@@ -91,8 +91,12 @@ document.getElementById('adminModal').addEventListener('hidden.bs.modal', functi
 
 function saveConfig() {
     const form = document.getElementById('tunnelConfig');
+    const statusDiv = document.getElementById('statusMessage') || createStatusElement();
     
-    // Utiliser fetch pour soumettre le formulaire en AJAX
+    statusDiv.textContent = "Enregistrement en cours...";
+    statusDiv.className = "status-message status-pending";
+    statusDiv.style.display = "block";
+    
     fetch('/update-settings', {
         method: 'POST',
         body: new FormData(form)
@@ -100,18 +104,29 @@ function saveConfig() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Afficher un message de succès
-            alert(data.message);
-            // Éventuellement recharger la page pour afficher les nouvelles valeurs
-            // window.location.reload();
+            statusDiv.textContent = data.message;
+            statusDiv.className = "status-message status-success";
+            // Faire disparaître après quelques secondes
+            setTimeout(() => { statusDiv.style.display = "none"; }, 1000);
         } else {
-            alert('Erreur: ' + data.message);
+            statusDiv.textContent = 'Erreur: ' + data.message;
+            statusDiv.className = "status-message status-error";
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Une erreur est survenue lors de la mise à jour des paramètres.');
+        statusDiv.textContent = 'Une erreur est survenue lors de la mise à jour des paramètres.';
+        statusDiv.className = "status-message status-error";
     });
+}
+
+function createStatusElement() {
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'statusMessage';
+    statusDiv.className = 'status-message';
+    // Insérer à un endroit approprié dans votre page
+    document.querySelector('form').after(statusDiv);
+    return statusDiv;
 }
 
 // Actualisation des logs
@@ -162,101 +177,108 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Fonctions de contrôle du tunnel
-function startTunnel() {
-  fetch('/admin/start-tunnel', { method: 'POST' })
+function performAction(action, params = {}) {
+    const data = {
+        action: action,
+        ...params
+    };
+    
+    fetch('/admin/service-action', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
     .then(response => response.json())
     .then(data => {
-      if (data.success) {
-        showToast('Tunnel démarré avec succès');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showToast('Erreur lors du démarrage du tunnel', 'error');
-      }
+        if (data.success) {
+            alert(`Action ${action} réussie`);
+            if (action === 'start_tunnel' || action === 'stop_tunnel' || action === 'restart_webserver') {
+                setTimeout(() => location.reload(), 1000);
+            }
+        } else {
+            alert(`Erreur lors de l'action ${action}: ${data.message || ''}`);
+        }
     })
     .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors du démarrage du tunnel', 'error');
+        console.error('Erreur:', error);
+        alert(`Erreur lors de l'action ${action}`);
     });
+}
+
+// Fonctions simplifiées qui utilisent performAction
+function startTunnel() {
+    performAction('start_tunnel');
 }
 
 function stopTunnel() {
-  fetch('/admin/stop-tunnel', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Tunnel arrêté avec succès');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showToast('Erreur lors de l\'arrêt du tunnel', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de l\'arrêt du tunnel', 'error');
-    });
+    performAction('stop_tunnel');
 }
 
 function enableService() {
-  fetch('/admin/enable-service', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Service activé avec succès');
-      } else {
-        showToast('Erreur lors de l\'activation du service', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de l\'activation du service', 'error');
-    });
+    performAction('enable_service');
 }
 
 function disableService() {
-  fetch('/admin/disable-service', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Service désactivé avec succès');
-      } else {
-        showToast('Erreur lors de la désactivation du service', 'error');
-      }
+    performAction('disable_service');
+}
+
+function restartWebServer() {
+    const webPort = document.querySelector('input[name="web_port"]').value;
+    
+    // Afficher immédiatement un message
+    alert("Redémarrage du serveur web en cours...");
+    
+    fetch('/admin/service-action', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'restart_webserver',
+            port: webPort
+        })
+    })
+    .then(response => {
+        // Cette partie peut ne jamais s'exécuter si le serveur redémarre
+        alert("Serveur web redémarré avec succès");
     })
     .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de la désactivation du service', 'error');
+        // Cette erreur est attendue car le serveur redémarre
+        console.log("Le serveur redémarre, tentative de reconnexion...");
+    })
+    .finally(() => {
+        // Attendre quelques secondes puis tenter de se reconnecter
+        setTimeout(() => {
+            // Tenter de se reconnecter à la nouvelle URL si le port a changé
+            const newUrl = window.location.protocol + '//' + window.location.hostname + ':' + webPort + window.location.pathname;
+            
+            // Vérifier si le serveur est de nouveau disponible
+            checkServerAvailability(newUrl, 10); // Essayer 10 fois
+        }, 3000);
     });
 }
 
-function enableCrontab() {
-  fetch('/admin/enable-crontab', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Crontab activé avec succès');
-      } else {
-        showToast('Erreur lors de l\'activation du crontab', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de l\'activation du crontab', 'error');
-    });
-}
-
-function disableCrontab() {
-  fetch('/admin/disable-crontab', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showToast('Crontab désactivé avec succès');
-      } else {
-        showToast('Erreur lors de la désactivation du crontab', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Erreur:', error);
-      showToast('Erreur lors de la désactivation du crontab', 'error');
-    });
+// Fonction pour vérifier si le serveur est disponible
+function checkServerAvailability(url, maxAttempts, currentAttempt = 1) {
+    if (currentAttempt > maxAttempts) {
+        alert("Impossible de se reconnecter au serveur après plusieurs tentatives.");
+        return;
+    }
+    
+    fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                // Le serveur est disponible, rediriger
+                window.location.href = url;
+            } else {
+                // Réessayer
+                setTimeout(() => checkServerAvailability(url, maxAttempts, currentAttempt + 1), 1000);
+            }
+        })
+        .catch(error => {
+            // Réessayer
+            setTimeout(() => checkServerAvailability(url, maxAttempts, currentAttempt + 1), 1000);
+        });
 }
