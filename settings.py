@@ -56,7 +56,7 @@ INCLUDE_DEBUG_INFO = False  # Inclure les informations de debug (fonction et lig
 # Format des logs avec gestion conditionnelle
 VERBOSE_FORMAT = (
     "%(asctime)s - %(name)s - %(levelname)s - "
-    "[PID: %(process)d - %(session_id)s] - "
+    "[PID: %(pid)d - %(session_id)s] - "
     + ("[File: %(filename)s] - " if INCLUDE_FILENAME else "")
     + ("[Thread: %(thread)d] - [Function: %(funcName)s - Line: %(lineno)d] - " if INCLUDE_DEBUG_INFO else "")
     + "%(message)s"
