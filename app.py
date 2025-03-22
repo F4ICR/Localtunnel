@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.5"
+APP_VERSION = "1.5.6"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -614,7 +614,37 @@ def update_settings():
     except Exception as e:
         return jsonify({"success": False, "message": f"Erreur : {str(e)}"}), 500
 
-      
+
+@app.route('/admin/service-action', methods=['POST'])
+def service_action():
+    data = request.json
+    action = data.get('action')
+    service = data.get('service', 'app.service')  # Service par défaut
+    
+    try:
+        if action == 'start_tunnel':
+            subprocess.run(['sudo', 'systemctl', 'start', 'localtunnel.service'], check=True)
+        elif action == 'stop_tunnel':
+            subprocess.run(['sudo', 'systemctl', 'stop', 'localtunnel.service'], check=True)
+        elif action == 'enable_service':
+            subprocess.run(['sudo', 'systemctl', 'enable', 'localtunnel.service'], check=True)
+        elif action == 'disable_service':
+            subprocess.run(['sudo', 'systemctl', 'disable', 'localtunnel.service'], check=True)
+        elif action == 'restart_webserver':
+            # Récupérer le port si fourni
+            port = data.get('port', 5000)
+            # Mettre à jour la configuration du port si nécessaire
+            # ...
+            subprocess.run(['sudo', 'systemctl', 'restart', 'app.service'], check=True)
+        else:
+            return jsonify({'success': False, 'message': 'Action non reconnue'})
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Erreur lors de l'exécution de l'action {action}: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)})
+
+     
 if __name__ == '__main__':
     # Planification des tâches périodiques au démarrage
     scheduler.add_job(schedule_test, 'interval', seconds=TUNNEL_CHECK_INTERVAL, next_run_time=datetime.now())

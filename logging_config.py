@@ -27,16 +27,38 @@ class EnhancedContextFilter(logging.Filter):
         return True
     
     def _load_app_state(self):
-        """Charge l'état de l'application depuis un fichier JSON"""
+        """Charge l'état de l'application et ajoute un suffixe à l'ID de session"""
         if os.path.exists(self.app_state_file):
             try:
                 with open(self.app_state_file, 'r') as f:
-                    return json.load(f)
-            except Exception:
-                pass
-        # État par défaut avec un nouvel ID de session simplifié
-        return {'session_id': f"{datetime.now().strftime('%Y%m%d%H%M%S')}"}
+                        state = json.load(f)
+            
+            # Ajouter un suffixe à l'ID de session existant
+                base_session_id = state.get('session_id', 'unknown')
+                restart_count = int(base_session_id.split('_')[-1]) if '_' in base_session_id else 0
+                new_session_id = f"{base_session_id.split('_')[0]}_{restart_count + 1}"
+            
+                state['session_id'] = new_session_id
+                return state
+            except Exception as e:
+                print(f"Erreur lors du chargement de l'état: {e}")
     
+    # Si le fichier n'existe pas ou en cas d'erreur, créer un nouvel état
+        new_state = {
+        'session_id': f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}_1",
+        'tunnel_port': "",
+        'tunnel_url': ""
+    }
+    
+    # Sauvegarder le nouvel état
+        try:
+            with open(self.app_state_file, 'w') as f:
+                json.dump(new_state, f)
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde de l'état: {e}")
+    
+        return new_state
+   
     def save_app_state(self, key, value):
         """Sauvegarde une information dans l'état de l'application"""
         self.app_state[key] = value
