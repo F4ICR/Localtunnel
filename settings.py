@@ -26,11 +26,11 @@ PORT = 3000  # Le port local à exposer
 
 # Configuration email
 EMAIL_NOTIFICATIONS = True  # Mettre à False pour désactiver les emails
-EMAIL = "pascal.paquet@gmail.com"  # Adresse email pour recevoir l'URL du tunnel
+EMAIL = "votre_mail@blabla.com"  # Adresse email pour recevoir l'URL du tunnel
 SMTP_SERVER = "smtp.gmail.com"  # Serveur SMTP (exemple avec Gmail)
 SMTP_PORT = 465  # Port SMTP sécurisé (SSL)
-SMTP_USER = "pascal.paquet@gmail.com"  # Adresse email utilisée pour l'envoi
-SMTP_PASSWORD = "hxbmpvemyilmdthx"  # Mot de passe ou App Password (si Gmail)
+SMTP_USER = "votre_mail@blabla.com"  # Adresse email utilisée pour l'envoi
+SMTP_PASSWORD = "mot_de_passe"  # Mot de passe ou App Password (si Gmail)
 
 # Sous-domaine pour le tunnel
 SUBDOMAIN = None  # Sous-domaine souhaité (None pour un sous-domaine aléatoire)
