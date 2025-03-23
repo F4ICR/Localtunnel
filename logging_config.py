@@ -135,7 +135,7 @@ class LogInfoExtractor:
                     if port_match and 'tunnel_port' not in self.critical_info:
                         self.critical_info['tunnel_port'] = port_match.group(1)
         except Exception as e:
-            print(f"Erreur lors de l'extraction des infos du fichier {file_path}: {e}")
+            logging.error(f"Erreur lors de l'extraction des infos du fichier {file_path}: {e}")
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Fonction pour préparer la rotation des logs

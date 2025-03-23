@@ -16,6 +16,7 @@ After=network.target
 
 [Service]
 Type=simple
+ExecStartPre=/bin/rm -f /tmp/localtunnel_session_id.json
 ExecStart=/usr/bin/python3 /root/Localtunnel/localtunnel.py
 Restart=always
 User=root
