@@ -219,3 +219,77 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('hoursFilter').addEventListener('change', updateChart);
   document.getElementById('cumulativeCheckbox').addEventListener('change', updateChart);
 });
+
+let requestsChart = null; // Stockage global de l'instance du graphique
+
+// Fonction pour charger et actualiser les données du graphique
+async function updateRequestsChart() {
+  try {
+    const response = await fetch('/requests_data/');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    const data = await response.json();
+
+    // Regrouper les données par heure
+    const groupedData = {};
+    data.forEach(item => {
+      const hour = new Date(item.timestamp).getHours();
+      const timeKey = `${hour}h`;
+      groupedData[timeKey] = (groupedData[timeKey] || 0) + 1;
+    });
+
+    // Trier les périodes chronologiquement
+    const sortedPeriods = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
+
+    const labels = sortedPeriods;
+    const counts = sortedPeriods.map(period => groupedData[period]);
+
+    if (requestsChart === null) {
+      // Première initialisation du graphique
+      const ctx = document.getElementById('requestsChart').getContext('2d');
+      requestsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Nombre de requêtes',
+            data: counts,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgb(75, 192, 192)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Période' } },
+            y: { beginAtZero: true, title: { display: true, text: 'Nombre de requêtes' } }
+          }
+        }
+      });
+    } else {
+      // Mise à jour dynamique du graphique existant
+      requestsChart.data.labels = labels;
+      requestsChart.data.datasets[0].data = counts;
+      requestsChart.update();
+    }
+
+  } catch (error) {
+    console.error('Erreur lors du chargement des données:', error);
+    document.getElementById('requestsChart').innerHTML = 'Erreur lors du chargement des données';
+  }
+}
+
+// Initialiser le graphique lorsqu'on clique sur l'onglet Statistiques
+document.addEventListener('DOMContentLoaded', function() {
+  const statsTab = document.querySelector('a[href="#stats"]');
+  if (statsTab) {
+    statsTab.addEventListener('click', function() {
+      setTimeout(() => {
+        updateRequestsChart(); // Initialisation immédiate
+        setInterval(updateRequestsChart, 5000); // Actualisation toutes les 5 secondes
+      }, 100);
+    });
+  }
+});
