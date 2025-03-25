@@ -101,96 +101,99 @@
 
   <!-- Contrôle -->
 <div class="tab-pane fade" id="control">
-  <!-- Configuration du Tunnel -->
-  <div class="card mb-3">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="fas fa-tunnel"></i> Configuration du Tunnel</h5>
-    </div>
-    <div class="card-body">
-      <div class="row align-items-center mb-3">
-        <div class="col-md-2">
-          <label class="form-label mb-0">Port Local</label>
-        </div>
-        <div class="col-md-4">
-          <div class="input-group">
-            <input type="number" class="form-control" name="port" value="{{ PORT }}">
-            <span class="input-group-text"><i class="fas fa-plug"></i></span>
+  <div class="row g-4">
+    <!-- Configuration du Tunnel -->
+    <div class="col-12">
+      <div class="card border-0 rounded-3">
+        <div class="card-header bg-light border-bottom">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-tunnel text-primary fs-5 me-2"></i>
+            <h5 class="fw-bold m-0">Configuration du Tunnel</h5>
           </div>
         </div>
-        <div class="col-md-2">
-          <label class="form-label mb-0">Sous-domaine</label>
-        </div>
-        <div class="col-md-4">
-          <input type="text" class="form-control" name="subdomain" value="{{ SUBDOMAIN or '' }}" placeholder="Sous-domaine personnalisé">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-8">
-          <small class="text-muted">Laissez le sous-domaine vide pour en obtenir un aléatoire</small>
-        </div>
-      </div>
-      <div class="row mt-4">
-        <div class="col-md-4">
-          <label class="form-label mb-0">Contrôle du Tunnel</label>
-        </div>
-        <div class="col-md-8">
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success" onclick="startTunnel()">
-              <i class="fas fa-play"></i> Démarrer
+        <div class="card-body bg-white">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-secondary small text-uppercase">Port Local</label>
+              <div class="input-group">
+                <input type="number" class="form-control form-control-lg border-secondary-subtle" name="port" value="{{ PORT }}">
+                <span class="input-group-text border-secondary-subtle bg-transparent"><i class="fas fa-plug text-secondary"></i></span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-secondary small text-uppercase">Sous-domaine</label>
+              <input type="text" class="form-control form-control-lg border-secondary-subtle" name="subdomain" value="{{ SUBDOMAIN or '' }}" placeholder="Sous-domaine personnalisé">
+              <div class="form-text small fst-italic">Laissez vide pour un sous-domaine aléatoire</div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-end mt-4">
+            <button type="button" class="btn btn-lg btn-outline-success me-2" onclick="startTunnel()">
+              <i class="fas fa-play"></i><span class="ms-2">Démarrer</span>
             </button>
-            <button type="button" class="btn btn-danger" onclick="stopTunnel()">
-              <i class="fas fa-stop"></i> Arrêter
+            <button type="button" class="btn btn-lg btn-outline-danger" onclick="stopTunnel()">
+              <i class="fas fa-stop"></i><span class="ms-2">Arrêter</span>
             </button>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  
-  <!-- Contrôle du Service -->
-  <div class="card mb-3">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="fas fa-cog"></i> Service Système Localtunnel</h5>
+    
+    <!-- Contrôle du Service -->
+    <div class="col-md-6">
+      <div class="card border-0 rounded-3 h-100">
+        <div class="card-header bg-light border-bottom">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-cog text-primary fs-5 me-2"></i>
+            <h5 class="fw-bold m-0">Service Système</h5>
+          </div>
+        </div>
+        <div class="card-body bg-white">
+          <div class="d-flex flex-column h-100">
+            <div class="mb-3">
+              <span class="text-secondary small text-uppercase">Gestion du service système Localtunnel</span>
+            </div>
+            <div class="d-flex gap-2 mt-auto">
+              <button type="button" class="btn btn-primary flex-fill" onclick="enableService()">
+                <i class="fas fa-power-off me-2"></i>Activer
+              </button>
+              <button type="button" class="btn btn-light flex-fill" onclick="disableService()">
+                <i class="fas fa-power-off me-2"></i>Désactiver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="mb-4">
-        <h6 class="mb-3">Activation/Désactivation du Service</h6>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-primary" onclick="enableService()">
-            <i class="fas fa-power-off"></i> Activer Service
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="disableService()">
-            <i class="fas fa-power-off"></i> Désactiver Service
-          </button>
+    
+    <!-- Contrôle du Serveur Web -->
+    <div class="col-md-6">
+      <div class="card border-0 rounded-3 h-100">
+        <div class="card-header bg-light border-bottom">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-server text-primary fs-5 me-2"></i>
+            <h5 class="fw-bold m-0">Serveur Web</h5>
+          </div>
+        </div>
+        <div class="card-body bg-white">
+          <div class="d-flex flex-column h-100">
+            <div class="mb-3">
+              <label class="form-label text-secondary small text-uppercase">Port du Serveur Web</label>
+              <div class="input-group">
+                <input type="number" class="form-control form-control-lg border-secondary-subtle" name="web_port" value="5000">
+                <span class="input-group-text border-secondary-subtle bg-transparent"><i class="fas fa-network-wired text-secondary"></i></span>
+              </div>
+            </div>
+            <div class="mt-auto text-end">
+              <button type="button" class="btn btn-warning" onclick="restartWebServer()">
+                <i class="fas fa-sync me-2"></i>Redémarrer Serveur
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  
-<!-- Contrôle du Serveur Web -->
-<div class="card mb-3">
-  <div class="card-header bg-primary text-white">
-    <h5 class="mb-0"><i class="fas fa-server"></i> Serveur Web</h5>
-  </div>
-  <div class="card-body">
-    <div class="row align-items-center">
-      <div class="col-md-4">
-        <label class="form-label mb-0">Port du Serveur Web</label>
-      </div>
-      <div class="col-md-4">
-        <div class="input-group">
-          <input type="number" class="form-control" name="web_port" value="5000">
-          <span class="input-group-text"><i class="fas fa-network-wired"></i></span>
-        </div>
-      </div>
-      <div class="col-md-4 text-end">
-        <button type="button" class="btn btn-warning" onclick="restartWebServer()">
-          <i class="fas fa-sync"></i> Redémarrer Serveur
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 </div>  
           <!-- Logs -->
           <div class="tab-pane fade" id="logs">
