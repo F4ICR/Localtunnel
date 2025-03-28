@@ -27,11 +27,13 @@ Téléchargez le projet Localtunnel depuis votre répertoire de travail qui est 
 
 `git clone https://github.com/F4ICR/Localtunnel.git`
 
-Rendre executable le script **install.sh** en se rendant dans le répertoire ***Localtunnel***
+Rendre executable le script **install.sh** en se rendant dans le répertoire ***Localtunnel*** :
 
 `cd Localtunnel/`
 
 `chmod +x install.sh`
+
+Puis executez la commande suivante :
 
 `./install.sh`
 
