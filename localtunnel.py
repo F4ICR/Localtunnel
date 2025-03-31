@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # F4ICR & OpenIA GPT-4
 
@@ -200,4 +201,3 @@ def main():
 # Point d'entrée du script
 if __name__ == "__main__":
     main()
-    
