@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.7"
+APP_VERSION = "1.5.8"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -364,7 +364,9 @@ def get_tunnel_data(days):
         data = []
         for entry in previous_tunnels:
             try:
-                parts = dict(item.strip().split(" : ") for item in entry.split(" | "))
+                # Supprimer le préfixe [RÉCUPÉRÉ] pour le traitement
+                cleaned_entry = entry.replace("[RÉCUPÉRÉ] ", "")
+                parts = dict(item.strip().split(" : ") for item in cleaned_entry.split(" | "))
                 
                 date_part = parts["Date"]
                 tunnel_date = datetime.strptime(date_part, "%Y-%m-%d")
@@ -377,12 +379,28 @@ def get_tunnel_data(days):
                     )
                     total_hours = round(hours + minutes / 60 + seconds / 3600, 2)
                     
+                    # Nettoyer l'URL si elle contient "your url is:"
+                    url = parts["URL"]
+                    if "your url is:" in url:
+                        import re
+                        url_match = re.search(r'https://[^\s]+', url)
+                        if url_match:
+                            url = url_match.group(0)
+                    
+                    # Ignorer les entrées avec "URL inconnue"
+                    if url == "URL inconnue":
+                        continue
+                    
+                    # Ignorer les sessions très courtes (moins de 10 secondes)
+                    if total_hours < 0.003:  # environ 10 secondes
+                        continue
+                    
                     data.append({
                         "date": date_part,
                         "duration": total_hours,
                         "start_time": parts["Heure de début"].split(".")[0],
                         "end_time": parts["Heure de fin"].split(".")[0],
-                        "url": parts["URL"]
+                        "url": url
                     })
             except Exception as e:
                 app.logger.warning(f"Erreur lors du traitement d'une entrée : {entry} - {e}")
