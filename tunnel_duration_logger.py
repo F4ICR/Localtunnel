@@ -34,20 +34,26 @@ class TunnelDurationLogger:
     def read_last_known_url(self):
         """
         Lit la dernière URL connue depuis le fichier de sortie du tunnel.
+        Extrait uniquement l'URL commençant par 'https'.
         """
         try:
             if os.path.exists(TUNNEL_OUTPUT_FILE):
                 with open(TUNNEL_OUTPUT_FILE, 'r') as f:
-                    url = f.read().strip()
-                    if url:
-                        return url
+                    content = f.read().strip()
+                    # Extraire uniquement l'URL commençant par https
+                    import re
+                    url_match = re.search(r'https://[^\s]+', content)
+                    if url_match:
+                        return url_match.group(0)
         except Exception as e:
             logger.error(f"Erreur lors de la lecture de l'URL depuis {TUNNEL_OUTPUT_FILE}: {e}")
         return None
 
+
     def read_last_url_from_durations(self):
         """
         Lit la dernière URL valide depuis le fichier des durées de tunnel.
+        Extrait uniquement l'URL commençant par 'https'.
         """
         try:
             if os.path.exists(TUNNEL_DURATIONS_FILE):
@@ -55,11 +61,11 @@ class TunnelDurationLogger:
                     lines = f.readlines()
                     for line in reversed(lines):
                         if "URL :" in line and "URL : URL inconnue" not in line:
-                            parts = line.split("URL :")
-                            if len(parts) > 1:
-                                url_part = parts[1].split("|")[0].strip()
-                                if url_part:
-                                    return url_part
+                            import re
+                            url_match = re.search(r'https://[^\s|]+', line)
+                            if url_match:
+                                return url_match.group(0)
+            return None
         except Exception as e:
             logger.error(f"Erreur lors de la lecture de la dernière URL depuis {TUNNEL_DURATIONS_FILE}: {e}")
         return None
@@ -302,14 +308,14 @@ class TunnelDurationLogger:
         if duration.total_seconds() < 10:
             logger.debug(f"Session ignorée car trop courte ({duration.total_seconds()} secondes)")
             return
-            
+        
         # Convertir la durée en heures, minutes et secondes
         total_seconds = int(duration.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
 
         duration_str = f"{hours}h {minutes}m {seconds}s"
-        
+    
         # Déterminer l'URL à utiliser
         url_to_log = self.current_url
         if url_to_log is None or url_to_log == "URL inconnue":
@@ -317,10 +323,17 @@ class TunnelDurationLogger:
             url_to_log = self.last_known_url or self.read_last_known_url() or self.read_last_url_from_durations() or "URL inconnue"
             if url_to_log != "URL inconnue":
                 logger.info(f"URL récupérée pour la session : {url_to_log}")
-        
+    
+        # Nettoyer l'URL pour s'assurer qu'elle est propre
+        if url_to_log != "URL inconnue":
+            import re
+            url_match = re.search(r'https://[^\s|]+', url_to_log)
+            if url_match:
+                url_to_log = url_match.group(0)
+    
         # Ajouter un préfixe pour les sessions récupérées
         prefix = "[RÉCUPÉRÉ] " if recovered else ""
-        
+    
         try:
             with open(TUNNEL_DURATIONS_FILE, "a") as f:
                 f.write(
@@ -330,21 +343,21 @@ class TunnelDurationLogger:
                     f"Heure de fin : {self.tunnel_end_time.time()} | "
                     f"Durée : {duration_str}\n"
                 )
-            
+        
             log_message = (
                 f"Détails du tunnel enregistrés : {prefix}Date : {self.tunnel_start_time.date()}, "
                 f"URL : {url_to_log}, Heure de début : {self.tunnel_start_time.time()}, "
                 f"Heure de fin : {self.tunnel_end_time.time()}, Durée : {duration_str}"
             )
-            
+        
             if recovered:
                 logger.warning(log_message)  # Utiliser warning pour les sessions récupérées
             else:
                 logger.info(log_message)
-                
+            
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des détails du tunnel : {e}")
-    
+
     def __del__(self):
         """
         Destructeur pour arrêter proprement le thread de sauvegarde.
