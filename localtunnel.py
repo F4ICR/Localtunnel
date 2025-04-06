@@ -66,26 +66,56 @@ lock = threading.Lock()
 def monitor_lt_process():
     """
     Vérifie périodiquement si le processus Localtunnel est actif.
-    Si le processus n'est pas actif, tente de redémarrer le tunnel.
+    Ne journalise que les problèmes et événements importants.
     """
+    restart_attempts = 0
+    max_restart_attempts = 10
+    backoff_multiplier = 1
+    
     while True:
         try:
             with lock:
-                # Vérifier si le processus Localtunnel est actif sur le port spécifié
+                # Vérifier si le processus est actif
                 if not check_lt_process(PORT):
-                    logger.warning("Le processus Localtunnel n'est pas actif. Tentative de redémarrage.")
-                    stop_existing_tunnel(PORT)  # Arrêter tout tunnel existant
+                    # Journaliser uniquement lors de la première détection ou après plusieurs échecs
+                    if restart_attempts == 0 or restart_attempts % 3 == 0:
+                        logger.warning(f"Tunnel inactif. Tentative de redémarrage ({restart_attempts + 1}/{max_restart_attempts}).")
                     
-                    # Démarrer un nouveau tunnel et mettre à jour la liste des tunnels actifs
+                    stop_existing_tunnel(PORT)
                     new_url = start_tunnel(PORT, SUBDOMAIN)
-                    if new_url and new_url not in active_tunnels:
-                        active_tunnels.append(new_url)
-                        logger.info(f"Nouveau tunnel démarré : {new_url}")
+                    
+                    if new_url:
+                        if new_url not in active_tunnels:
+                            active_tunnels.append(new_url)
+                        
+                        # Vérifier la connectivité
+                        if test_tunnel_connectivity(new_url):
+                            # Journaliser uniquement si des tentatives ont échoué avant
+                            if restart_attempts > 0:
+                                logger.info(f"Tunnel rétabli après {restart_attempts} tentatives : {new_url}")
+                            restart_attempts = 0
+                            backoff_multiplier = 1
+                        else:
+                            restart_attempts += 1
+                            logger.error(f"Tunnel démarré mais inaccessible : {new_url}")
+                    else:
+                        restart_attempts += 1
+                        # Journaliser uniquement lors d'échecs répétés
+                        if restart_attempts % 3 == 0:
+                            logger.error(f"Échecs répétés du démarrage du tunnel ({restart_attempts} tentatives)")
+                    
+                    # Augmenter le backoff en cas d'échecs répétés
+                    if restart_attempts > 0:
+                        backoff_multiplier = min(32, 2 ** (restart_attempts - 1))
+                else:
+                    # Réinitialiser silencieusement si tout va bien
+                    restart_attempts = 0
+                    backoff_multiplier = 1
         except Exception as e:
-            logger.error(f"Erreur lors de la surveillance du processus Localtunnel : {e}")
+            logger.error(f"Erreur de surveillance du tunnel : {e}")
         
-        # Pause avant la prochaine vérification (intervalle configurable)
-        time.sleep(LT_PROCESS_CHECK_INTERVAL)
+        # Pause avec backoff si nécessaire
+        time.sleep(LT_PROCESS_CHECK_INTERVAL * backoff_multiplier)
 
 
 # Gérer le cycle de vie du tunnel (connectivité)
@@ -200,4 +230,3 @@ def main():
 # Point d'entrée du script
 if __name__ == "__main__":
     main()
-    
