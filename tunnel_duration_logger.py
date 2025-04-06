@@ -6,7 +6,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from logging_config import logger
-from settings import TUNNEL_DURATIONS_FILE
+from settings import TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE
 
 
 class TunnelDurationLogger:
@@ -18,6 +18,7 @@ class TunnelDurationLogger:
         self.tunnel_start_time = None
         self.tunnel_end_time = None
         self.current_url = None
+        self.last_known_url = None
         self.backup_interval = 300  # Sauvegarde toutes les 5 minutes
         self.backup_thread = None
         self.running = False
@@ -30,6 +31,39 @@ class TunnelDurationLogger:
         # Démarrer le thread de sauvegarde périodique
         self.start_backup_thread()
 
+    def read_last_known_url(self):
+        """
+        Lit la dernière URL connue depuis le fichier de sortie du tunnel.
+        """
+        try:
+            if os.path.exists(TUNNEL_OUTPUT_FILE):
+                with open(TUNNEL_OUTPUT_FILE, 'r') as f:
+                    url = f.read().strip()
+                    if url:
+                        return url
+        except Exception as e:
+            logger.error(f"Erreur lors de la lecture de l'URL depuis {TUNNEL_OUTPUT_FILE}: {e}")
+        return None
+
+    def read_last_url_from_durations(self):
+        """
+        Lit la dernière URL valide depuis le fichier des durées de tunnel.
+        """
+        try:
+            if os.path.exists(TUNNEL_DURATIONS_FILE):
+                with open(TUNNEL_DURATIONS_FILE, 'r') as f:
+                    lines = f.readlines()
+                    for line in reversed(lines):
+                        if "URL :" in line and "URL : URL inconnue" not in line:
+                            parts = line.split("URL :")
+                            if len(parts) > 1:
+                                url_part = parts[1].split("|")[0].strip()
+                                if url_part:
+                                    return url_part
+        except Exception as e:
+            logger.error(f"Erreur lors de la lecture de la dernière URL depuis {TUNNEL_DURATIONS_FILE}: {e}")
+        return None
+
     def check_previous_session(self):
         """
         Vérifie s'il existe un fichier de session précédente non terminée et l'enregistre.
@@ -40,8 +74,10 @@ class TunnelDurationLogger:
                     start_time_str = f.read().strip()
                     previous_start_time = datetime.fromisoformat(start_time_str)
                 
-                # Récupérer l'URL depuis le fichier de sauvegarde si disponible
+                # Récupérer l'URL depuis plusieurs sources
                 url = "URL inconnue"
+                
+                # 1. Essayer d'abord le fichier de sauvegarde
                 if os.path.exists("/tmp/tunnel_backup.txt"):
                     with open("/tmp/tunnel_backup.txt", "r") as f:
                         for line in f:
@@ -53,11 +89,26 @@ class TunnelDurationLogger:
                                         break
                                 break
                 
+                # 2. Si toujours inconnue, essayer le fichier de sortie du tunnel
+                if url == "URL inconnue":
+                    last_url = self.read_last_known_url()
+                    if last_url:
+                        url = last_url
+                        logger.info(f"URL récupérée depuis le fichier de sortie du tunnel : {url}")
+                
+                # 3. En dernier recours, utiliser la dernière URL du fichier de durées
+                if url == "URL inconnue":
+                    last_url = self.read_last_url_from_durations()
+                    if last_url:
+                        url = last_url
+                        logger.info(f"URL récupérée depuis le fichier de durées : {url}")
+                
                 logger.warning(f"Session précédente non terminée détectée, démarrée à {previous_start_time}")
                 
                 # Enregistrer la session précédente
                 self.tunnel_start_time = previous_start_time
                 self.current_url = url
+                self.last_known_url = url if url != "URL inconnue" else None
                 self.tunnel_end_time = datetime.now()
                 duration = self.tunnel_end_time - self.tunnel_start_time
                 
@@ -149,8 +200,13 @@ class TunnelDurationLogger:
             significant_inconsistencies = []
             for entry in duration_entries:
                 # Ignorer les sessions très courtes (moins de 10 secondes)
-                if "Durée : 0h 0m " in entry and int(entry.split("Durée : 0h 0m ")[1].split("s")[0]) < 10:
-                    continue
+                if "Durée : 0h 0m " in entry:
+                    try:
+                        seconds = int(entry.split("Durée : 0h 0m ")[1].split("s")[0])
+                        if seconds < 10:
+                            continue
+                    except (IndexError, ValueError):
+                        pass
                 
                 parts = entry.split("|")
                 date_part = parts[0].strip().replace("Date : ", "").replace("[RÉCUPÉRÉ] Date : ", "")
@@ -181,6 +237,7 @@ class TunnelDurationLogger:
             
         self.tunnel_start_time = datetime.now()
         self.current_url = url
+        self.last_known_url = url  # Mémoriser cette URL
         
         # Enregistrer l'heure de démarrage dans un fichier
         try:
@@ -235,17 +292,31 @@ class TunnelDurationLogger:
     def log_tunnel_details(self, duration: timedelta, recovered=False):
         """
         Enregistre les détails complets du tunnel dans un fichier distinct.
+        Ignore les sessions très courtes et utilise la dernière URL connue si nécessaire.
         
         Args:
             duration: La durée du tunnel
             recovered: Indique si cette entrée provient d'une récupération de session
         """
+        # Ignorer les sessions très courtes (moins de 10 secondes)
+        if duration.total_seconds() < 10:
+            logger.debug(f"Session ignorée car trop courte ({duration.total_seconds()} secondes)")
+            return
+            
         # Convertir la durée en heures, minutes et secondes
         total_seconds = int(duration.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
 
         duration_str = f"{hours}h {minutes}m {seconds}s"
+        
+        # Déterminer l'URL à utiliser
+        url_to_log = self.current_url
+        if url_to_log is None or url_to_log == "URL inconnue":
+            # Essayer de récupérer l'URL depuis différentes sources
+            url_to_log = self.last_known_url or self.read_last_known_url() or self.read_last_url_from_durations() or "URL inconnue"
+            if url_to_log != "URL inconnue":
+                logger.info(f"URL récupérée pour la session : {url_to_log}")
         
         # Ajouter un préfixe pour les sessions récupérées
         prefix = "[RÉCUPÉRÉ] " if recovered else ""
@@ -254,7 +325,7 @@ class TunnelDurationLogger:
             with open(TUNNEL_DURATIONS_FILE, "a") as f:
                 f.write(
                     f"{prefix}Date : {self.tunnel_start_time.date()} | "
-                    f"URL : {self.current_url} | "
+                    f"URL : {url_to_log} | "
                     f"Heure de début : {self.tunnel_start_time.time()} | "
                     f"Heure de fin : {self.tunnel_end_time.time()} | "
                     f"Durée : {duration_str}\n"
@@ -262,7 +333,7 @@ class TunnelDurationLogger:
             
             log_message = (
                 f"Détails du tunnel enregistrés : {prefix}Date : {self.tunnel_start_time.date()}, "
-                f"URL : {self.current_url}, Heure de début : {self.tunnel_start_time.time()}, "
+                f"URL : {url_to_log}, Heure de début : {self.tunnel_start_time.time()}, "
                 f"Heure de fin : {self.tunnel_end_time.time()}, Durée : {duration_str}"
             )
             
