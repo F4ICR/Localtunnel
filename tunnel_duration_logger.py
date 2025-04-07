@@ -6,7 +6,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from logging_config import logger
-from settings import TUNNEL_DURATIONS_FILE, TUNNEL_OUTPUT_FILE
+from settings import TUNNEL_DURATIONS_FILE
 
 
 class TunnelDurationLogger:
@@ -18,7 +18,6 @@ class TunnelDurationLogger:
         self.tunnel_start_time = None
         self.tunnel_end_time = None
         self.current_url = None
-        self.last_known_url = None
         self.backup_interval = 300  # Sauvegarde toutes les 5 minutes
         self.backup_thread = None
         self.running = False
@@ -31,45 +30,6 @@ class TunnelDurationLogger:
         # Démarrer le thread de sauvegarde périodique
         self.start_backup_thread()
 
-    def read_last_known_url(self):
-        """
-        Lit la dernière URL connue depuis le fichier de sortie du tunnel.
-        Extrait uniquement l'URL commençant par 'https'.
-        """
-        try:
-            if os.path.exists(TUNNEL_OUTPUT_FILE):
-                with open(TUNNEL_OUTPUT_FILE, 'r') as f:
-                    content = f.read().strip()
-                    # Extraire uniquement l'URL commençant par https
-                    import re
-                    url_match = re.search(r'https://[^\s]+', content)
-                    if url_match:
-                        return url_match.group(0)
-        except Exception as e:
-            logger.error(f"Erreur lors de la lecture de l'URL depuis {TUNNEL_OUTPUT_FILE}: {e}")
-        return None
-
-
-    def read_last_url_from_durations(self):
-        """
-        Lit la dernière URL valide depuis le fichier des durées de tunnel.
-        Extrait uniquement l'URL commençant par 'https'.
-        """
-        try:
-            if os.path.exists(TUNNEL_DURATIONS_FILE):
-                with open(TUNNEL_DURATIONS_FILE, 'r') as f:
-                    lines = f.readlines()
-                    for line in reversed(lines):
-                        if "URL :" in line and "URL : URL inconnue" not in line:
-                            import re
-                            url_match = re.search(r'https://[^\s|]+', line)
-                            if url_match:
-                                return url_match.group(0)
-            return None
-        except Exception as e:
-            logger.error(f"Erreur lors de la lecture de la dernière URL depuis {TUNNEL_DURATIONS_FILE}: {e}")
-        return None
-
     def check_previous_session(self):
         """
         Vérifie s'il existe un fichier de session précédente non terminée et l'enregistre.
@@ -80,10 +40,8 @@ class TunnelDurationLogger:
                     start_time_str = f.read().strip()
                     previous_start_time = datetime.fromisoformat(start_time_str)
                 
-                # Récupérer l'URL depuis plusieurs sources
+                # Récupérer l'URL depuis le fichier de sauvegarde si disponible
                 url = "URL inconnue"
-                
-                # 1. Essayer d'abord le fichier de sauvegarde
                 if os.path.exists("/tmp/tunnel_backup.txt"):
                     with open("/tmp/tunnel_backup.txt", "r") as f:
                         for line in f:
@@ -95,26 +53,11 @@ class TunnelDurationLogger:
                                         break
                                 break
                 
-                # 2. Si toujours inconnue, essayer le fichier de sortie du tunnel
-                if url == "URL inconnue":
-                    last_url = self.read_last_known_url()
-                    if last_url:
-                        url = last_url
-                        logger.info(f"URL récupérée depuis le fichier de sortie du tunnel : {url}")
-                
-                # 3. En dernier recours, utiliser la dernière URL du fichier de durées
-                if url == "URL inconnue":
-                    last_url = self.read_last_url_from_durations()
-                    if last_url:
-                        url = last_url
-                        logger.info(f"URL récupérée depuis le fichier de durées : {url}")
-                
                 logger.warning(f"Session précédente non terminée détectée, démarrée à {previous_start_time}")
                 
                 # Enregistrer la session précédente
                 self.tunnel_start_time = previous_start_time
                 self.current_url = url
-                self.last_known_url = url if url != "URL inconnue" else None
                 self.tunnel_end_time = datetime.now()
                 duration = self.tunnel_end_time - self.tunnel_start_time
                 
@@ -181,54 +124,49 @@ class TunnelDurationLogger:
     def check_consistency(self):
         """
         Vérifie la cohérence entre les logs système et le fichier de durées.
-        Ignore les sessions très courtes et génère un rapport consolidé.
         """
         try:
-            # Vérifications préliminaires des fichiers
+            # Vérifier si les fichiers existent
             if not os.path.exists(TUNNEL_DURATIONS_FILE):
+                logger.warning(f"Le fichier de durées {TUNNEL_DURATIONS_FILE} n'existe pas.")
                 return
-            
+                
+            # Comparer avec les logs système (exemple avec /var/log/syslog)
             system_log_file = "/var/log/syslog"
             if not os.path.exists(system_log_file):
-                system_log_file = "/var/log/messages"
-                if not os.path.exists(system_log_file):
-                    return
-            
-            # Lire les entrées du fichier de durées
+                system_log_file = "/var/log/messages"  # Alternative sur certains systèmes
+                
+            if not os.path.exists(system_log_file):
+                logger.warning("Aucun fichier de log système standard trouvé pour la vérification de cohérence.")
+                return
+                
+            # Lire les dernières entrées du fichier de durées
             with open(TUNNEL_DURATIONS_FILE, "r") as f:
                 duration_entries = f.readlines()[-10:]  # Limiter aux 10 dernières entrées
-            
-            # Lire les logs système pertinents
+                
+            # Lire les logs système pertinents (recherche de mots clés)
             with open(system_log_file, "r") as f:
                 system_logs = f.read()
-            
-            # Vérifier la cohérence
-            significant_inconsistencies = []
-            for entry in duration_entries:
-                # Ignorer les sessions très courtes (moins de 10 secondes)
-                if "Durée : 0h 0m " in entry:
-                    try:
-                        seconds = int(entry.split("Durée : 0h 0m ")[1].split("s")[0])
-                        if seconds < 10:
-                            continue
-                    except (IndexError, ValueError):
-                        pass
                 
+            # Vérifier la cohérence
+            inconsistencies = []
+            for entry in duration_entries:
+                # Extraire la date et l'heure de début
                 parts = entry.split("|")
-                date_part = parts[0].strip().replace("Date : ", "").replace("[RÉCUPÉRÉ] Date : ", "")
-            
-                # Vérifier uniquement les entrées des 2 derniers jours
-                if date_part not in system_logs:
-                    significant_inconsistencies.append(entry.strip())
-        
-            # Générer un rapport consolidé uniquement si des incohérences significatives sont trouvées
-            if significant_inconsistencies:
-                logger.warning(f"Rapport de cohérence : {len(significant_inconsistencies)} entrées significatives non retrouvées dans les logs système")
-                # Journaliser uniquement les 3 premières pour éviter la verbosité
-                for i, entry in enumerate(significant_inconsistencies[:3]):
-                    logger.warning(f"Exemple d'incohérence #{i+1}: {entry}")
-                if len(significant_inconsistencies) > 3:
-                    logger.warning(f"... et {len(significant_inconsistencies) - 3} autres entrées")
+                date_part = parts[0].strip().replace("Date : ", "")
+                time_part = parts[2].strip().replace("Heure de début : ", "")
+                
+                # Vérifier si cette entrée est mentionnée dans les logs système
+                if date_part not in system_logs or time_part not in system_logs:
+                    inconsistencies.append(entry.strip())
+                    
+            if inconsistencies:
+                logger.warning(f"Incohérences détectées entre les logs système et le fichier de durées ({len(inconsistencies)} entrées)")
+                for entry in inconsistencies:
+                    logger.warning(f"Entrée potentiellement incohérente : {entry}")
+            else:
+                logger.info("Vérification de cohérence réussie : aucune incohérence détectée")
+                
         except Exception as e:
             logger.error(f"Erreur lors de la vérification de cohérence : {e}")
 
@@ -243,7 +181,6 @@ class TunnelDurationLogger:
             
         self.tunnel_start_time = datetime.now()
         self.current_url = url
-        self.last_known_url = url  # Mémoriser cette URL
         
         # Enregistrer l'heure de démarrage dans un fichier
         try:
@@ -298,66 +235,45 @@ class TunnelDurationLogger:
     def log_tunnel_details(self, duration: timedelta, recovered=False):
         """
         Enregistre les détails complets du tunnel dans un fichier distinct.
-        Ignore les sessions très courtes et utilise la dernière URL connue si nécessaire.
         
         Args:
             duration: La durée du tunnel
             recovered: Indique si cette entrée provient d'une récupération de session
         """
-        # Ignorer les sessions très courtes (moins de 10 secondes)
-        if duration.total_seconds() < 10:
-            logger.debug(f"Session ignorée car trop courte ({duration.total_seconds()} secondes)")
-            return
-        
         # Convertir la durée en heures, minutes et secondes
         total_seconds = int(duration.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
 
         duration_str = f"{hours}h {minutes}m {seconds}s"
-    
-        # Déterminer l'URL à utiliser
-        url_to_log = self.current_url
-        if url_to_log is None or url_to_log == "URL inconnue":
-            # Essayer de récupérer l'URL depuis différentes sources
-            url_to_log = self.last_known_url or self.read_last_known_url() or self.read_last_url_from_durations() or "URL inconnue"
-            if url_to_log != "URL inconnue":
-                logger.info(f"URL récupérée pour la session : {url_to_log}")
-    
-        # Nettoyer l'URL pour s'assurer qu'elle est propre
-        if url_to_log != "URL inconnue":
-            import re
-            url_match = re.search(r'https://[^\s|]+', url_to_log)
-            if url_match:
-                url_to_log = url_match.group(0)
-    
+        
         # Ajouter un préfixe pour les sessions récupérées
         prefix = "[RÉCUPÉRÉ] " if recovered else ""
-    
+        
         try:
             with open(TUNNEL_DURATIONS_FILE, "a") as f:
                 f.write(
                     f"{prefix}Date : {self.tunnel_start_time.date()} | "
-                    f"URL : {url_to_log} | "
+                    f"URL : {self.current_url} | "
                     f"Heure de début : {self.tunnel_start_time.time()} | "
                     f"Heure de fin : {self.tunnel_end_time.time()} | "
                     f"Durée : {duration_str}\n"
                 )
-        
+            
             log_message = (
                 f"Détails du tunnel enregistrés : {prefix}Date : {self.tunnel_start_time.date()}, "
-                f"URL : {url_to_log}, Heure de début : {self.tunnel_start_time.time()}, "
+                f"URL : {self.current_url}, Heure de début : {self.tunnel_start_time.time()}, "
                 f"Heure de fin : {self.tunnel_end_time.time()}, Durée : {duration_str}"
             )
-        
+            
             if recovered:
                 logger.warning(log_message)  # Utiliser warning pour les sessions récupérées
             else:
                 logger.info(log_message)
-            
+                
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des détails du tunnel : {e}")
-
+    
     def __del__(self):
         """
         Destructeur pour arrêter proprement le thread de sauvegarde.
