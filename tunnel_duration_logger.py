@@ -235,7 +235,7 @@ class TunnelDurationLogger:
     def log_tunnel_details(self, duration: timedelta, recovered=False):
         """
         Enregistre les détails complets du tunnel dans un fichier distinct.
-        
+    
         Args:
             duration: La durée du tunnel
             recovered: Indique si cette entrée provient d'une récupération de session
@@ -246,33 +246,31 @@ class TunnelDurationLogger:
         minutes, seconds = divmod(remainder, 60)
 
         duration_str = f"{hours}h {minutes}m {seconds}s"
-        
-        # Ajouter un préfixe pour les sessions récupérées
-        prefix = "[RÉCUPÉRÉ] " if recovered else ""
-        
+    
         try:
             with open(TUNNEL_DURATIONS_FILE, "a") as f:
                 f.write(
-                    f"{prefix}Date : {self.tunnel_start_time.date()} | "
+                    f"Date : {self.tunnel_start_time.date()} | "
                     f"URL : {self.current_url} | "
                     f"Heure de début : {self.tunnel_start_time.time()} | "
                     f"Heure de fin : {self.tunnel_end_time.time()} | "
                     f"Durée : {duration_str}\n"
                 )
-            
+        
             log_message = (
-                f"Détails du tunnel enregistrés : {prefix}Date : {self.tunnel_start_time.date()}, "
+                f"Détails du tunnel enregistrés : Date : {self.tunnel_start_time.date()}, "
                 f"URL : {self.current_url}, Heure de début : {self.tunnel_start_time.time()}, "
                 f"Heure de fin : {self.tunnel_end_time.time()}, Durée : {duration_str}"
             )
-            
+        
             if recovered:
-                logger.warning(log_message)  # Utiliser warning pour les sessions récupérées
+                logger.warning(log_message + " (session récupérée)")  # Ajouter l'info de récupération uniquement dans le log
             else:
                 logger.info(log_message)
-                
+            
         except Exception as e:
             logger.error(f"Erreur lors de l'enregistrement des détails du tunnel : {e}")
+
     
     def __del__(self):
         """
