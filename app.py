@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # F4ICR & OpenIA GPT-4
 
-APP_VERSION = "1.5.7"
+APP_VERSION = "1.5.8"
 DEVELOPER_NAME = "Développé par F4ICR Pascal & OpenIA GPT-4"
 
 from flask import Flask, render_template, request, jsonify
@@ -656,4 +656,3 @@ if __name__ == '__main__':
 
     # Lancement de l'application Flask
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
-    
