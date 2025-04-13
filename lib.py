@@ -429,4 +429,3 @@ def test_tunnel_connectivity(tunnel_url, retries=10, timeout=15, backoff_factor=
         logger.warning("Un ou plusieurs tests ont échoué : L'URL n'est pas pleinement accessible.")
         
         return False
-    
